@@ -255,6 +255,7 @@ EOF
     info "install dependencies for building an initramfs"
     emerge --ask --tree --verbose sys-apps/busybox
     emerge --ask --tree --verbose sys-fs/cryptsetup
+    emerge --ask --tree --verbose app-arch/lz4
 
     # note that currently tpm2-tools package is in testing branch. that means, you
     # need to unmask the package to install. remove --autounmask flag when
