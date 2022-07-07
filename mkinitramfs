@@ -1,0 +1,54 @@
+#!/bin/bash
+set -o errexit -o nounset -o noglob -o pipefail
+
+this_script=$(basename "$0")
+
+info() {
+    echo "$this_script:" "$@"
+}
+
+error() {
+    echo "$this_script:" "$@" >&2
+}
+
+if [ "$EUID" != 0 ]
+then
+    error "this script requires root privilege!"
+    exit 1
+fi
+
+readonly initramfs_path="/usr/src/initramfs"
+
+rinstall() {
+    local src="$1"
+    local dst="$2"
+
+    install "$src" "$dst"
+
+    deps=$(env --unset=LD_PRELOAD ldd "$src" \
+        | sed -e "
+            /\//!d;
+            /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
+            s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/
+        ")
+
+    for dep in "$deps"
+    do
+        install "$dep" "$initramfs_path/$dep"
+    done
+}
+
+info "install the busybox inside the initramfs"
+rinstall /bin/busybox "$initramfs_path/usr/bin/"
+chroot "$initramfs_path" busybox --install
+
+info "install the tpm2-tools inside the initramfs"
+rinstall /bin/tpm2 "$initramfs_path/usr/bin/"
+
+info "install the cryptsetup inside the initramfs"
+rinstall /bin/cryptsetup "$initramfs_path/usr/bin/"
+
+info "generate and install the initramfs to /boot"
+find "$initramfs_path" -print0 \
+    | cpio --null --create --verbose --format="newc" \
+    | lz4 --to-stdout > /boot/initramfs.cpio.lz4

@@ -134,7 +134,7 @@ info "mount a root filesystem partition"
 mkdir -vp /mnt/root
 mount /dev/mapper/root /mnt/root
 
-info "set the file system hierarchy layout"
+info "set the filesystem hierarchy layout"
 mkdir -vp /mnt/root/boot
 mkdir -vp /mnt/root/deploy/{image-a,image-b}
 mkdir -vp /mnt/root/snapshots
@@ -177,9 +177,9 @@ chroot_main() {
     info "configure Portage compile flags"
     sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -pipe -march=native"/' \
         /etc/portage/make.conf
-    cat <<-EOF >> /etc/portage/make.conf
-    # Note that it's recommended to have at least 2GB of RAM for each jobs.
-    MAKEOPTS="-j$(nproc)"
+    cat << EOF >> /etc/portage/make.conf
+# Note that it's recommended to have at least 2GB of RAM for each jobs.
+MAKEOPTS="-j$(nproc)"
 EOF
 
     info "configure Portage mirrors"
@@ -244,11 +244,31 @@ EOF
     # this will copy the kernel image into /boot together with the System.map
     # file and the kernel configuration file.
     $make install
+
+    info "set the initramfs directory layout"
+    mkdir -p /usr/src/initramfs/{bin,dev,etc,lib,lib64,proc,root,sbin,sys}
+    install init /usr/src/initramfs/
+
+    info "install dependencies for building an initramfs"
+    emerge --ask --tree --verbose sys-apps/busybox
+    emerge --ask --tree --verbose sys-fs/cryptsetup
+
+    # note that currently tpm2-tools package is in testing branch. that means, you
+    # need to unmask the package to install. remove --autounmask flag when
+    # tpm2-tools package is in stable branch.
+    info "install tpm2-tools for building an initramfs"
+    # FIXME: for some reason, emerge with --autounmask returns 1 when it succeeds
+    emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
+    dispatch-conf
+    emerge --ask --tree --verbose app-crypt/tpm2-tools
+
+    info "build and install an initramfs"
+    mkinitramfs
 }
 
 info "chroot into $install_path and execute chroot_main()"
 chroot "$install_path" /bin/bash -c "
-    this_script=$(basename "$0")
+    this_script=$this_script
     root_storage=$root_storage
     partition_efi=$partition_efi
     partition_swap=$partition_swap

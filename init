@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# mount the /dev, /proc and /sys filesystems.
+mount -t devtmpfs none /dev
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+# mount the root filesystem
+mount -o ro /dev/sda1 /mnt/root
+
+# clean up
+umount /dev
+umount /proc
+umount /sys
+
+# boot the real thing
+exec switch_root /mnt/root /sbin/init
