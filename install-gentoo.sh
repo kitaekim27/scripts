@@ -21,7 +21,7 @@ info "sync time with ntp.org"
 ntpd -q -g
 
 info "configure Portage mirrors of the installer"
-mirrorselect -s5 -o >> /etc/portage/make.conf
+mirrorselect --servers="5"
 
 # note that currently tpm2-tools package is in testing branch. that means, you
 # need to unmask the package to install. remove --autounmask flag when
@@ -183,7 +183,7 @@ chroot_main() {
 EOF
 
     info "configure Portage mirrors"
-    mirrorselect -s5 -o >> /etc/portage/make.conf
+    mirrorselect --servers="5"
 
     info "configure Portage ebuild repositories"
     mkdir -vp /etc/portage/repos.conf
