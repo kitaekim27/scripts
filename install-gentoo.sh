@@ -235,11 +235,11 @@ EOF
 
     info "compile and install the linux kernel"
     make="make --directory=/usr/src/linux --jobs=$(nproc)"
-    $make --directory="/usr/src/linux" --jobs="$(nproc)"
-    $make --directory="/usr/src/linux" --jobs="$(nproc)" modules_install
+    $make
+    $make modules_install
     # this will copy the kernel image into /boot together with the System.map
     # file and the kernel configuration file.
-    $make --directory="/usr/src/linux" --jobs="$(nproc)" install
+    $make install
 }
 
 info "chroot into $install_path and execute chroot_main()"
