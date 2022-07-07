@@ -1,0 +1,2 @@
+#!/bin/sh
+apropos "${1:-.}" | fzf -q "^$1" | awk '{print $1}' | xargs -r man
