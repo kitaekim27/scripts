@@ -30,7 +30,7 @@ newroot="$(realpath "$2")"
 check_attrib() {
     local file="$1"
 
-    if [ ! "$(stat --format="%U:%G" "$file")" = "root:root" ]
+    if [ "$(stat --format="%U:%G" "$file")" != "root:root" ]
     then
         error "File $file does not have root:root owner and group attribute."
         error "This script permits only files with root:root attribute to be installed in the initramfs."
