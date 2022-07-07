@@ -88,6 +88,7 @@ dd if=/dev/urandom bs=128 count=1 status=none | tpm2_create \
 # see: TCG, "Registry of Reserved TPM 2.0 Handles and Localities"
 info "make the generated key persistent in TPM"
 # try to evict existing object at 0x81018000 first
+# XXX: make sure that there are no important objects at 0x81018000.
 tpm2_evictcontrol --object-context="0x81018000" 2>/dev/null || :
 tpm2_evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 
@@ -155,7 +156,7 @@ find download -iname "stage3-*.tar.xz" -exec tar \
 info "configure DNS info"
 cp -vL /etc/resolv.conf "$install_path/etc/"
 
-info "mount linux filesystems"
+info "mount the linux filesystems"
 mount --types proc /proc "$install_path/proc"
 mount --rbind /sys "$install_path/sys"
 mount --make-rslave "$install_path/sys"
@@ -164,8 +165,6 @@ mount --make-rslave "$install_path/dev"
 mount --bind /run "$install_path/run"
 mount --make-rslave "$install_path/run"
 
-# XXX: note that variables defined outside of this function does will not work
-#      inside this function unless you define it again properly!
 chroot_main() {
     source /etc/profile
 
