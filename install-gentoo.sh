@@ -135,9 +135,6 @@ mkdir -vp /mnt/root/boot
 mkdir -vp /mnt/root/deploy/{image-a,image-b}
 mkdir -vp /mnt/root/snapshots
 
-info "mount an efi boot partition"
-mount "/dev/$partition_efi" /mnt/root/boot
-
 # TODO: verify the downloaded files
 info "download a stage 3 tarball"
 arch="amd64"
@@ -171,6 +168,9 @@ mount --make-rslave "$install_path/run"
 #      inside this function unless you define it again properly!
 chroot_main() {
     source /etc/profile
+
+    info "mount an efi boot partition"
+    mount "/dev/$partition_efi" /boot
 
     info "configure Portage compile flags"
     sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -pipe -march=native"/' \
@@ -245,7 +245,11 @@ EOF
 
 info "chroot into $install_path and execute chroot_main()"
 chroot "$install_path" /bin/bash -c "
-    this_script=$(basename $0)
+    this_script=$(basename "$0")
+    root_storage=$root_storage
+    partition_efi=$partition_efi
+    partition_swap=$partition_swap
+    partition_rootfs=$partition_rootfs
     $(declare -f info)
     $(declare -f error)
     $(declare -f chroot_main)
