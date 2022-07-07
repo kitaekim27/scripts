@@ -1,0 +1,86 @@
+#!/bin/bash
+# Recursively copy the given executable.
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+this_script=$(basename "$0")
+
+info() {
+    echo "$this_script:" "$@"
+}
+
+error() {
+    info "$@" >&2
+}
+
+if [ "$EUID" != 0 ]
+then
+    error "This script requires root privilege."
+    exit 1
+fi
+
+readonly CP="cp --preserve --no-dereference"
+
+target="$(realpath "$1")"
+newroot="$(realpath "$2")"
+
+# Check if the given file has root:root owner and group attribute.
+# It's quite cumbersome to match users and groups inside and ouside of the
+# initramfs. So, just use root user and group only.
+check_attrib() {
+    local file="$1"
+
+    if [ ! "$(stat --format="%U:%G" "$file")" = "root:root" ]
+    then
+        error "File $file does not have root:root owner and group attribute."
+        error "This script permits only files with root:root attribute to be installed in the initramfs."
+        exit 1
+    fi
+}
+
+deep_check_attrib() {
+    local file="$1"
+
+    check_attrib "$file"
+    [ -L "$file" ] && check_attrib "$(readlink -f "$file")"
+}
+
+deep_copy() {
+    local file="$1"
+
+    mkdir --parents "$newroot${file%/*}"
+    $CP "$file" "$newroot$file"
+    if [ -L "$file" ]
+    then
+        realfile=$(readlink -f "$file")
+        mkdir --parents "$newroot${realfile%/*}"
+        $CP "$realfile" "$newroot$realfile"
+    fi
+}
+
+if [ ! -d "$newroot" ]
+then
+    error "$newroot is not a directory!"
+    exit 1
+fi
+
+dependencies=$(env --unset="LD_PRELOAD" ldd "$target" \
+    | sed -e "
+        /\//!d;
+        /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
+        s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/
+    ")
+
+deep_check_attrib "$target"
+
+for dependency in $dependencies
+do
+    deep_check_attrib "$dependency"
+done
+
+deep_copy "$target"
+
+for dependency in $dependencies
+do
+    deep_copy "$dependency"
+done

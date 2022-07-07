@@ -19,7 +19,7 @@ then
     exit 1
 fi
 
-readonly snapshot=$(date -Iseconds)
+snapshot=$(date -Iseconds)
 
 info "Create a snapshot $snapshot."
 
