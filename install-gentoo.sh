@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -o errexit -o nounset -o noglob -o pipefail
 
 this_script=$(basename "$0")
@@ -8,7 +9,7 @@ info() {
 }
 
 error() {
-    echo "$this_script:" "$@" >&2
+    info "$@" >&2
 }
 
 if [ "$EUID" != 0 ]
@@ -22,6 +23,9 @@ ntpd -q -g
 
 info "configure Portage mirrors of the installer"
 mirrorselect --servers="5"
+
+info "Install my scripts."
+find tools -exec install --verbose {} /usr/local/bin/ \;
 
 # note that currently tpm2-tools package is in testing branch. that means, you
 # need to unmask the package to install. remove --autounmask flag when
@@ -98,8 +102,7 @@ tpm2_evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 info "create a LUKS2 passphrase for a root filesystem"
 read -srp "enter a passphrase: " passphrase
 echo
-luks_passphrase=$(create-luks-passphrase.sh "$passphrase" \
-                    | sed -n 's/result = \(.*\)/\1/p')
+luks_passphrase=$(mkpassphrase "$passphrase" | sed -n 's/result = \(.*\)/\1/p')
 
 info "encrypt a root filesystem partition"
 echo "$luks_passphrase" \
@@ -159,7 +162,7 @@ find download -iname "stage3-*.tar.xz" -exec tar \
 info "configure DNS info"
 cp -vL /etc/resolv.conf "$install_path/etc/"
 
-info "Install my own scripts into the installation."
+info "Install my scripts into the installation."
 find tools -exec install --verbose {} "$install_path/usr/local/bin/" \;
 
 info "mount the linux filesystems"
@@ -248,9 +251,9 @@ EOF
     # file and the kernel configuration file.
     $make install
 
-    info "set the basic initramfs directory"
+    info "Set the basic initramfs directory."
     mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
-    install --verbose init /usr/src/initramfs/
+    find initramfs -exec install --verbose {} /usr/src/initramfs/ \;
 
     info "install dependencies for building an initramfs"
     emerge --ask --tree --verbose sys-apps/busybox
