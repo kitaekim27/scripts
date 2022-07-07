@@ -159,8 +159,8 @@ find download -iname "stage3-*.tar.xz" -exec tar \
 info "configure DNS info"
 cp -vL /etc/resolv.conf "$install_path/etc/"
 
-info "install my scripts"
-install --verbose mkinitramfs "$install_path/usr/local/bin/"
+info "Install my own scripts into the installation."
+find tools -exec install --verbose {} "$install_path/usr/local/bin/" \;
 
 info "mount the linux filesystems"
 mount --types proc /proc "$install_path/proc"
