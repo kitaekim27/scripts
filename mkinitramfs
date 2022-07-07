@@ -34,14 +34,14 @@ rcopy() {
 
     for dep in $deps
     do
-        mkdir --parents "${dep%/*}"
+        mkdir --parents "${initramfs_path}${dep%/*}"
         cp --verbose --preserve --no-dereference "$dep" "${initramfs_path}${dep}"
         # if it's a symbolic link, copy the pointing file too
         if [ -L "$dep" ]
         then
             local target
             target=$(readlink -f "$dep")
-            mkdir --parents "${target%/*}"
+            mkdir --parents "${initramfs_path}${target%/*}"
             cp --verbose --preserve --no-dereference "$target" "${initramfs_path}${target}"
         fi
     done
