@@ -23,7 +23,7 @@ rinstall() {
     local src="$1"
     local dst="$2"
 
-    install "$src" "$dst"
+    install --verbose "$src" "$dst"
 
     deps=$(env --unset=LD_PRELOAD ldd "$src" \
         | sed -e "
@@ -34,7 +34,7 @@ rinstall() {
 
     for dep in "$deps"
     do
-        install "$dep" "$initramfs_path/$dep"
+        install --verbose "$dep" "$initramfs_path/$dep"
     done
 }
 
