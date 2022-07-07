@@ -34,7 +34,7 @@ info "install tpm2-tools package"
 # FIXME: for some reason, emerge with --autounmask returns 1 when it succeeds
 emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
 dispatch-conf
-emerge --ask --tree --verbose app-crypt/tpm2-tools
+emerge --tree --verbose app-crypt/tpm2-tools
 
 # check if we have space in TPM for persistent handle of an encryption key
 if [ "$(tpm2_getcap properties-variable \
@@ -205,7 +205,7 @@ EOF
     eselect profile set "$profile"
 
     info "update @world Portage set"
-    emerge --ask --verbose --update --deep --newuse @world
+    emerge --verbose --update --deep --newuse @world
 
     info "configure timezone to Asia/Seoul"
     echo "Asia/Seoul" > /etc/timezone
@@ -226,10 +226,10 @@ EOF
 
     # TODO: install microcodes
     info "install linux firmwares"
-    emerge --ask --tree --verbose sys-kernel/linux-firmwares
+    emerge --tree --verbose sys-kernel/linux-firmwares
 
     info "install the linux kernel sources"
-    emerge --ask --tree --verbose sys-kernel/gentoo-sources
+    emerge --tree --verbose sys-kernel/gentoo-sources
 
     # It is conventional for a /usr/src/linux symlink to be maintained, such
     # that it refers to whichever sources correspond with the currently running
@@ -256,9 +256,9 @@ EOF
     find initramfs -exec install --verbose {} /usr/src/initramfs/ \;
 
     info "install dependencies for building an initramfs"
-    emerge --ask --tree --verbose sys-apps/busybox
-    emerge --ask --tree --verbose sys-fs/cryptsetup
-    emerge --ask --tree --verbose app-arch/lz4
+    emerge --tree --verbose sys-apps/busybox
+    emerge --tree --verbose sys-fs/cryptsetup
+    emerge --tree --verbose app-arch/lz4
 
     # note that currently tpm2-tools package is in testing branch. that means, you
     # need to unmask the package to install. remove --autounmask flag when
@@ -267,7 +267,7 @@ EOF
     # FIXME: for some reason, emerge with --autounmask returns 1 when it succeeds
     emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
     dispatch-conf
-    emerge --ask --tree --verbose app-crypt/tpm2-tools
+    emerge --tree --verbose app-crypt/tpm2-tools
 
     info "build and install an initramfs"
     mkinitramfs
