@@ -6,10 +6,11 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "$0")
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
 
 info() {
-    echo "$this_script:" "$@"
+    echo "$THIS_SCRIPT:" "$@"
 }
 
 error() {
@@ -22,25 +23,26 @@ then
     exit 1
 fi
 
-readonly INITRAMFS_PATH="/usr/src/initramfs"
+readonly INITRAMFS_SOURCE="/usr/src/initramfs"
 
-tmpdir=$(mktemp --directory)
+INITRAMFS_ROOT=$(mktemp --directory)
+readonly INITRAMFS_ROOT
 
-info "Copy files in $INITRAMFS_PATH into $tmpdir."
-find "$INITRAMFS_PATH" -maxdepth 1 \
-    -exec cp --preserve --recursive --no-dereference {} "$tmpdir" \;
+info "Copy files in $INITRAMFS_SOURCE into $INITRAMFS_ROOT."
+find "$INITRAMFS_SOURCE" -maxdepth 1 \
+    -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
 
-info "Install the busybox into the initramfs."
-rcopy "$(which busybox)" "$tmpdir"
-chroot "$tmpdir" /bin/busybox --install
+info "Install the busybox into the initramfs root."
+rcopy "$(which busybox)" "$INITRAMFS_ROOT"
+chroot "$INITRAMFS_ROOT" /bin/busybox --install
 
-info "Install the tpm2-tools into the initramfs."
-rcopy "$(which tpm2)" "$tmpdir"
+info "Install the tpm2-tools into the initramfs root."
+rcopy "$(which tpm2)" "$INITRAMFS_ROOT"
 
-info "Install the cryptsetup into the initramfs."
-rcopy "$(which cryptsetup)" "$tmpdir"
+info "Install the cryptsetup into the initramfs root."
+rcopy "$(which cryptsetup)" "$INITRAMFS_ROOT"
 
 info "Build and install the initramfs into /boot."
-find "$tmpdir" -print0 \
+find "$INITRAMFS_ROOT" -print0 \
     | cpio --null --create --verbose --format="newc" \
     | lz4 --to-stdout > /boot/initramfs.cpio.lz4

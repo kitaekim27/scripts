@@ -2,10 +2,11 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "$0")
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
 
 info() {
-    echo "$this_script:" "$@"
+    echo "$THIS_SCRIPT:" "$@"
 }
 
 error() {
@@ -14,272 +15,275 @@ error() {
 
 if [ "$EUID" != 0 ]
 then
-    error "this script requires root privilege!"
+    error "This script requires root privilege!"
     exit 1
 fi
 
-info "sync time with ntp.org"
+info "Sync the system time with ntp.org."
 ntpd -q -g
 
-info "configure Portage mirrors of the installer"
+info "Configure Portage mirrors of the system."
 mirrorselect --servers="5"
 
-info "Install my scripts."
+info "Install my scripts into the system."
 find tools -exec install --verbose {} /usr/local/bin/ \;
 
-# note that currently tpm2-tools package is in testing branch. that means, you
-# need to unmask the package to install. remove --autounmask flag when
+# Note that currently tpm2-tools package is in testing branch. that means, you
+# need to unmask the package to install. Remove --autounmask flag when
 # tpm2-tools package is in stable branch.
-info "install tpm2-tools package"
-# FIXME: for some reason, emerge with --autounmask returns 1 when it succeeds
+info "Install package tpm2-tools."
+# FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
 emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
 dispatch-conf
 emerge --tree --verbose app-crypt/tpm2-tools
 
-# check if we have space in TPM for persistent handle of an encryption key
-if [ "$(tpm2_getcap properties-variable \
+# Check if we have any persistent handle in TPM for an encryption key.
+if [ "$(tpm2 getcap properties-variable \
     | sed -n 's/TPM2_PT_HR_PERSISTENT_AVAIL: \(.*\)/\1/p')" = 0x0 ]
 then
-    error "there's no space available to store an encryption key in TPM!"
+    error "There's no available persistent handle in TPM to store an encryption key!"
     exit 1
 fi
 
 if ! ping -q -c 1 -W 1 google.com >/dev/null
 then
-    error "can not connect to the internet!"
+    error "Can not connect to the internet!"
     exit 1
 fi
 
 lsblk
-read -rp "select a root storage device: " root_storage
+read -rp "Select a root storage: " root_storage
 fdisk "/dev/$root_storage"
 sync
 
 lsblk
-read -rp "select a root filesystem partition: " partition_rootfs
-read -rp "select an efi boot partition: " partition_efi
-read -rp "select a swap partition: " partition_swap
+read -rp "Select a root partition: " partition_root
+read -rp "Select an efi partition: " partition_efi
+read -rp "Select a swap partition: " partition_swap
 
-info "format an efi boot partition in vfat"
+info "Format an efi partition in vfat."
 mkfs.vfat "/dev/$partition_efi"
 
-info "set swap on $partition_swap"
+info "Set swap on $partition_swap."
 mkswap "/dev/$partition_swap"
 swapon "/dev/$partition_swap"
 
-tmpdir=$(mktemp -d)
+tmpdir=$(mktemp --directory)
+readonly tmpdir
 
-info "generate a primary TPM object in the endorsement hierarchy"
-tpm2_createprimary --quiet --hierarchy="e" --key-context="$tmpdir/primary.ctx"
+info "Create a primary object in the endorsement hierarchy."
+tpm2 createprimary --quiet --hierarchy="e" --key-context="$tmpdir/primary.ctx"
 
-info "start a TPM HMAC trial session for building a policy"
-tpm2_startauthsession --session="$tmpdir/session.bin"
+info "Start a TPM HMAC trial session for building a policy."
+tpm2 startauthsession --session="$tmpdir/session.bin"
 
-info "generate a TPM policy with sha256 bank of PCR 0,2,4,8,9"
-tpm2_policypcr \
+info "Generate a TPM policy with sha256 bank of PCR 0,2,4,8,9."
+tpm2 policypcr \
     --quiet \
     --session="$tmpdir/session.bin" \
     --pcr-list="sha256:0,2,4,8,9" \
     --policy="$tmpdir/policy.bin"
 
-info "seal a random key in a TPM object with the policy"
-dd if=/dev/urandom bs=128 count=1 status=none | tpm2_create \
+info "Seal a random key into a TPM object with the policy."
+dd if=/dev/urandom bs=128 count=1 status=none | tpm2 create \
     --quiet \
     --parent-context="$tmpdir/primary.ctx" \
     --policy="$tmpdir/policy.bin" \
     --key-context="$tmpdir/key.ctx" \
     --sealing-input="-"
 
-# note that 0x81018000 is the first not-reserved persistent object handle in the
-# endorsement hierarchy
-# see: TCG, "Registry of Reserved TPM 2.0 Handles and Localities"
-info "make the generated key persistent in TPM"
-# try to evict existing object at 0x81018000 first
-# XXX: make sure that there are no important objects at 0x81018000.
-tpm2_evictcontrol --object-context="0x81018000" 2>/dev/null || :
-tpm2_evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
+# Note that 0x81018000 is the first non-reserved persistent object handle in the
+# endorsement hierarchy.
+# See: TCG, "Registry of Reserved TPM 2.0 Handles and Localities"
+info "Make the generated key object persistent in TPM."
+# Try to evict existing object at 0x81018000 first.
+# XXX: Make sure that there are no important objects at 0x81018000.
+tpm2 evictcontrol --object-context="0x81018000" 2>/dev/null || :
+tpm2 evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 
-info "create a LUKS2 passphrase for a root filesystem"
-read -srp "enter a passphrase: " passphrase
+info "Create a LUKS2 passphrase for the root partition."
+read -srp "Enter a passphrase for the root partition: " passphrase
 echo
-luks_passphrase=$(mkpassphrase "$passphrase" | sed -n 's/result = \(.*\)/\1/p')
+luks_passphrase=$(mkpassphrase "$passphrase" | sed -n "s/result = \(.*\)/\1/p")
 
-info "encrypt a root filesystem partition"
+info "Encrypt the root partition."
 echo "$luks_passphrase" \
     | xxd -revert -plain \
     | cryptsetup luksFormat \
         --type="luks2" \
         --key-file="-" \
-        "/dev/$partition_rootfs"
+        "/dev/$partition_root"
 
-info "add a recovery passphrase"
-read -srp "enter a recovery passphrase: " recovery_passphrase
+info "Add a recovery passphrase for the root partition."
+read -srp "Enter a recovery passphrase for the root partition: " recovery_passphrase
 echo
 echo "$luks_passphrase" \
     | xxd -revert -plain \
     | cryptsetup luksAddKey \
         --key-file="-" \
-        "/dev/$partition_rootfs" \
+        "/dev/$partition_root" \
         <(echo "$recovery_passphrase")
 
-info "decrypt a root filesystem partition"
+info "Decrypt the root partition."
 echo "$luks_passphrase" \
     | xxd -revert -plain \
     | cryptsetup luksOpen \
         --key-file="-" \
-        "/dev/$partition_rootfs" \
+        "/dev/$partition_root" \
         root
 
-info "format a root partition in btrfs"
+info "Format the root partition in btrfs."
 mkfs.btrfs /dev/mapper/root
 
-info "mount a root filesystem partition"
-mkdir -vp /mnt/root
+info "Mount the root partition."
+mkdir --parents /mnt/root
 mount /dev/mapper/root /mnt/root
 
-info "set the filesystem hierarchy layout"
-mkdir -vp /mnt/root/boot
-mkdir -vp /mnt/root/deploy/{image-a,image-b}
-mkdir -vp /mnt/root/snapshots
+info "Set the filesystem hierarchy layout in the root partition."
+mkdir --parents /mnt/root/boot
+mkdir --parents /mnt/root/deploy/{image-a,image-b}
+mkdir --parents /mnt/root/snapshots
 
-# TODO: verify the downloaded files
-info "download a stage 3 tarball"
-arch="amd64"
-mirror="http://ftp.kaist.ac.kr/gentoo/releases"
+# TODO: Verify the downloaded files.
+info "Download a stage 3 tarball."
+readonly ARCH="amd64"
+readonly MIRROR="http://ftp.kaist.ac.kr/gentoo/releases"
 wget --recursive --no-parent --no-directories \
     --directory-prefix="download" \
-    --accept="stage3-$arch-hardened-openrc-*" \
-    "$mirror/$arch/autobuilds/current-stage3-$arch-openrc/"
+    --accept="stage3-$ARCH-hardened-openrc-*" \
+    "$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
 
-install_path="/mnt/root/deploy/image-a"
+readonly INSTALL_ROOT="/mnt/root/deploy/image-a"
 
-info "extract a stage3 tarball into $install_path"
+info "Extract the stage 3 tarball into $INSTALL_ROOT."
 find download -iname "stage3-*.tar.xz" -exec tar \
-    --directory="$install_path" \
+    --directory="$INSTALL_ROOT" \
     --extract --preserve-permissions --file={} \
     --xattrs-include='*.*' --numeric-owner \;
 
-info "configure DNS info"
-cp -vL /etc/resolv.conf "$install_path/etc/"
+info "Configure the DNS of the installation."
+cp --dereference /etc/resolv.conf "$INSTALL_ROOT/etc/resolv.conf"
 
 info "Install my scripts into the installation."
-find tools -exec install --verbose {} "$install_path/usr/local/bin/" \;
+find tools -exec install {} "$INSTALL_ROOT/usr/local/bin/" \;
 
-info "mount the linux filesystems"
-mount --types proc /proc "$install_path/proc"
-mount --rbind /sys "$install_path/sys"
-mount --make-rslave "$install_path/sys"
-mount --rbind /dev "$install_path/dev"
-mount --make-rslave "$install_path/dev"
-mount --bind /run "$install_path/run"
-mount --make-rslave "$install_path/run"
+info "Mount the proc filesystem in the installation."
+mount --types proc /proc "$INSTALL_ROOT/proc"
+
+info "Mount the sys fileseystem in the installation."
+mount --rbind /sys "$INSTALL_ROOT/sys"
+mount --make-rslave "$INSTALL_ROOT/sys"
+
+info "Mount the dev filesystem in the installation."
+mount --rbind /dev "$INSTALL_ROOT/dev"
+mount --make-rslave "$INSTALL_ROOT/dev"
+
+info "Mount the run filesystem in the installation."
+mount --bind /run "$INSTALL_ROOT/run"
+mount --make-rslave "$INSTALL_ROOT/run"
 
 chroot_main() {
     source /etc/profile
 
-    info "mount an efi boot partition"
+    info "Mount an efi partition."
     mount "/dev/$partition_efi" /boot
 
-    info "configure Portage compile flags"
-    sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -pipe -march=native"/' \
+    info "Configure Portage compile flags."
+    sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -march=native -pipe"/p' \
         /etc/portage/make.conf
-    cat << EOF >> /etc/portage/make.conf
-# Note that it's recommended to have at least 2GB of RAM for each jobs.
-MAKEOPTS="-j$(nproc)"
-EOF
+    echo 'makeOPTS="--jobs=$(nproc)"' >> /etc/portage/make.conf
 
-    info "configure Portage mirrors"
+    info "Configure Portage mirrors."
     mirrorselect --servers="5"
 
-    info "configure Portage ebuild repositories"
-    mkdir -vp /etc/portage/repos.conf
-    cp -v /usr/share/portage/config/repos.conf \
+    info "Configure Portage ebuild repositories."
+    mkdir --parents /etc/portage/repos.conf
+    cp /usr/share/portage/config/repos.conf \
         /etc/portage/repos.conf/gentoo.conf
 
-    info "install a snapshot of the Gentoo ebuild repository"
+    info "Install a snapshot of the Gentoo ebuild repository."
     emerge-webrsync
 
-    info "choose a Portage profile"
+    info "Choose a Portage profile."
     eselect profile list
-    read -rp "select a Portage profile by index number: " profile
+    read -rp "Select a Portage profile: " profile
     eselect profile set "$profile"
 
-    info "update @world Portage set"
+    info "Update @world Portage set."
     emerge --verbose --update --deep --newuse @world
 
-    info "configure timezone to Asia/Seoul"
+    info "Set the timezone to Asia/Seoul."
     echo "Asia/Seoul" > /etc/timezone
     emerge --config sys-libs/timezone-data
 
-    info "generate locales"
+    info "Generate the locales."
     nano -w /etc/locale.gen
     locale-gen
 
-    info "configure locales"
+    info "Configure the locales."
     eselect locale list
-    read -rp "select a locale by index number: " locale
+    read -rp "Select a locale: " locale
     eselect locale set "$locale"
 
-    info "reload the environment"
+    info "Reload the environment."
     env-update
     source /etc/profile
 
-    # TODO: install microcodes
-    info "install linux firmwares"
+    # TODO: Install microcodes.
+    info "Install the linux firmwares."
     emerge --tree --verbose sys-kernel/linux-firmwares
 
-    info "install the linux kernel sources"
+    info "Install the linux kernel sources."
     emerge --tree --verbose sys-kernel/gentoo-sources
 
-    # It is conventional for a /usr/src/linux symlink to be maintained, such
-    # that it refers to whichever sources correspond with the currently running
-    # kernel.
-    info "create a symlink /usr/src/linux"
+    # /usr/src/linux symlink refers to the source tree corresponding with the
+    # currently running kernel.
+    info "Create a symlink /usr/src/linux."
     eselect kernel list
-    read -rp "select a kernel by index number: " kernel
+    read -rp "Select a kernel: " kernel
     eselect kernel set "$kernel"
 
     make="make --directory=/usr/src/linux --jobs=$(nproc)"
 
-    info "configure the linux kernel"
+    info "Configure the linux kernel."
     $make menuconfig
 
-    info "compile and install the linux kernel"
+    info "Compile and install the linux kernel."
     $make
     $make modules_install
-    # this will copy the kernel image into /boot together with the System.map
+    # This will copy the kernel image into /boot together with the System.map
     # file and the kernel configuration file.
     $make install
 
-    info "Set the basic initramfs directory."
+    info "Set the initramfs source directory."
     mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
-    find initramfs -exec install --verbose {} /usr/src/initramfs/ \;
+    find initramfs -maxdepth 1 -exec cp --recursive {} /usr/src/initramfs/ +
 
-    info "install dependencies for building an initramfs"
+    info "Install packages for building an initramfs."
     emerge --tree --verbose sys-apps/busybox
     emerge --tree --verbose sys-fs/cryptsetup
     emerge --tree --verbose app-arch/lz4
 
-    # note that currently tpm2-tools package is in testing branch. that means, you
-    # need to unmask the package to install. remove --autounmask flag when
+    # Note that currently tpm2-tools package is in testing branch. that means, you
+    # need to unmask the package to install. Remove --autounmask flag when
     # tpm2-tools package is in stable branch.
-    info "install tpm2-tools for building an initramfs"
-    # FIXME: for some reason, emerge with --autounmask returns 1 when it succeeds
+    info "Install tpm2-tools to build an initramfs."
+    # FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
     emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
     dispatch-conf
     emerge --tree --verbose app-crypt/tpm2-tools
 
-    info "build and install an initramfs"
+    info "Build and install an initramfs."
     mkinitramfs
 }
 
-info "chroot into $install_path and execute chroot_main()"
-chroot "$install_path" /bin/bash -c "
-    this_script=$this_script
+info "chroot into $INSTALL_ROOT and execute chroot_main()."
+chroot "$INSTALL_ROOT" /bin/bash -c "
+    THIS_SCRIPT=$THIS_SCRIPT
     root_storage=$root_storage
     partition_efi=$partition_efi
     partition_swap=$partition_swap
-    partition_rootfs=$partition_rootfs
+    partition_root=$partition_root
     $(declare -f info)
     $(declare -f error)
     $(declare -f chroot_main)

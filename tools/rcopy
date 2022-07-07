@@ -3,10 +3,11 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "$0")
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
 
 info() {
-    echo "$this_script:" "$@"
+    echo "$THIS_SCRIPT:" "$@"
 }
 
 error() {
@@ -15,11 +16,11 @@ error() {
 
 if [ "$EUID" != 0 ]
 then
-    error "This script requires root privilege."
+    error "This script requires root privilege!"
     exit 1
 fi
 
-readonly CP="cp --preserve --no-dereference"
+cp="cp --preserve --no-dereference"
 
 target="$(realpath "$1")"
 newroot="$(realpath "$2")"
@@ -49,12 +50,12 @@ deep_copy() {
     local file="$1"
 
     mkdir --parents "$newroot${file%/*}"
-    $CP "$file" "$newroot$file"
+    $cp "$file" "$newroot$file"
     if [ -L "$file" ]
     then
         realfile=$(readlink -f "$file")
         mkdir --parents "$newroot${realfile%/*}"
-        $CP "$realfile" "$newroot$realfile"
+        $cp "$realfile" "$newroot$realfile"
     fi
 }
 

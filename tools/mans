@@ -1,2 +1,6 @@
-#!/bin/sh
-apropos "${1:-.}" | fzf -q "^$1" | awk '{print $1}' | xargs -r man
+#!/bin/bash
+# Print multiple manuals regarding the given keyword.
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+apropos "${1:-.}" | fzf --query="^$1" | awk '{print $1}' | xargs -r man

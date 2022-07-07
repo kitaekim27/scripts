@@ -6,7 +6,7 @@ set -o errexit -o nounset -o noglob
 
 passphrase="$1"
 
-tmpdir=$(mktemp -d)
+tmpdir=$(mktemp --directory)
 
 tpm2 startauthsession \
     --policy-session \

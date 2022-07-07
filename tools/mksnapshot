@@ -3,10 +3,11 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "$0")
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
 
 info() {
-    echo "$this_script:" "$@"
+    echo "$THIS_SCRIPT:" "$@"
 }
 
 error() {
@@ -15,7 +16,7 @@ error() {
 
 if [ "$EUID" != 0 ]
 then
-    error "This script requires root privilege."
+    error "This script requires root privilege!"
     exit 1
 fi
 
