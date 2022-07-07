@@ -246,7 +246,7 @@ EOF
     $make install
 
     info "set the initramfs directory layout"
-    mkdir -p /usr/src/initramfs/{bin,dev,etc,lib,lib64,proc,root,sbin,sys}
+    mkdir -p /usr/src/initramfs/{bin,dev,mnt/root,etc,lib,lib64,proc,root,sbin,sys}
     install init /usr/src/initramfs/
 
     info "install dependencies for building an initramfs"
