@@ -19,34 +19,43 @@ fi
 
 readonly initramfs_path="/usr/src/initramfs"
 
-rinstall() {
+rcopy() {
     local src="$1"
     local dst="$2"
 
-    install --verbose "$src" "$dst"
+    cp --verbose --preserve --no-dereference "$src" "$dst"
 
-    deps=$(env --unset=LD_PRELOAD ldd "$src" \
+    deps=$(env --unset="LD_PRELOAD" ldd "$src" \
         | sed -e "
             /\//!d;
             /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
             s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/
         ")
 
-    for dep in "$deps"
+    for dep in $deps
     do
-        install --verbose "$dep" "$initramfs_path/$dep"
+        mkdir --parents "${dep%/*}"
+        cp --verbose --preserve --no-dereference "$dep" "${initramfs_path}${dep}"
+        # if it's a symbolic link, copy the pointing file too
+        if [ -L "$dep" ]
+        then
+            local target
+            target=$(readlink -f "$dep")
+            mkdir --parents "${target%/*}"
+            cp --verbose --preserve --no-dereference "$target" "${initramfs_path}${target}"
+        fi
     done
 }
 
 info "install the busybox inside the initramfs"
-rinstall /bin/busybox "$initramfs_path/usr/bin/"
+rcopy $(which busybox) "${initramfs_path}$(which busybox)"
 chroot "$initramfs_path" busybox --install
 
 info "install the tpm2-tools inside the initramfs"
-rinstall /bin/tpm2 "$initramfs_path/usr/bin/"
+rcopy $(which tpm2) "${initramfs_path}$(which tpm2)"
 
 info "install the cryptsetup inside the initramfs"
-rinstall /bin/cryptsetup "$initramfs_path/usr/bin/"
+rcopy $(which cryptsetup) "${initramfs_path}$(which cryptsetup)"
 
 info "generate and install the initramfs to /boot"
 find "$initramfs_path" -print0 \

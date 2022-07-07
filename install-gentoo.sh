@@ -159,6 +159,9 @@ find download -iname "stage3-*.tar.xz" -exec tar \
 info "configure DNS info"
 cp -vL /etc/resolv.conf "$install_path/etc/"
 
+info "install my scripts"
+install --verbose mkinitramfs "$install_path/usr/local/bin/"
+
 info "mount the linux filesystems"
 mount --types proc /proc "$install_path/proc"
 mount --rbind /sys "$install_path/sys"
@@ -245,8 +248,8 @@ EOF
     # file and the kernel configuration file.
     $make install
 
-    info "set the initramfs directory layout"
-    mkdir -p /usr/src/initramfs/{bin,dev,mnt/root,etc,lib,lib64,proc,root,sbin,sys}
+    info "set the basic initramfs directory"
+    mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
     install --verbose init /usr/src/initramfs/
 
     info "install dependencies for building an initramfs"
