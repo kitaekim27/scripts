@@ -214,6 +214,32 @@ EOF
     info "reload the environment"
     env-update
     source /etc/profile
+
+    # TODO: install microcodes
+    info "install linux firmwares"
+    emerge --ask --tree --verbose sys-kernel/linux-firmwares
+
+    info "install the linux kernel sources"
+    emerge --ask --tree --verbose sys-kernel/gentoo-sources
+
+    # It is conventional for a /usr/src/linux symlink to be maintained, such
+    # that it refers to whichever sources correspond with the currently running
+    # kernel.
+    info "create a symlink /usr/src/linux"
+    eselect kernel list
+    read -rp "select a kernel by index number: " kernel
+    eselect kernel set "$kernel"
+
+    info "configure the linux kernel"
+    make --directory="/usr/src/linux" menuconfig
+
+    info "compile and install the linux kernel"
+    make="make --directory=/usr/src/linux --jobs=$(nproc)"
+    $make --directory="/usr/src/linux" --jobs="$(nproc)"
+    $make --directory="/usr/src/linux" --jobs="$(nproc)" modules_install
+    # this will copy the kernel image into /boot together with the System.map
+    # file and the kernel configuration file.
+    $make --directory="/usr/src/linux" --jobs="$(nproc)" install
 }
 
 info "chroot into $install_path and execute chroot_main()"
