@@ -46,6 +46,7 @@ fi
 lsblk
 read -rp "select a root storage device: " root_storage
 fdisk "/dev/$root_storage"
+sync
 
 lsblk
 read -rp "select a root filesystem partition: " partition_rootfs
