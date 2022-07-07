@@ -231,11 +231,12 @@ EOF
     read -rp "select a kernel by index number: " kernel
     eselect kernel set "$kernel"
 
+    make="make --directory=/usr/src/linux --jobs=$(nproc)"
+
     info "configure the linux kernel"
-    make --directory="/usr/src/linux" menuconfig
+    $make menuconfig
 
     info "compile and install the linux kernel"
-    make="make --directory=/usr/src/linux --jobs=$(nproc)"
     $make
     $make modules_install
     # this will copy the kernel image into /boot together with the System.map
