@@ -195,9 +195,6 @@ chroot_main() {
         /etc/portage/make.conf
     echo "MAKEOPTS=\"--jobs=$(nproc)\"" >> /etc/portage/make.conf
 
-    info "Configure Portage mirrors."
-    mirrorselect --servers="5"
-
     info "Configure Portage ebuild repositories."
     mkdir --parents /etc/portage/repos.conf
     cp /usr/share/portage/config/repos.conf \
