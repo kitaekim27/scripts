@@ -169,6 +169,11 @@ info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
+info "Set the initramfs source directory in the installation."
+mkdir -p $INSTALL_ROOT/usr/src/initramfs/{mnt/root,dev,proc,sys}
+find initramfs -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive {} /usr/src/initramfs/ \;
+
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$INSTALL_ROOT/proc"
 
@@ -253,11 +258,6 @@ chroot_main() {
     # This will copy the kernel image into /boot together with the System.map
     # file and the kernel configuration file.
     $make install
-
-    info "Set the initramfs source directory."
-    mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
-    find initramfs -mindepth 1 -maxdepth 1 \
-        -exec cp --recursive {} /usr/src/initramfs/ \;
 
     info "Install packages for building an initramfs."
     emerge --tree --verbose sys-apps/busybox
