@@ -1,17 +1,78 @@
 #!/bin/sh
 
-# mount the /dev, /proc and /sys filesystems.
-mount -t devtmpfs none /dev
-mount -t proc none /proc
-mount -t sysfs none /sys
+# shellcheck disable=SC3040
+set -o errexit -o nounset -o noglob -o pipefail
 
-# mount the root filesystem
-mount -o ro /dev/sda1 /mnt/root
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
 
-# clean up
+info() {
+    echo "$THIS_SCRIPT:" "$@"
+}
+
+error() {
+    info "$@" >&2
+}
+
+rescue_shell() {
+    error "Something went wrong! Dropping to a rescue shell."
+    exec sh
+}
+
+# Read input silently.
+sread() {
+    read_prompt="$1"
+    read_variable="$2"
+
+    printf "%s" "$read_prompt"
+    stty -echo
+    read -r "${read_variable?}"
+    stty echo
+    echo
+}
+
+trap rescue_shell EXIT
+
+mount -t devtmpfs   none    /dev
+mount -t proc       none    /proc
+mount -t sysfs      none    /sys
+
+# shellcheck disable=SC2013
+for cmd in $(cat /proc/cmdline)
+do
+    case "$cmd" in
+        rootuuid=*)
+            rootuuid="${cmd#rootuuid=}"
+            while ! root=$(findfs UUID="$rootuuid")
+            do
+                sleep 0.1
+            done
+            ;;
+    esac
+done
+
+sread "Enter a passphrase for the root partition: " passphrase
+luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
+
+if ! ( echo "$luks_passphrase" | xxd -revert -plain \
+    | cryptsetup luksOpen --key-file="-" "/dev/$root" root )
+then
+    error "Failed to open the root partition!"
+    error "The system you're on might be manipulated to steal your information!"
+    printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
+    read -r answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]
+    then
+        sread "Enter a recovery passphrase for the root partition: " recovery_passphrase
+        echo "${recovery_passphrase?}" \
+            | cryptsetup luksOpen --key-file="-" "/dev/$root" root
+    fi
+fi
+
+mount /dev/mapper/root /mnt/root
+
 umount /dev
 umount /proc
 umount /sys
 
-# boot the real thing
 exec switch_root /mnt/root /sbin/init
