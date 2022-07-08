@@ -77,4 +77,4 @@ umount /dev
 umount /proc
 umount /sys
 
-exec switch_root /mnt/root /sbin/init
+exec switch_root /mnt/root/deploy/current /sbin/init
