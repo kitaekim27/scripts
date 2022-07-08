@@ -66,6 +66,8 @@ then
         sread "Enter a recovery passphrase for the root partition: " recovery_passphrase
         echo "${recovery_passphrase?}" \
             | cryptsetup luksOpen --key-file="-" "/dev/$root" root
+    else
+        exit 1
     fi
 fi
 
