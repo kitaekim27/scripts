@@ -49,6 +49,6 @@ info "Install the cryptsetup into the initramfs root."
 rcopy "$(which cryptsetup)" "$INITRAMFS_ROOT"
 
 info "Build and install the initramfs into /boot."
-{ cd "$INITRAMFS_ROOT" && find -mindepth 1 -print0 } \
+find "$INITRAMFS_ROOT" -mindepth 1 -print0 \
     | cpio --null --create --verbose --format="newc" \
     | lz4 --to-stdout > /boot/initramfs.cpio.lz4
