@@ -234,8 +234,8 @@ chroot_main() {
     source /etc/profile
 
     # TODO: Install microcodes.
-    info "Install the linux firmwares."
-    emerge --tree --verbose sys-kernel/linux-firmware
+    # info "Install the linux firmwares."
+    # emerge --tree --verbose sys-kernel/linux-firmware
 
     info "Install the linux kernel sources."
     emerge --tree --verbose sys-kernel/gentoo-sources
