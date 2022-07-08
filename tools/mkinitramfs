@@ -28,12 +28,15 @@ readonly INITRAMFS_SOURCE="/usr/src/initramfs"
 INITRAMFS_ROOT=$(mktemp --directory)
 readonly INITRAMFS_ROOT
 
-info "Copy files in $INITRAMFS_SOURCE into $INITRAMFS_ROOT."
+info "INITRAMFS_SOURCE=$INITRAMFS_SOURCE"
+info "INITRAMFS_ROOT=$INITRAMFS_ROOT"
+
+info "Copy files in the initramfs source into the initramfs root."
 find "$INITRAMFS_SOURCE" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
 
 info "Copy my scripts into the initramfs root."
-rcopy $(which mkpassphrase) "$INITRAMFS_ROOT"
+cp --verbose $(which mkpassphrase) "$INITRAMFS_ROOT/usr/local/bin"
 
 info "Install the busybox into the initramfs root."
 rcopy "$(which busybox)" "$INITRAMFS_ROOT"
