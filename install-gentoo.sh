@@ -256,8 +256,9 @@ chroot_main() {
     $make install
 
     info "Set the initramfs source directory."
-    mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
+    mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys,sbin}
     find initramfs -maxdepth 1 -exec cp --recursive {} /usr/src/initramfs/ +
+    cp $(which mkpassphrase) /usr/src/initramfs/sbin
 
     info "Install packages for building an initramfs."
     emerge --tree --verbose sys-apps/busybox
