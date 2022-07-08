@@ -193,7 +193,7 @@ chroot_main() {
     info "Configure Portage compile flags."
     sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -march=native -pipe"/p' \
         /etc/portage/make.conf
-    echo 'MAKEOPTS="--jobs=$(nproc)"' >> /etc/portage/make.conf
+    echo "MAKEOPTS=\"--jobs=$(nproc)\"" >> /etc/portage/make.conf
 
     info "Configure Portage mirrors."
     mirrorselect --servers="5"
