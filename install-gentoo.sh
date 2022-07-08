@@ -282,6 +282,7 @@ chroot_main() {
 
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
+    set -o errexit -o nounset -o noglob -o pipefail
     readonly THIS_SCRIPT=$THIS_SCRIPT
     root_storage=$root_storage
     partition_efi=$partition_efi
