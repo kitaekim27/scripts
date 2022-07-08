@@ -172,7 +172,7 @@ find tools -mindepth 1 -maxdepth 1 \
 info "Set the initramfs source directory in the installation."
 mkdir -p $INSTALL_ROOT/usr/src/initramfs/{mnt/root,usr/bin,usr/local/bin,bin,sbin,dev,proc,sys}
 find initramfs -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} /usr/src/initramfs/ \;
+    -exec cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs/" \;
 
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$INSTALL_ROOT/proc"
