@@ -43,7 +43,10 @@ deep_check_attrib() {
     local file="$1"
 
     check_attrib "$file"
-    [ -L "$file" ] && check_attrib "$(readlink -f "$file")"
+    if [ -L "$file" ]
+    then
+        check_attrib "$(readlink -f "$file")"
+    fi
 }
 
 deep_copy() {
