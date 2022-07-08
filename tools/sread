@@ -1,0 +1,37 @@
+#!/bin/sh
+# POSIX-compliant silent read. (read -s)
+
+set -o errexit -o noglob
+
+for opt in "$@"
+do
+    case "$opt" in
+        -*)
+            opts="$opts $opt"
+            ;;
+        *)
+            if [ -z "$prompt" ]
+            then
+                prompt="$opt"
+            elif [ -z "$variable" ]
+            then
+                variable="$opt"
+            else
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ -z "$variable" ]
+then
+    exit 1
+fi
+
+printf "%s" "$prompt"
+stty -echo
+# shellcheck disable=SC2162,SC2229,SC2086
+read $opts $variable
+stty echo
+echo
+echo "$variable=\"$(eval echo \$"$variable")\""
