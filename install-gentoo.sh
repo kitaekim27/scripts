@@ -26,7 +26,8 @@ info "Configure Portage mirrors of the system."
 mirrorselect --servers="5"
 
 info "Install my scripts into the system."
-find tools -exec install --verbose {} /usr/local/bin/ \;
+find tools -mindepth 1 -maxdepth 1 \
+    -exec cp --verbose --recursive {} /usr/local/bin/ +
 
 # Note that currently tpm2-tools package is in testing branch. that means, you
 # need to unmask the package to install. Remove --autounmask flag when
@@ -165,7 +166,8 @@ info "Configure the DNS of the installation."
 cp --dereference /etc/resolv.conf "$INSTALL_ROOT/etc/resolv.conf"
 
 info "Install my scripts into the installation."
-find tools -exec install {} "$INSTALL_ROOT/usr/local/bin/" \;
+find tools -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" +
 
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$INSTALL_ROOT/proc"
@@ -257,7 +259,8 @@ chroot_main() {
 
     info "Set the initramfs source directory."
     mkdir -p /usr/src/initramfs/{mnt/root,dev,proc,sys}
-    find initramfs -maxdepth 1 -exec cp --recursive {} /usr/src/initramfs/ +
+    find initramfs -mindepth 1 -maxdepth 1 \
+        -exec cp --recursive {} /usr/src/initramfs/ +
 
     info "Install packages for building an initramfs."
     emerge --tree --verbose sys-apps/busybox
