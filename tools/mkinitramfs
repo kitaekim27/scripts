@@ -36,7 +36,7 @@ find "$INITRAMFS_SOURCE" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
 
 info "Copy my scripts into the initramfs root."
-cp --verbose $(which mkpassphrase) "$INITRAMFS_ROOT/usr/local/bin"
+cp $(which mkpassphrase) "$INITRAMFS_ROOT/usr/local/bin"
 
 info "Install the busybox into the initramfs root."
 rcopy "$(which busybox)" "$INITRAMFS_ROOT"
