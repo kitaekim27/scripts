@@ -1,6 +1,6 @@
 #!/bin/bash
 # Print multiple manuals regarding the given keyword.
 
-set -o errexit -o nounset -o noglob -o pipefail
+set -o errexit -o pipefail
 
 apropos "${1:-.}" | fzf --query="^$1" | awk '{print $1}' | xargs -r man
