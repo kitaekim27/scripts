@@ -56,13 +56,10 @@ info "Install my scripts into the system."
 find tools -mindepth 1 -maxdepth 1 \
     -exec cp --verbose --recursive {} /usr/local/bin/ \;
 
-# Note that currently tpm2-tools package is in testing branch. that means, you
-# need to unmask the package to install. Remove --autounmask flag when
-# tpm2-tools package is in stable branch.
+# TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
+#       it to install. Remove --autounmask flag when it's in stable branch.
 info "Install package tpm2-tools."
-# FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
-emerge --ask --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
-dispatch-conf
+emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
 emerge app-crypt/tpm2-tools
 
 # Check if we have any persistent handle in TPM for an encryption key.
@@ -260,9 +257,8 @@ chroot_main() {
     fi
 
     info "Install the linux firmwares."
-    echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
-        >> /etc/portage/package.license
-    emerge sys-kernel/linux-firmware
+    emerge --autounmask --autounmask-license --autounmask-write --autounmask-only \
+        sys-kernel/linux-firmware
 
     info "Install the linux kernel sources."
     emerge sys-kernel/gentoo-sources
@@ -291,13 +287,10 @@ chroot_main() {
     emerge sys-fs/cryptsetup
     emerge app-arch/lz4
 
-    # Note that currently tpm2-tools package is in testing branch. that means, you
-    # need to unmask the package to install. Remove --autounmask flag when
-    # tpm2-tools package is in stable branch.
+    # TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
+    #       it to install. Remove --autounmask flag when it's in stable branch.
     info "Install tpm2-tools to build an initramfs."
-    # FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
-    emerge --ask --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
-    dispatch-conf
+    emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
     emerge app-crypt/tpm2-tools
 
     info "Build and install an initramfs."
