@@ -262,8 +262,9 @@ chroot_main() {
     fi
 
     info "Install the linux firmwares."
-    emerge --autounmask --autounmask-license --autounmask-write --autounmask-only \
-        sys-kernel/linux-firmware
+    echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
+        >> /etc/portage/package.license
+    emerge sys-kernel/linux-firmware
 
     info "Install the linux kernel sources."
     emerge sys-kernel/gentoo-sources
