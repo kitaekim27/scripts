@@ -13,6 +13,26 @@ error() {
     info "$@" >&2
 }
 
+get_passphrase() {
+    local checkvar=
+    local prompt="${1?}"
+    local variable="${2?}"
+
+    while true
+    do
+        read -srp "$prompt" "${variable?}"
+        echo
+        read -srp "Enter a passphrase again: " checkvar
+        echo
+        if [ "$(eval echo "\$$variable")" = "$checkvar" ]
+        then
+            break
+        else
+            info "You've entered different passphrases! Try again."
+        fi
+    done
+}
+
 if [ "$EUID" != 0 ]
 then
     error "This script requires root privilege!"
@@ -103,8 +123,7 @@ tpm2 evictcontrol --object-context="0x81018000" 2>/dev/null || :
 tpm2 evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 
 info "Create a LUKS2 passphrase for the root partition."
-read -srp "Enter a passphrase for the root partition: " passphrase
-echo
+get_passphrase "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "$passphrase" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
@@ -116,8 +135,7 @@ echo "$luks_passphrase" \
         "/dev/$partition_root"
 
 info "Add a recovery passphrase for the root partition."
-read -srp "Enter a recovery passphrase for the root partition: " recovery_passphrase
-echo
+get_passphrase "Enter a recovery passphrase for the root partition: " recovery_passphrase
 echo "$luks_passphrase" \
     | xxd -revert -plain \
     | cryptsetup luksAddKey \
