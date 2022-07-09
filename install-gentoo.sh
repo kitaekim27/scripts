@@ -237,7 +237,7 @@ chroot_main() {
 
     if [ -d /etc/portage/package.use ]
     then
-        info "Make the Portage package.use a single file"
+        info "Make the Portage package.use a single file."
         rm --recursive /etc/portage/package.use
         touch /etc/portage/package.use
     fi

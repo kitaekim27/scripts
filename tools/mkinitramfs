@@ -9,11 +9,8 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-THIS_SCRIPT=$(basename "$0")
-readonly THIS_SCRIPT
-
 info() {
-    echo "$THIS_SCRIPT:" "$@"
+    echo "$(basename "$0"):" "$@"
 }
 
 error() {
@@ -39,7 +36,7 @@ find "$INITRAMFS_SOURCE" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
 
 info "Copy my scripts into the initramfs root."
-cp $(which mkpassphrase) "$INITRAMFS_ROOT/usr/local/bin"
+cp "$(which mkpassphrase)" "$INITRAMFS_ROOT/usr/local/bin"
 
 info "Install the busybox into the initramfs root."
 rcopy "$(which busybox)" "$INITRAMFS_ROOT"
@@ -52,6 +49,6 @@ info "Install the cryptsetup into the initramfs root."
 rcopy "$(which cryptsetup)" "$INITRAMFS_ROOT"
 
 info "Build and install the initramfs into /boot."
-( cd "$INITRAMFS_ROOT" && find -mindepth 1 -print0 \
+( cd "$INITRAMFS_ROOT" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
     | lz4 --to-stdout > /boot/initramfs.cpio.lz4 )

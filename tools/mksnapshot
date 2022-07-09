@@ -3,11 +3,8 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-THIS_SCRIPT=$(basename "$0")
-readonly THIS_SCRIPT
-
 info() {
-    echo "$THIS_SCRIPT:" "$@"
+    echo "$(basename "$0"):" "$@"
 }
 
 error() {
