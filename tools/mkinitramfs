@@ -3,6 +3,9 @@
 #
 # Note that this script expects that `/usr/src/initramfs` directory contains all
 # the necessary files.
+#
+# This script does not copy any firmware and modules into the initramfs.
+# If you're willing to copy them, copy files in /lib/firmware and /lib/modules.
 
 set -o errexit -o nounset -o noglob -o pipefail
 
