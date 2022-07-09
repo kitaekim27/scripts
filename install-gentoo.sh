@@ -346,7 +346,7 @@ EOF
     print "Set the hostname."
     nano /etc/conf.d/hostname
 
-    print "Set the hosts printrmation."
+    print "Set the hosts information."
     nano /etc/hosts
 
     print "Install NetworkManager."
