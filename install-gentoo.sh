@@ -211,8 +211,11 @@ chroot_main() {
     info "Mount an efi partition."
     mount "/dev/$partition_efi" /boot
 
+    info "Set Portage global USE flags."
+    echo 'USE="bluetooth networkmanager"' >> /etc/portage/make.conf
+
     info "Configure Portage compile flags."
-    sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -march=native -pipe"/p' \
+    sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -march=native -pipe"/' \
         /etc/portage/make.conf
     echo "MAKEOPTS=\"--jobs=$(nproc)\"" >> /etc/portage/make.conf
 
@@ -340,6 +343,9 @@ PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_swap")    none     swap  
 # difference when there are many snapshots.
 PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_root")    /        btrfs    noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/taget    0 1
 EOF
+
+    info "Install NetworkManager."
+    emerge --tree --verbose net-misc/networkmanager
 }
 
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
