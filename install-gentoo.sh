@@ -198,6 +198,9 @@ chroot_main() {
     emerge app-portage/gentoolkit
     emerge app-portage/mirrorselect
 
+    info "Enable some system-wide USE flags."
+    euse --enable bluetooth networkmanager
+
     info "Configure Portage mirrors."
     mirrorselect --servers="5"
 
