@@ -23,8 +23,7 @@ error() {
     info "$@" >&2
 }
 
-readpass() {
-    local checkvar=
+getpassphrase() {
     local prompt="${1?}"
     local variable="${2?}"
 
@@ -32,9 +31,9 @@ readpass() {
     do
         read -srp "$prompt" "${variable?}"
         echo
-        read -srp "Enter a passphrase again: " checkvar
+        read -srp "Enter a passphrase again: " checkphrase
         echo
-        if [ "$(eval echo "\$$variable")" = "$checkvar" ]
+        if [ "$(eval echo "\$$variable")" = "${checkphrase?}" ]
         then
             break
         else
@@ -132,7 +131,7 @@ tpm2 evictcontrol --object-context="0x81018000" 2>/dev/null || :
 tpm2 evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 
 info "Create a LUKS2 passphrase for the root partition."
-readpass "Enter a passphrase for the root partition: " passphrase
+getpassphrase "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
@@ -144,7 +143,7 @@ echo "$luks_passphrase" \
         "/dev/$partition_root"
 
 info "Add a recovery passphrase for the root partition."
-readpass "Enter a recovery passphrase for the root partition: " recovery_passphrase
+getpassphrase "Enter a recovery passphrase for the root partition: " recovery_passphrase
 echo "$luks_passphrase" \
     | xxd -revert -plain \
     | cryptsetup luksAddKey \
