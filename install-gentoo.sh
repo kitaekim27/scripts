@@ -196,6 +196,7 @@ chroot_main() {
     info "Install system management tools."
     emerge app-portage/gentoolkit
     emerge app-portage/mirrorselect
+    emerge sys-fs/btrfs-progs
 
     info "Enable some system-wide USE flags."
     euse --enable bluetooth networkmanager
