@@ -188,12 +188,12 @@ find tools -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
 info "Install config files into the installation."
-install --mode="644" config/make.conf "$INSTALL_ROOT/etc/portage/make.conf"
+ls config | xargs -I{} cp --recursive --preserve {} "$INSTALL_ROOT"
 
 info "Set the initramfs source directory in the installation."
-mkdir -p $INSTALL_ROOT/usr/src/initramfs/{mnt/root,usr/bin,usr/local/bin,bin,sbin,dev,proc,sys}
-find initramfs -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs/" \;
+mkdir --parents \
+    $INSTALL_ROOT/usr/src/initramfs/{mnt/root,usr/bin,usr/local/bin,bin,sbin,dev,proc,sys}
+ls initramfs | xargs -I{} cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs/" \;
 
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$INSTALL_ROOT/proc"
