@@ -311,6 +311,10 @@ chroot_main() {
     info "Install NetworkManager."
     emerge net-misc/networkmanager
     rc-update add NetworkManager default
+
+    info "Install rsyslog."
+    emerge app-admin/rsyslog
+    rc-update add rsyslog default
 }
 
 info "chroot into $install_root and execute chroot_main()."
