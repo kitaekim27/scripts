@@ -333,6 +333,16 @@ chroot_main() {
 
     info "Build and install an initramfs."
     mkinitramfs
+
+    info "Generate a fstab."
+    cat << EOF > /etc/fstab
+PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_efi")     /boot    vfat     noauto,noatime                                                0 0
+PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_swap")    none     swap     sw                                                            0 0
+# Note that it seems btrfs requires noatime because without it, metadata blocks
+# always need to be copied as it's CoW filesystem. It seems this makes huge
+# difference when there are many snapshots.
+PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_root")    /        btrfs    noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/taget    0 1
+EOF
 }
 
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
