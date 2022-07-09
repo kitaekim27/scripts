@@ -187,6 +187,9 @@ info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
+info "Install config files into the installation."
+install --mode="644" config/make.conf "$INSTALL_ROOT/etc/portage/make.conf"
+
 info "Set the initramfs source directory in the installation."
 mkdir -p $INSTALL_ROOT/usr/src/initramfs/{mnt/root,usr/bin,usr/local/bin,bin,sbin,dev,proc,sys}
 find initramfs -mindepth 1 -maxdepth 1 \
@@ -210,14 +213,6 @@ mount --make-rslave "$INSTALL_ROOT/run"
 chroot_main() {
     info "Mount an efi partition."
     mount "/dev/$partition_efi" /boot
-
-    info "Set Portage global USE flags."
-    echo 'USE="bluetooth networkmanager"' >> /etc/portage/make.conf
-
-    info "Configure Portage compile flags."
-    sed -i 's/COMMON_FLAGS=".*"/COMMON_FLAGS="-O2 -march=native -pipe"/' \
-        /etc/portage/make.conf
-    echo "MAKEOPTS=\"--jobs=$(nproc)\"" >> /etc/portage/make.conf
 
     info "Configure Portage ebuild repositories."
     mkdir --parents /etc/portage/repos.conf
