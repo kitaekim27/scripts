@@ -191,8 +191,7 @@ chroot_main() {
 
     info "Configure Portage ebuild repositories."
     mkdir --parents /etc/portage/repos.conf
-    cp /usr/share/portage/config/repos.conf \
-        /etc/portage/repos.conf/gentoo.conf
+    cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 
     info "Install system management tools."
     emerge app-portage/gentoolkit
