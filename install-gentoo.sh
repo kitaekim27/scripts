@@ -238,37 +238,26 @@ chroot_main() {
     info "Reload the environment."
     env-update
 
-    # This process can be automated using something like cpuid or /proc/cpuinfo.
-    info "Install microcodes for your CPU."
-    info " 1. Intel"
-    info " 2. AMD"
-    while true
-    do
-        read -rp "Select your CPU manufacturer: " cpu
-        case "$cpu" in
-            1 | intel | Intel | INTEL)
-                # This USE flag generates microcode cpio at /boot so that GRUB automatically
-                # detect and generate config with it.
-                info "Enable USE flag \"initramfs\" of sys-firmware/intel-microcode"
-                echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
+    if grep --quiet --ignore-case "AMD" /proc/cpuinfo
+    then
+        info "AMD CPU detected. Install AMD microcodes."
+        # AMD microcodes are shipped in the sys-kernel/linux-firmware package.
+        info "Enable USE flag \"initramfs\" of sys-kernel/linux-firmware"
+        echo "sys-kernel/linux-firmware initramfs" >> /etc/portage/package.use
 
-                info "Install the intel microcode package."
-                emerge sys-firmware/intel-microcode
+    elif grep --quiet --ignore-case "Intel" /proc/cpuinfo
+    then
+        info "Intel CPU detected. Install Intel microcodes."
+        info "Enable USE flag \"initramfs\" of sys-firmware/intel-microcode"
+        # This USE flag generates microcode cpio at /boot so that GRUB automatically
+        # detect and generate config with it.
+        echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
 
-                break
-                ;;
-            2 | amd | Amd | AMD)
-                # AMD microcodes are shipped in the sys-kernel/linux-firmware package.
-                info "Enable USE flag \"initramfs\" of sys-kernel/linux-firmware"
-                echo "sys-kernel/linux-firmware initramfs" >> /etc/portage/package.use
-
-                break
-                ;;
-            *)
-                error "Wrong input! Try again."
-                ;;
-        esac
-    done
+        info "Install the intel microcode package."
+        emerge sys-firmware/intel-microcode
+    else
+        info "Can not determine CPU manufacturer. Do not install microcodes."
+    fi
 
     info "Install the linux firmwares."
     echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
