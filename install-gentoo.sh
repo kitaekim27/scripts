@@ -163,8 +163,10 @@ find tools -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$install_root/usr/local/bin/" \;
 
 info "Set the initramfs source directory in the installation."
-mkdir --parents $install_root/usr/src/initramfs/{mnt/root,usr/bin,\
-                                            usr/local/bin,bin,sbin,dev,proc,sys}
+for dir in mnt/root usr/bin usr/local/bin bin sbin dev proc sys
+do
+    mkdir --parents "$install_root/usr/src/initramfs/$dir"
+done
 find initramfs -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$install_root/usr/src/initramfs" \;
 
