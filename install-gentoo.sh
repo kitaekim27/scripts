@@ -96,37 +96,8 @@ info "Set swap on $partition_swap."
 mkswap "/dev/$partition_swap"
 swapon "/dev/$partition_swap"
 
-tmpdir=$(mktemp --directory)
-
-info "Create a primary object in the endorsement hierarchy."
-tpm2 createprimary --quiet --hierarchy="e" --key-context="$tmpdir/primary.ctx"
-
-info "Start a TPM HMAC trial session for building a policy."
-tpm2 startauthsession --session="$tmpdir/session.bin"
-
-info "Generate a TPM policy with sha256 bank of PCR 0,2,4,8,9."
-tpm2 policypcr \
-    --quiet \
-    --session="$tmpdir/session.bin" \
-    --pcr-list="sha256:0,2,4,8,9" \
-    --policy="$tmpdir/policy.bin"
-
-info "Seal a random key into a TPM object with the policy."
-dd if=/dev/urandom bs=128 count=1 status=none | tpm2 create \
-    --quiet \
-    --parent-context="$tmpdir/primary.ctx" \
-    --policy="$tmpdir/policy.bin" \
-    --key-context="$tmpdir/key.ctx" \
-    --sealing-input="-"
-
-# Note that 0x81018000 is the first non-reserved persistent object handle in the
-# endorsement hierarchy.
-# See: TCG, "Registry of Reserved TPM 2.0 Handles and Localities"
-info "Make the generated key object persistent in TPM."
-# Try to evict existing object at 0x81018000 first.
-# XXX: Make sure that there are no important objects at 0x81018000.
-tpm2 evictcontrol --object-context="0x81018000" 2>/dev/null || :
-tpm2 evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
+info "Seal a random key into TPM."
+tpmsealrandkey
 
 info "Create a LUKS2 passphrase for the root partition."
 getpassphrase "Enter a passphrase for the root partition: " passphrase
