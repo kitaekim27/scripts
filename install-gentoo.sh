@@ -227,6 +227,13 @@ chroot_main() {
     cp /usr/share/portage/config/repos.conf \
         /etc/portage/repos.conf/gentoo.conf
 
+    info "Install system management tools."
+    emerge app-portage/gentoolkit
+    emerge app-portage/mirrorselect
+
+    info "Configure Portage mirrors."
+    mirrorselect --servers="5"
+
     info "Install a snapshot of the Gentoo ebuild repository."
     emerge-webrsync
 
@@ -244,9 +251,6 @@ chroot_main() {
 
     info "Update @world Portage set."
     emerge --update --deep --newuse @world
-
-    info "Install system management tools."
-    emerge app-portage/gentoolkit
 
     info "Set the timezone to Asia/Seoul."
     echo "Asia/Seoul" > /etc/timezone
@@ -324,7 +328,9 @@ chroot_main() {
     $make install
 
     info "Install packages for building an initramfs."
-    emerge sys-apps/busybox sys-fs/cryptsetup app-arch/lz4
+    emerge sys-apps/busybox
+    emerge sys-fs/cryptsetup
+    emerge app-arch/lz4
 
     # Note that currently tpm2-tools package is in testing branch. that means, you
     # need to unmask the package to install. Remove --autounmask flag when
