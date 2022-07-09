@@ -23,14 +23,17 @@ then
     exit 1
 fi
 
-INITRAMFS_SOURCE="/usr/src/initramfs"
+readonly INITRAMFS_SOURCE="/usr/src/initramfs"
+
 INITRAMFS_ROOT=$(mktemp --directory)
+readonly INITRAMFS_ROOT
 
 info "INITRAMFS_SOURCE=$INITRAMFS_SOURCE"
 info "INITRAMFS_ROOT=$INITRAMFS_ROOT"
 
 info "Copy files in the initramfs source into the initramfs root."
-cp --recursive --preserve --no-dereference $INITRAMFS_SOURCE/* "$INITRAMFS_ROOT"
+find "$INITRAMFS_SOURCE" -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
 
 info "Copy my scripts into the initramfs root."
 cp "$(which mkpassphrase)" "$INITRAMFS_ROOT/usr/local/bin"
