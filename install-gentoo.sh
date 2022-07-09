@@ -124,7 +124,7 @@ tpm2 evictcontrol --object-context="$tmpdir/key.ctx" 0x81018000
 
 info "Create a LUKS2 passphrase for the root partition."
 get_passphrase "Enter a passphrase for the root partition: " passphrase
-luks_passphrase=$(mkpassphrase "$passphrase" | sed -n "s/result = \(.*\)/\1/p")
+luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
 echo "$luks_passphrase" \
@@ -141,7 +141,7 @@ echo "$luks_passphrase" \
     | cryptsetup luksAddKey \
         --key-file="-" \
         "/dev/$partition_root" \
-        <(echo "$recovery_passphrase")
+        <(echo "${recovery_passphrase?}")
 
 info "Decrypt the root partition."
 echo "$luks_passphrase" \
@@ -231,6 +231,13 @@ chroot_main() {
     read -rp "Select a Portage profile: " profile
     eselect profile set "$profile"
 
+    if [ -d /etc/portage/package.use ]
+    then
+        info "Make the Portage package.use a single file"
+        rm --recursive /etc/portage/package.use
+        touch /etc/portage/package.use
+    fi
+
     info "Update @world Portage set."
     emerge --verbose --update --deep --newuse @world
 
@@ -251,7 +258,38 @@ chroot_main() {
     env-update
     source /etc/profile
 
-    # TODO: Install microcodes.
+    # This process can be automated using something like cpuid or /proc/cpuinfo.
+    info "Install microcodes for your CPU."
+    info " 1. Intel"
+    info " 2. AMD"
+    while true
+    do
+        read -rp "Select your CPU manufacturer: " cpu
+        case "$cpu" in
+            1 | intel | Intel | INTEL)
+                # This USE flag generates microcode cpio at /boot so that GRUB automatically
+                # detect and generate config with it.
+                info "Enable USE flag \"initramfs\" of sys-firmware/intel-microcode"
+                echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
+
+                info "Install the intel microcode package."
+                emerge --tree --verbose sys-firmware/intel-microcode
+
+                break
+                ;;
+            2 | amd | Amd | AMD)
+                # AMD microcodes are shipped in the sys-kernel/linux-firmware package.
+                info "Enable USE flag \"initramfs\" of sys-kernel/linux-firmware"
+                echo "sys-kernel/linux-firmware initramfs" >> /etc/portage/package.use
+
+                break
+                ;;
+            *)
+                error "Wrong input! Try again."
+                ;;
+        esac
+    done
+
     info "Install the linux firmwares."
     echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
         >> /etc/portage/package.license
