@@ -327,6 +327,11 @@ chroot_main() {
     info "Install logrotate."
     echo "app-admin/logrotate cron" >> /etc/portage/package.use
     emerge app-admin/logrotate
+
+    info "Install GRUB2."
+    emerge sys-boot/grub
+    grub-install --target="x86_64-efi" --efi-directory="/boot" --removable
+    grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 info "chroot into $install_root and execute chroot_main()."
