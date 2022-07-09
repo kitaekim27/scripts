@@ -308,6 +308,14 @@ chroot_main() {
     read -rp "Enter the hostname: " hostname
     sed -i "s/localhost/$hostname/g" /etc/conf.d/hostname /etc/hosts
 
+    info "Install cron."
+    emerge sys-process/fcron
+    rc-update add fcron default
+
+    info "Install chronoy."
+    emerge net-misc/chrony
+    rc-update add chronyd default
+
     info "Install NetworkManager."
     emerge net-misc/networkmanager
     rc-update add NetworkManager default
@@ -315,6 +323,10 @@ chroot_main() {
     info "Install rsyslog."
     emerge app-admin/rsyslog
     rc-update add rsyslog default
+
+    info "Install logrotate."
+    echo "app-admin/logrotate cron" >> /etc/portage/package.use
+    emerge app-admin/logrotate
 }
 
 info "chroot into $install_root and execute chroot_main()."
