@@ -338,17 +338,15 @@ chroot_main() {
     info "Build and install an initramfs."
     mkinitramfs
 
-    info "Generate a fstab."
+    info "Generate the fstab."
     PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
     PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
     PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
         envsubst < config/etc/fstab.tmpl >> /etc/fstab
 
     info "Set the hostname."
-    nano /etc/conf.d/hostname
-
-    info "Set the hosts information."
-    nano /etc/hosts
+    read -rp "Enter the hostname: " hostname
+    sed -i "s/localhost/$hostname/g" /etc/conf.d/hostname /etc/hosts
 
     info "Install NetworkManager."
     emerge net-misc/networkmanager
