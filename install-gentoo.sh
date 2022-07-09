@@ -332,6 +332,15 @@ chroot_main() {
     emerge sys-boot/grub
     grub-install --target="x86_64-efi" --efi-directory="/boot" --removable
     grub-mkconfig -o /boot/grub/grub.cfg
+
+    info "Install opendoas."
+    emerge app-admin/doas
+    install --mode="600" config/etc/doas.conf /etc/doas.conf
+
+    info "Create a user."
+    read -rp "Enter use name: " user
+    useradd --create-home --groups="users,wheel,audio" --shell="/bin/bash" "$user"
+    passwd "$user"
 }
 
 info "chroot into $install_root and execute chroot_main()."
