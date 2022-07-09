@@ -86,11 +86,11 @@ sync
 
 lsblk
 read -rp "Select a root partition: " partition_root
-read -rp "Select an efi partition: " partition_efi
+read -rp "Select an efi partition: " partition_uefi
 read -rp "Select a swap partition: " partition_swap
 
 info "Format an efi partition in vfat."
-mkfs.vfat "/dev/$partition_efi"
+mkfs.vfat "/dev/$partition_uefi"
 
 info "Set swap on $partition_swap."
 mkswap "/dev/$partition_swap"
@@ -220,7 +220,7 @@ mount --make-rslave "$install_root/run"
 
 chroot_main() {
     info "Mount an efi partition."
-    mount "/dev/$partition_efi" /boot
+    mount "/dev/$partition_uefi" /boot
 
     info "Configure Portage ebuild repositories."
     mkdir --parents /etc/portage/repos.conf
@@ -339,14 +339,10 @@ chroot_main() {
     mkinitramfs
 
     info "Generate a fstab."
-    cat << EOF > /etc/fstab
-PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_efi")     /boot    vfat     noauto,noatime                                               0 0
-PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_swap")    none     swap     sw                                                           0 0
-# Note that it seems btrfs requires noatime because without it, metadata blocks
-# always need to be copied as it's CoW filesystem. It seems this makes huge
-# difference when there are many snapshots.
-PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_root")    /        btrfs    noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/taget    0 1
-EOF
+    PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
+    PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
+    PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
+        envsubst < config/etc/fstab.tmpl >> /etc/fstab
 
     info "Set the hostname."
     nano /etc/conf.d/hostname
@@ -362,7 +358,7 @@ info "chroot into $install_root and execute chroot_main()."
 chroot "$install_root" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
     root_storage=$root_storage
-    partition_efi=$partition_efi
+    partition_uefi=$partition_uefi
     partition_swap=$partition_swap
     partition_root=$partition_root
     $(declare -f info)
