@@ -187,6 +187,9 @@ chroot_main() {
     info "Mount an efi partition."
     mount "/dev/$partition_uefi" /boot
 
+    info "Set Portae MAKEOPTS variable."
+    echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
+
     info "Configure Portage ebuild repositories."
     mkdir --parents /etc/portage/repos.conf
     cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
