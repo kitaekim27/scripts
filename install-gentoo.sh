@@ -53,8 +53,7 @@ info "Configure Portage mirrors."
 mirrorselect --servers="5"
 
 info "Install my scripts into the system."
-find tools -mindepth 1 -maxdepth 1 \
-    -exec cp --verbose --recursive {} /usr/local/bin/ \;
+cp --recursive tools/* /usr/local/bin
 
 # TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
 #       it to install. Remove --autounmask flag when it's in stable branch.
@@ -153,20 +152,17 @@ info "Configure the DNS of the installation."
 cp --dereference /etc/resolv.conf "$install_root/etc/resolv.conf"
 
 info "Install config files into the installation."
-find config -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive --preserve {} "$install_root" \;
+cp --recursive --preserve config/* "$install_root"
 
 info "Install my scripts into the installation."
-find tools -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$install_root/usr/local/bin/" \;
+cp --recursive tools/* "$install_root/usr/local/bin/"
 
 info "Set the initramfs source directory in the installation."
 for dir in mnt/root usr/bin usr/local/bin bin sbin dev proc sys
 do
     mkdir --parents "$install_root/usr/src/initramfs/$dir"
 done
-find initramfs -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$install_root/usr/src/initramfs" \;
+cp --recursive initramfs/* "$install_root/usr/src/initramfs"
 
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$install_root/proc"
