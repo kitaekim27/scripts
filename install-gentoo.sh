@@ -342,7 +342,7 @@ chroot_main() {
     PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
     PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
     PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
-        envsubst < config/etc/fstab.tmpl >> /etc/fstab
+        envsubst < config/etc/fstab.tmpl > /etc/fstab
 
     info "Set the hostname."
     read -rp "Enter the hostname: " hostname
