@@ -24,16 +24,14 @@ error() {
 }
 
 getpassphrase() {
-    local prompt="${1?}"
-    local variable="${2?}"
-
     while true
     do
-        read -srp "$prompt" "${variable?}"
+        read -srp "${1?}" "${2?}"
         echo
         read -srp "Enter a passphrase again: " checkphrase
         echo
-        if [ "$(eval echo "\$$variable")" = "${checkphrase?}" ]
+
+        if [ "$(eval echo "\$${2?}")" = "${checkphrase?}" ]
         then
             break
         else
