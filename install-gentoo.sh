@@ -104,29 +104,23 @@ getpassphrase "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
-echo "$luks_passphrase" \
-    | xxd -revert -plain \
-    | cryptsetup luksFormat \
-        --type="luks2" \
-        --key-file="-" \
-        "/dev/$partition_root"
+echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksFormat \
+    --type="luks2" \
+    --key-file="-" \
+    "/dev/$partition_root"
 
 info "Add a recovery passphrase for the root partition."
 getpassphrase "Enter a recovery passphrase for the root partition: " recovery_passphrase
-echo "$luks_passphrase" \
-    | xxd -revert -plain \
-    | cryptsetup luksAddKey \
-        --key-file="-" \
-        "/dev/$partition_root" \
-        <(echo "${recovery_passphrase?}")
+echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksAddKey \
+    --key-file="-" \
+    "/dev/$partition_root" \
+    <(echo "${recovery_passphrase?}")
 
 info "Decrypt the root partition."
-echo "$luks_passphrase" \
-    | xxd -revert -plain \
-    | cryptsetup luksOpen \
-        --key-file="-" \
-        "/dev/$partition_root" \
-        root
+echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
+    --key-file="-" \
+    "/dev/$partition_root" \
+    root
 
 info "Format the root partition in btrfs."
 mkfs.btrfs /dev/mapper/root
