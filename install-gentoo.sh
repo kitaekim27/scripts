@@ -339,6 +339,12 @@ PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_swap")    none     swap  
 PARTUUID=$(blkid -o value -s PARTUUID "/dev/$partition_root")    /        btrfs    noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/taget    0 1
 EOF
 
+    info "Set the hostname."
+    nano /etc/conf.d/hostname
+
+    info "Set the hosts information."
+    nano /etc/hosts
+
     info "Install NetworkManager."
     emerge --tree --verbose net-misc/networkmanager
 }
