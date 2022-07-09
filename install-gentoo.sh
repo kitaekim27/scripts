@@ -63,9 +63,9 @@ find tools -mindepth 1 -maxdepth 1 \
 # tpm2-tools package is in stable branch.
 info "Install package tpm2-tools."
 # FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
-emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
+emerge --ask --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
 dispatch-conf
-emerge --tree --verbose app-crypt/tpm2-tools
+emerge app-crypt/tpm2-tools
 
 # Check if we have any persistent handle in TPM for an encryption key.
 if [ "$(tpm2 getcap properties-variable \
@@ -245,10 +245,10 @@ chroot_main() {
     fi
 
     info "Update @world Portage set."
-    emerge --verbose --update --deep --newuse @world
+    emerge --update --deep --newuse @world
 
     info "Install system management tools."
-    emerge --verbose --tree app-portage/gentoolkit
+    emerge app-portage/gentoolkit
 
     info "Set the timezone to Asia/Seoul."
     echo "Asia/Seoul" > /etc/timezone
@@ -281,7 +281,7 @@ chroot_main() {
                 echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
 
                 info "Install the intel microcode package."
-                emerge --tree --verbose sys-firmware/intel-microcode
+                emerge sys-firmware/intel-microcode
 
                 break
                 ;;
@@ -301,10 +301,10 @@ chroot_main() {
     info "Install the linux firmwares."
     echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
         >> /etc/portage/package.license
-    emerge --tree --verbose sys-kernel/linux-firmware
+    emerge sys-kernel/linux-firmware
 
     info "Install the linux kernel sources."
-    emerge --tree --verbose sys-kernel/gentoo-sources
+    emerge sys-kernel/gentoo-sources
 
     # /usr/src/linux symlink refers to the source tree corresponding with the
     # currently running kernel.
@@ -326,16 +326,16 @@ chroot_main() {
     $make install
 
     info "Install packages for building an initramfs."
-    emerge --tree --verbose sys-apps/busybox sys-fs/cryptsetup app-arch/lz4
+    emerge sys-apps/busybox sys-fs/cryptsetup app-arch/lz4
 
     # Note that currently tpm2-tools package is in testing branch. that means, you
     # need to unmask the package to install. Remove --autounmask flag when
     # tpm2-tools package is in stable branch.
     info "Install tpm2-tools to build an initramfs."
     # FIXME: For some reason, emerge with --autounmask returns 1 when it succeeds.
-    emerge --ask --tree --verbose --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
+    emerge --ask --autounmask app-crypt/tpm2-tools || [ "$?" = 1 ]
     dispatch-conf
-    emerge --tree --verbose app-crypt/tpm2-tools
+    emerge app-crypt/tpm2-tools
 
     info "Build and install an initramfs."
     mkinitramfs
@@ -357,7 +357,7 @@ EOF
     nano /etc/hosts
 
     info "Install NetworkManager."
-    emerge --tree --verbose net-misc/networkmanager
+    emerge net-misc/networkmanager
 }
 
 info "chroot into $install_root and execute chroot_main()."
