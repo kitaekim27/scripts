@@ -208,8 +208,6 @@ mount --bind /run "$INSTALL_ROOT/run"
 mount --make-rslave "$INSTALL_ROOT/run"
 
 chroot_main() {
-    source /etc/profile
-
     info "Mount an efi partition."
     mount "/dev/$partition_efi" /boot
 
@@ -256,7 +254,6 @@ chroot_main() {
 
     info "Reload the environment."
     env-update
-    source /etc/profile
 
     # This process can be automated using something like cpuid or /proc/cpuinfo.
     info "Install microcodes for your CPU."
