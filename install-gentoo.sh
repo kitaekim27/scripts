@@ -350,6 +350,7 @@ chroot_main() {
 
     info "Install NetworkManager."
     emerge net-misc/networkmanager
+    rc-update add NetworkManager default
 }
 
 info "chroot into $install_root and execute chroot_main()."
