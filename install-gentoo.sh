@@ -50,7 +50,7 @@ info "Sync the system time with ntp.org."
 ntpd -q -g
 
 info "Configure Portage mirrors."
-mirrorselect --servers="5"
+mirrorselect --interactive
 
 info "Install my scripts into the system."
 find tools -mindepth 1 -maxdepth 1 \
@@ -219,7 +219,7 @@ chroot_main() {
     euse --enable bluetooth networkmanager dbus
 
     info "Configure Portage mirrors."
-    mirrorselect --servers="5"
+    mirrorselect --interactive
 
     info "Install a snapshot of the Gentoo ebuild repository."
     emerge-webrsync
