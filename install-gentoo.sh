@@ -317,7 +317,7 @@ chroot_main() {
     emerge sys-process/fcron
     rc-update add fcron default
 
-    info "Install chronoy."
+    info "Install chrony."
     emerge net-misc/chrony
     rc-update add chronyd default
 
