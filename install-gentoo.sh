@@ -207,7 +207,7 @@ chroot_main() {
     emerge sys-fs/btrfs-progs
 
     info "Enable some system-wide USE flags."
-    euse --enable bluetooth networkmanager
+    euse --enable bluetooth networkmanager dbus
 
     info "Configure Portage mirrors."
     mirrorselect --servers="5"
