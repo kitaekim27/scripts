@@ -135,11 +135,11 @@ mkdir --parents /mnt/root/snapshots
 info "Create a btrfs subvolume to install the system."
 # Here, note that our initial subvolume is image-a.
 btrfs subvolume create /mnt/root/deploy/image-a
-# This makes mounttab valid so that we can see / mount entry inside the chroot.
-mount --types="btrfs" --options="noatime,subvol=/deploy/image-a" \
-    /dev/mapper/root /mnt/root/deploy/image-b
 ln --symbolic /deploy/image-a /mnt/root/deploy/current
 ln --symbolic /deploy/image-a /mnt/root/deploy/target
+# This makes mounttab valid so that we can see / mount entry inside the chroot.
+mount --types="btrfs" --options="noatime,subvol=/deploy/target" \
+    /dev/mapper/root /mnt/root/deploy/image-a
 
 # TODO: Verify the downloaded files.
 info "Download a stage 3 tarball."
