@@ -133,8 +133,11 @@ mkdir --parents /mnt/root/deploy
 mkdir --parents /mnt/root/snapshots
 
 info "Create a btrfs subvolume to install the system."
-btrfs subvolume create /mnt/root/deploy/image-a
 # Here, note that our initial subvolume is image-a.
+btrfs subvolume create /mnt/root/deploy/image-a
+# This makes mounttab valid so that we can see / mount entry inside the chroot.
+mount --types="btrfs" --options="noatime,subvol=/deploy/image-a" \
+    /dev/mapper/root /mnt/root/deploy/image-b
 ln --symbolic /deploy/image-a /mnt/root/deploy/current
 ln --symbolic /deploy/image-a /mnt/root/deploy/target
 
@@ -181,7 +184,7 @@ PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
     envsubst < config/etc/fstab.tmpl > "$install_root/etc/fstab"
 
 info "Mount the proc filesystem in the installation."
-mount --types proc /proc "$install_root/proc"
+mount --types="proc" /proc "$install_root/proc"
 
 info "Mount the sys fileseystem in the installation."
 mount --rbind /sys "$install_root/sys"
