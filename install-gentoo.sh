@@ -129,8 +129,14 @@ mount /dev/mapper/root /mnt/root
 
 info "Set the filesystem hierarchy layout in the root partition."
 mkdir --parents /mnt/root/boot
-mkdir --parents /mnt/root/deploy/{image-a,image-b}
+mkdir --parents /mnt/root/deploy
 mkdir --parents /mnt/root/snapshots
+
+info "Create a btrfs subvolume to install the system."
+btrfs subvolume create /mnt/root/deploy/image-a
+# Here, note that our initial subvolume is image-a.
+ln --symbolic /deploy/image-a /mnt/root/deploy/current
+ln --symbolic /deploy/image-a /mnt/root/deploy/target
 
 # TODO: Verify the downloaded files.
 info "Download a stage 3 tarball."
