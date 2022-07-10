@@ -183,6 +183,9 @@ PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
 PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
     envsubst < config/etc/fstab.tmpl > "$install_root/etc/fstab"
 
+info "Copy doas.conf into the installation."
+install --mode="600" config/etc/doas.conf "$install_root/etc/doas.conf"
+
 info "Mount the proc filesystem in the installation."
 mount --types="proc" /proc "$install_root/proc"
 
@@ -349,7 +352,6 @@ chroot_main() {
 
     info "Install opendoas."
     emerge app-admin/doas
-    install --mode="600" config/etc/doas.conf /etc/doas.conf
 
     info "Create a user."
     read -rp "Enter use name: " user
