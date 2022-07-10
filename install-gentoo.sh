@@ -168,6 +168,12 @@ done
 find initramfs -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$install_root/usr/src/initramfs" \;
 
+info "Generate the fstab into the installation."
+PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
+PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
+PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
+    envsubst < config/etc/fstab.tmpl > "$install_root/etc/fstab"
+
 info "Mount the proc filesystem in the installation."
 mount --types proc /proc "$install_root/proc"
 
@@ -302,12 +308,6 @@ chroot_main() {
 
     info "Build and install an initramfs."
     mkinitramfs
-
-    info "Generate the fstab."
-    PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
-    PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
-    PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
-        envsubst < config/etc/fstab.tmpl > /etc/fstab
 
     info "Set the hostname."
     read -rp "Enter the hostname: " hostname
