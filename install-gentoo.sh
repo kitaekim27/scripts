@@ -275,6 +275,7 @@ chroot_main() {
     make="make --directory=/usr/src/linux --jobs=$(nproc)"
 
     info "Configure the linux kernel."
+    $make defconfig
     $make menuconfig
 
     info "Compile and install the linux kernel."
