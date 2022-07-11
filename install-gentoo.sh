@@ -194,8 +194,9 @@ chroot_main() {
     emerge app-portage/mirrorselect
     emerge sys-fs/btrfs-progs
 
-    info "Set some system-wide USE flags."
-    euse --enable X bluetooth networkmanager dbus
+    info "Set system-wide USE flags."
+    euse --enable elogind X bluetooth networkmanager dbus
+    euse --disable systemd
 
     info "Configure Portage mirrors."
     mirrorselect --interactive
@@ -301,6 +302,9 @@ chroot_main() {
     info "Set the hostname."
     read -rp "Enter the hostname: " hostname
     sed -i "s/localhost/$hostname/g" /etc/conf.d/hostname /etc/hosts
+
+    info "Enable the elogind service."
+    rc-update add elogind boot
 
     info "Install system packages."
 
