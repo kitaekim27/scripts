@@ -63,14 +63,6 @@ emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
 dispatch-conf
 emerge app-crypt/tpm2-tools
 
-# Check if we have any persistent handle in TPM for an encryption key.
-if [ "$(tpm2 getcap properties-variable \
-    | sed -n 's/TPM2_PT_HR_PERSISTENT_AVAIL: \(.*\)/\1/p')" = 0x0 ]
-then
-    error "There's no available persistent handle in TPM to store an encryption key!"
-    exit 1
-fi
-
 if ! ping -q -c 1 -W 1 google.com >/dev/null
 then
     error "Can not connect to the internet!"
