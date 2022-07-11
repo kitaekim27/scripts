@@ -23,32 +23,27 @@ then
     exit 1
 fi
 
-readonly INITRAMFS_SOURCE="/usr/src/initramfs"
+initramfs_source="/usr/src/initramfs"
+initramfs_buiddir=$(mktemp --directory)
 
-INITRAMFS_ROOT=$(mktemp --directory)
-readonly INITRAMFS_ROOT
+info "Copy files in the source directory into the build directory."
+find "$initramfs_source" -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive --preserve --no-dereference {} "$initramfs_buiddir" \;
 
-info "INITRAMFS_SOURCE=$INITRAMFS_SOURCE"
-info "INITRAMFS_ROOT=$INITRAMFS_ROOT"
+info "Copy my scripts into the initramfs build directory."
+cp "$(which mkpassphrase)" "$initramfs_buiddir/usr/local/bin"
 
-info "Copy files in the initramfs source into the initramfs root."
-find "$INITRAMFS_SOURCE" -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive --preserve --no-dereference {} "$INITRAMFS_ROOT" \;
+info "Install the busybox into the initramfs build directory."
+rcopy "$(which busybox)" "$initramfs_buiddir"
+chroot "$initramfs_buiddir" /bin/busybox --install
 
-info "Copy my scripts into the initramfs root."
-cp "$(which mkpassphrase)" "$INITRAMFS_ROOT/usr/local/bin"
+info "Install the tpm2-tools into the initramfs build directory."
+rcopy "$(which tpm2)" "$initramfs_buiddir"
 
-info "Install the busybox into the initramfs root."
-rcopy "$(which busybox)" "$INITRAMFS_ROOT"
-chroot "$INITRAMFS_ROOT" /bin/busybox --install
-
-info "Install the tpm2-tools into the initramfs root."
-rcopy "$(which tpm2)" "$INITRAMFS_ROOT"
-
-info "Install the cryptsetup into the initramfs root."
-rcopy "$(which cryptsetup)" "$INITRAMFS_ROOT"
+info "Install the cryptsetup into the initramfs build directory."
+rcopy "$(which cryptsetup)" "$initramfs_buiddir"
 
 info "Build and install the initramfs into /boot."
-( cd "$INITRAMFS_ROOT" && find . -mindepth 1 -print0 \
+( cd "$initramfs_buiddir" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
     | lz4 --to-stdout > /boot/initramfs.cpio.lz4 )
