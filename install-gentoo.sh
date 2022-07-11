@@ -161,6 +161,12 @@ info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$install_root/usr/local/bin/" \;
 
+info "Generate the fstab into the installation."
+PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
+PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
+PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
+    envsubst < templates/etc/fstab.tmpl > "$install_root/etc/fstab"
+
 info "Set the initramfs source directory in the installation."
 for dir in mnt/root usr/bin usr/local/bin bin sbin dev proc sys
 do
@@ -168,12 +174,6 @@ do
 done
 find initramfs -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$install_root/usr/src/initramfs" \;
-
-info "Generate the fstab into the installation."
-PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
-PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
-PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
-    envsubst < templates/etc/fstab.tmpl > "$install_root/etc/fstab"
 
 info "Mount the proc filesystem in the installation."
 mount --types="proc" /proc "$install_root/proc"
@@ -207,7 +207,7 @@ chroot_main() {
     emerge app-portage/mirrorselect
     emerge sys-fs/btrfs-progs
 
-    info "Enable some system-wide USE flags."
+    info "Set some system-wide USE flags."
     euse --enable bluetooth networkmanager dbus
 
     info "Configure Portage mirrors."
@@ -314,37 +314,34 @@ chroot_main() {
     read -rp "Enter the hostname: " hostname
     sed -i "s/localhost/$hostname/g" /etc/conf.d/hostname /etc/hosts
 
-    info "Install cron."
+    info "Install system packages."
+
     emerge sys-process/fcron
     rc-update add fcron default
 
-    info "Install chrony."
     emerge net-misc/chrony
     rc-update add chronyd default
 
-    info "Install NetworkManager."
     emerge net-misc/networkmanager
     rc-update add NetworkManager default
 
-    info "Install rsyslog."
     emerge app-admin/rsyslog
     rc-update add rsyslog default
 
-    info "Install logrotate."
+    emerge app-admin/doas
+
     echo "app-admin/logrotate cron" >> /etc/portage/package.use
     emerge app-admin/logrotate
 
-    info "Install GRUB2."
+    info "Install GRUB2 bootloader."
     emerge sys-boot/grub
     grub-install --target="x86_64-efi" --efi-directory="/boot" --removable
-    grub-mkconfig -o /boot/grub/grub.cfg
+    grub-mkconfig --output="/boot/grub/grub.cfg"
 
-    info "Install opendoas."
-    emerge app-admin/doas
-
-    info "Create a user."
-    read -rp "Enter use name: " user
-    useradd --create-home --groups="users,wheel,audio" --shell="/bin/bash" "$user"
+    info "Create a default user."
+    read -rp "Enter an user name: " user
+    useradd --create-home --groups="users,wheel,audio" \
+        --shell="/bin/bash" "$user"
     passwd "$user"
 }
 
