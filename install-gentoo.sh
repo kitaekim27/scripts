@@ -166,6 +166,7 @@ mount --bind /run "$INSTALL_ROOT/run"
 mount --make-rslave "$INSTALL_ROOT/run"
 
 chroot_cleanup() {
+    info "Clean up installation artiparcts."
     rm --recursive /config
     rm --recursive /templates
 }
