@@ -360,8 +360,8 @@ find initramfs -mindepth 1 -maxdepth 1 \
     -exec cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs" \;
 
 info "Copy config files into the installation."
-cp --recursive config "$INSTALL_ROOT"
-cp --recursive templates "$INSTALL_ROOT"
+cp --verbose --recursive config "$INSTALL_ROOT"
+cp --verbose --recursive templates "$INSTALL_ROOT"
 
 info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
