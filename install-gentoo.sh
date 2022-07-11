@@ -63,7 +63,7 @@ emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
 dispatch-conf
 emerge app-crypt/tpm2-tools
 
-if ! ping -q -c 1 -W 1 google.com >/dev/null
+if ! nc -zw1 google.com 443
 then
     error "Can not connect to the internet!"
     exit 1
