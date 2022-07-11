@@ -357,7 +357,7 @@ do
     mkdir --parents "$INSTALL_ROOT/usr/src/initramfs/$dir"
 done
 find initramfs -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs" \;
+    -exec cp --verbose --recursive {} "$INSTALL_ROOT/usr/src/initramfs" \;
 
 info "Copy config files into the installation."
 cp --verbose --recursive config "$INSTALL_ROOT"
@@ -365,7 +365,7 @@ cp --verbose --recursive templates "$INSTALL_ROOT"
 
 info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
+    -exec cp --verbose --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
