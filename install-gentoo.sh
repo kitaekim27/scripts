@@ -15,8 +15,10 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
+this_script=$(basename "$0")
+
 info() {
-    echo "$(basename "$0"):" "$@"
+    echo "$this_script:" "$@"
 }
 
 error() {
@@ -369,6 +371,7 @@ info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
     trap chroot_cleanup EXIT
+    this_script=$this_script
     root_storage=$root_storage
     partition_uefi=$partition_uefi
     partition_swap=$partition_swap
