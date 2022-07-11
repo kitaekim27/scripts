@@ -195,7 +195,7 @@ chroot_main() {
     emerge sys-fs/btrfs-progs
 
     info "Set some system-wide USE flags."
-    euse --enable bluetooth networkmanager dbus
+    euse --enable X bluetooth networkmanager dbus
 
     info "Configure Portage mirrors."
     mirrorselect --interactive
@@ -233,6 +233,7 @@ chroot_main() {
 
     info "Reload the environment."
     env-update
+    source /etc/profile
 
     if grep --quiet --ignore-case "AMD" /proc/cpuinfo
     then
@@ -332,6 +333,11 @@ chroot_main() {
         --shell="/bin/bash" "$user"
     passwd "$user"
     install --mode="644" config/home/user/dot-profile "/home/$user/.profile"
+
+    info "Install Xorg server."
+    emerge x11-base/xorg-server
+    env-update
+    source /etc/profile
 }
 
 info "Configure DNS of the installation."
