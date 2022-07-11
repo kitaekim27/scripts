@@ -55,7 +55,7 @@ info "Configure Portage mirrors."
 mirrorselect --interactive
 
 info "Install my scripts into the system."
-find tools -mindepth 1 -maxdepth 1 \
+find -L tools -mindepth 1 -maxdepth 1 \
     -exec cp --verbose --recursive {} /usr/local/bin/ \;
 
 # TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
