@@ -372,7 +372,6 @@ sync
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
-    trap chroot_cleanup EXIT
     this_script=$this_script
     root_storage=$root_storage
     partition_uefi=$partition_uefi
@@ -383,4 +382,5 @@ chroot "$INSTALL_ROOT" /bin/bash -c "
     $(declare -f chroot_cleanup)
     $(declare -f chroot_main)
     chroot_main
+    chroot_cleanup
 "
