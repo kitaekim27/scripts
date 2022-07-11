@@ -367,8 +367,6 @@ info "Install my scripts into the installation."
 find tools -mindepth 1 -maxdepth 1 \
     -exec cp --verbose --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
-sync
-
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
