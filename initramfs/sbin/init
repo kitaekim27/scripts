@@ -18,32 +18,36 @@ rescue_shell() {
 
 # Read input silently.
 sread() {
-    read_prompt="$1"
-    read_variable="$2"
+    read_prompt="${1?}"
+    read_variable="${2?}"
 
     printf "%s" "$read_prompt"
     stty -echo
-    read -r "${read_variable?}"
+    read -r "$read_variable"
     stty echo
     echo
 }
 
 trap rescue_shell EXIT
 
-mount -t devtmpfs   none    /dev
-mount -t proc       none    /proc
-mount -t sysfs      none    /sys
+mount -t devtmpfs none /dev
+mount -t proc none /proc
+mount -t sysfs none /sys
 
 # shellcheck disable=SC2013
 for cmd in $(cat /proc/cmdline)
 do
     case "$cmd" in
-        rootuuid=*)
-            rootuuid="${cmd#rootuuid=}"
-            while ! root=$(findfs UUID="$rootuuid")
-            do
-                sleep 0.1
-            done
+        root=*)
+            cmd="${cmd#root=}"
+            case "$cmd" in
+                PARTUUID=*)
+                    while ! root=$(findfs PARTUUID="${cmd#PARTUUID=}")
+                    do
+                        sleep 0.1
+                    done
+                    ;;
+            esac
             ;;
     esac
 done
@@ -51,11 +55,11 @@ done
 sread "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
-if ! ( echo "$luks_passphrase" | xxd -revert -plain \
-    | cryptsetup luksOpen --key-file="-" "/dev/$root" root )
+if ! echo "$luks_passphrase" | xxd -revert -plain \
+    | cryptsetup luksOpen --key-file="-" "/dev/$root" root
 then
     error "Failed to open the root partition!"
-    error "The system you're on might be manipulated to steal your information!"
+    error "The system you're on might be modified to steal your information!"
     printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
     read -r answer
     if [ "$answer" = "y" ] || [ "$answer" = "Y" ]
