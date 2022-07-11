@@ -1,0 +1,6 @@
+#!/bin/bash
+# List all versions of the linux kernel found in /boot.
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+find /boot -iname 'vmlinuz-*' 2>/dev/null | sed 's/\/boot\/vmlinuz-\(.*\)$/\1/'
