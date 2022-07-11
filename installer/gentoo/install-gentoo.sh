@@ -367,7 +367,7 @@ cp --verbose --recursive config "$INSTALL_ROOT"
 cp --verbose --recursive templates "$INSTALL_ROOT"
 
 info "Install my scripts into the installation."
-find tools -mindepth 1 -maxdepth 1 \
+find -L tools -mindepth 1 -maxdepth 1 \
     -exec cp --verbose --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
 
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
