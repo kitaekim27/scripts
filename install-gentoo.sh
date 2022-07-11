@@ -142,59 +142,46 @@ wget --recursive --no-parent --no-directories \
     --accept="stage3-$ARCH-hardened-openrc-*" \
     "$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
 
-readonly install_root="/mnt/root/deploy/image-a"
+readonly INSTALL_ROOT="/mnt/root/deploy/image-a"
 
-info "Extract the stage 3 tarball into $install_root."
+info "Extract the stage 3 tarball into $INSTALL_ROOT."
 find download -iname "stage3-*.tar.xz" -exec tar \
-    --directory="$install_root" \
+    --directory="$INSTALL_ROOT" \
     --extract --preserve-permissions --file={} \
     --xattrs-include='*.*' --numeric-owner \;
 
-info "Configure the DNS of the installation."
-cp --dereference /etc/resolv.conf "$install_root/etc/resolv.conf"
-
-info "Install config files into the installation."
-find config -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive --preserve {} "$install_root" \;
-
-info "Install my scripts into the installation."
-find tools -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$install_root/usr/local/bin/" \;
-
-info "Generate the fstab into the installation."
-PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
-PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
-PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
-    envsubst < templates/etc/fstab.tmpl > "$install_root/etc/fstab"
-
-info "Set the initramfs source directory in the installation."
-for dir in mnt/root usr/bin usr/local/bin bin sbin dev proc sys
-do
-    mkdir --parents "$install_root/usr/src/initramfs/$dir"
-done
-find initramfs -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive {} "$install_root/usr/src/initramfs" \;
-
 info "Mount the proc filesystem in the installation."
-mount --types="proc" /proc "$install_root/proc"
+mount --types="proc" /proc "$INSTALL_ROOT/proc"
 
 info "Mount the sys fileseystem in the installation."
-mount --rbind /sys "$install_root/sys"
-mount --make-rslave "$install_root/sys"
+mount --rbind /sys "$INSTALL_ROOT/sys"
+mount --make-rslave "$INSTALL_ROOT/sys"
 
 info "Mount the dev filesystem in the installation."
-mount --rbind /dev "$install_root/dev"
-mount --make-rslave "$install_root/dev"
+mount --rbind /dev "$INSTALL_ROOT/dev"
+mount --make-rslave "$INSTALL_ROOT/dev"
 
 info "Mount the run filesystem in the installation."
-mount --bind /run "$install_root/run"
-mount --make-rslave "$install_root/run"
+mount --bind /run "$INSTALL_ROOT/run"
+mount --make-rslave "$INSTALL_ROOT/run"
+
+chroot_cleanup() {
+    rm --recursive /config
+    rm --recursive /templates
+}
 
 chroot_main() {
     info "Mount an efi partition."
     mount "/dev/$partition_uefi" /boot
 
-    info "Set Portae MAKEOPTS variable."
+    info "Generate the fstab into the installation."
+    PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
+    PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
+    PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
+        envsubst < /templates/etc/fstab.tmpl > /etc/fstab
+
+    info "Configure Portage make.conf file."
+    install --mode="600" /config/etc/portage/make.conf /etc/portage/make.conf
     echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
 
     info "Configure Portage ebuild repositories."
@@ -329,6 +316,7 @@ chroot_main() {
     rc-update add rsyslog default
 
     emerge app-admin/doas
+    install --mode="600" config/etc/doas.conf /etc/doas.conf
 
     echo "app-admin/logrotate cron" >> /etc/portage/package.use
     emerge app-admin/logrotate
@@ -343,17 +331,39 @@ chroot_main() {
     useradd --create-home --groups="users,wheel,audio" \
         --shell="/bin/bash" "$user"
     passwd "$user"
+    install --mode="644" config/home/user/dot-profile "/home/$user/.profile"
 }
 
-info "chroot into $install_root and execute chroot_main()."
-chroot "$install_root" /bin/bash -c "
+info "Configure DNS of the installation."
+cp --dereference /etc/resolv.conf "$INSTALL_ROOT/etc/resolv.conf"
+
+info "Set the initramfs source directory in the installation."
+for dir in mnt/root usr/bin usr/local/bin bin sbin dev proc sys
+do
+    mkdir --parents "$INSTALL_ROOT/usr/src/initramfs/$dir"
+done
+find initramfs -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive {} "$INSTALL_ROOT/usr/src/initramfs" \;
+
+info "Copy config files into the installation."
+cp --recursive config "$INSTALL_ROOT"
+cp --recursive templates "$INSTALL_ROOT"
+
+info "Install my scripts into the installation."
+find tools -mindepth 1 -maxdepth 1 \
+    -exec cp --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
+
+info "chroot into $INSTALL_ROOT and execute chroot_main()."
+chroot "$INSTALL_ROOT" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
+    trap chroot_cleanup EXIT
     root_storage=$root_storage
     partition_uefi=$partition_uefi
     partition_swap=$partition_swap
     partition_root=$partition_root
     $(declare -f info)
     $(declare -f error)
+    $(declare -f chroot_cleanup)
     $(declare -f chroot_main)
     chroot_main
 "
