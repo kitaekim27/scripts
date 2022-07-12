@@ -36,6 +36,7 @@ mkdir --parents \
     "$initramfs_builddir/mnt/root" \
     "$initramfs_builddir/sbin" \
     "$initramfs_builddir/usr/local/bin"
+ln --symbolic /proc/self/mounts "$initramfs_builddir/etc/mtab"
 
 info "Copy files in the source directory into the build directory."
 find "$initramfs_source" -mindepth 1 -maxdepth 1 \
