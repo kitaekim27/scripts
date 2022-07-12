@@ -30,25 +30,26 @@ linux_version=$(lslinux | fzf --header="Select the target linux kernel version."
 
 info "Copy files in the source directory into the build directory."
 find "$initramfs_source" -mindepth 1 -maxdepth 1 \
-    -exec cp --recursive --preserve --no-dereference {} "$initramfs_buiddir" \;
+    -exec cp --recursive --preserve --no-dereference {} "$initramfs_builddir" \;
 
 info "Copy my scripts into the initramfs build directory."
-cp "$(which mkpassphrase)" "$initramfs_buiddir/usr/local/bin"
+mkdir --parents "$initramfs_builddir/usr/local/bin"
+cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
-rcopy "$(which busybox)" "$initramfs_buiddir"
-chroot "$initramfs_buiddir" /bin/busybox --install -s
+rcopy "$(which busybox)" "$initramfs_builddir"
+chroot "$initramfs_builddir" /bin/busybox --install -s
 
 info "Install the xxd utility into the initramfs build directory."
-rcopy "$(which xxd)" "$initramfs_buiddir"
+rcopy "$(which xxd)" "$initramfs_builddir"
 
 info "Install the tpm2-tools into the initramfs build directory."
-rcopy "$(which tpm2)" "$initramfs_buiddir"
+rcopy "$(which tpm2)" "$initramfs_builddir"
 
 info "Install the cryptsetup into the initramfs build directory."
-rcopy "$(which cryptsetup)" "$initramfs_buiddir"
+rcopy "$(which cryptsetup)" "$initramfs_builddir"
 
 info "Build and install the initramfs into /boot."
-( cd "$initramfs_buiddir" && find . -mindepth 1 -print0 \
+( cd "$initramfs_builddir" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
     | lz4 --to-stdout > "/boot/initrd.img-$linux_version" )
