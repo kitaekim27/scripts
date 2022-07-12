@@ -38,6 +38,7 @@ cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_builddir"
+mkdir --parents "$initramfs_builddir/sbin"
 chroot "$initramfs_builddir" /bin/busybox --install -s
 
 info "Install the xxd utility into the initramfs build directory."
