@@ -65,12 +65,10 @@ then
     exit 1
 fi
 
-dependencies=$(env --unset="LD_PRELOAD" ldd "$target" \
-    | sed -e "
-        /\//!d;
-        /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
-        s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/
-    ")
+dependencies=$(env --unset="LD_PRELOAD" ldd "$target" 2>/dev/null || : | sed -e "
+    /\//!d;
+    /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
+    s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/")
 
 deep_check_attrib "$target"
 
