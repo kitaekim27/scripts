@@ -49,12 +49,12 @@ deep_check_attrib() {
 deep_copy() {
     local file="$1"
 
-    mkdir --parents "$newroot${file%/*}"
+    mkdir --parents "$newroot${file%/*}" || :
     $cp "$file" "$newroot$file"
     if [ -L "$file" ]
     then
         realfile=$(readlink -f "$file")
-        mkdir --parents "$newroot${realfile%/*}"
+        mkdir --parents "$newroot${realfile%/*}" || :
         $cp "$realfile" "$newroot$realfile"
     fi
 }
