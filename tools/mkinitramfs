@@ -48,4 +48,4 @@ rcopy "$(which cryptsetup)" "$initramfs_buiddir"
 info "Build and install the initramfs into /boot."
 ( cd "$initramfs_buiddir" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | lz4 --to-stdout > "/boot/initramfs.img-$linux_version" )
+    | lz4 --to-stdout > "/boot/initrd.img-$linux_version" )
