@@ -24,7 +24,7 @@ then
 fi
 
 initramfs_source="/usr/src/initramfs"
-initramfs_buiddir=$(mktemp --directory)
+initramfs_builddir=$(mktemp --directory)
 
 linux_version=$(lslinux | fzf --header="Select the target linux kernel version.")
 
