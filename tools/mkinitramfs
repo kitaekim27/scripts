@@ -39,6 +39,9 @@ info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_buiddir"
 chroot "$initramfs_buiddir" /bin/busybox --install -s
 
+info "Install the xxd utility into the initramfs build directory."
+rcopy "$(which xxd)" "$initramfs_buiddir"
+
 info "Install the tpm2-tools into the initramfs build directory."
 rcopy "$(which tpm2)" "$initramfs_buiddir"
 
