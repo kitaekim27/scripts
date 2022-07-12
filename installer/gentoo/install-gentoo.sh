@@ -293,6 +293,7 @@ chroot_main() {
     emerge sys-fs/cryptsetup
     emerge app-arch/lz4
     emerge app-shells/fzf
+    emerge sys-apps/kbd
 
     # TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
     #       it to install. Remove --autounmask flag when it's in stable branch.
