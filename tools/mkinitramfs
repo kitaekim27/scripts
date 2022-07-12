@@ -28,17 +28,24 @@ initramfs_builddir=$(mktemp --directory)
 
 linux_version=$(lslinux | fzf --header="Select the target linux kernel version.")
 
+info "Set the filesystem hierarchy layout."
+mkdir --parents \
+    "$initramfs_builddir/proc" \
+    "$initramfs_builddir/sys" \
+    "$initramfs_builddir/run" \
+    "$initramfs_builddir/mnt/root" \
+    "$initramfs_builddir/sbin" \
+    "$initramfs_builddir/usr/local/bin"
+
 info "Copy files in the source directory into the build directory."
 find "$initramfs_source" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$initramfs_builddir" \;
 
 info "Copy my scripts into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/usr/local/bin"
 cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_builddir"
-mkdir --parents "$initramfs_builddir/sbin"
 chroot "$initramfs_builddir" /bin/busybox --install -s
 
 info "Install the xxd utility into the initramfs build directory."
