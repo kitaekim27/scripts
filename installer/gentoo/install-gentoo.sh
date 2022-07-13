@@ -288,7 +288,7 @@ chroot_main() {
     $make install
 
     info "Install packages for building an initramfs."
-    emerge sys-apps/busybox sys-fs/cryptsetup app-shells/fzf sys-apps/kbd
+    emerge sys-apps/busybox sys-fs/cryptsetup app-shells/fzf
 
     # TODO: Currently tpm2-tools package is in testing branch. So you need to unmask
     #       it to install. Remove --autounmask flag when it's in stable branch.
