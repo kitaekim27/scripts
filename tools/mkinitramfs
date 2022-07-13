@@ -53,7 +53,7 @@ cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_builddir"
-for target in $(busybox --install)
+for target in $(busybox --list)
 do
     path=$(whereis "$target" || continue | sed "s/.*: \(.*\).*/\1/")
     ln --symbolic $(which busybox) "$initramfs_builddir$path"
