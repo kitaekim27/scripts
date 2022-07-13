@@ -25,17 +25,22 @@ fi
 
 initramfs_source="/usr/src/initramfs"
 initramfs_builddir=$(mktemp --directory)
-
 linux_version=$(lslinux | fzf --header="Select the target linux kernel version.")
 
+# Note that directories created here are not a complete set; You might need to
+# add some directories here in the future.
 info "Set the filesystem hierarchy layout."
 mkdir --parents \
     "$initramfs_builddir/proc" \
     "$initramfs_builddir/sys" \
     "$initramfs_builddir/run" \
+    "$initramfs_builddir/tmp" \
     "$initramfs_builddir/mnt/root" \
     "$initramfs_builddir/sbin" \
     "$initramfs_builddir/etc" \
+    "$initramfs_builddir/lib" \
+    "$initramfs_builddir/lib32" \
+    "$initramfs_builddir/lib64" \
     "$initramfs_builddir/usr/local/bin"
 ln --symbolic /proc/self/mounts "$initramfs_builddir/etc/mtab"
 
@@ -48,7 +53,11 @@ cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_builddir"
-chroot "$initramfs_builddir" /bin/busybox --install -s
+for target in $(busybox --install)
+do
+    path=$(whereis "$target" || continue | sed "s/.*: \(.*\).*/\1/")
+    ln --symbolic $(which busybox) "$initramfs_builddir$path"
+done
 
 info "Install the xxd utility into the initramfs build directory."
 rcopy "$(which xxd)" "$initramfs_builddir"
