@@ -55,8 +55,8 @@ info "Install the busybox into the initramfs build directory."
 rcopy "$(which busybox)" "$initramfs_builddir"
 for target in $(busybox --list)
 do
-    path=$(whereis "$target" || continue | sed "s/.*: \(.*\).*/\1/")
-    ln --symbolic $(which busybox) "$initramfs_builddir$path"
+    path=$(whereis "$target" | awk '{print $2}')
+    [ -n "$path" ] && ln --symbolic "$(which busybox)" "$initramfs_builddir$path"
 done
 
 info "Install the xxd utility into the initramfs build directory."
