@@ -35,6 +35,7 @@ mkdir --parents \
     "$initramfs_builddir/run" \
     "$initramfs_builddir/mnt/root" \
     "$initramfs_builddir/sbin" \
+    "$initramfs_builddir/etc" \
     "$initramfs_builddir/usr/local/bin"
 ln --symbolic /proc/self/mounts "$initramfs_builddir/etc/mtab"
 
