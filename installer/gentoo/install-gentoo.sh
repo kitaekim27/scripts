@@ -170,7 +170,6 @@ mount --make-rslave "$INSTALL_ROOT/run"
 chroot_cleanup() {
     info "Clean up installation artiparcts."
     rm --recursive /config
-    rm --recursive /templates
 }
 
 chroot_main() {
@@ -181,7 +180,7 @@ chroot_main() {
     PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
     PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
     PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
-        envsubst < /templates/etc/fstab.tmpl > /etc/fstab
+        envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
     info "Configure Portage make.conf file."
     install --mode="600" /config/etc/portage/make.conf /etc/portage/make.conf
@@ -357,7 +356,6 @@ find initramfs -mindepth 1 -maxdepth 1 \
 
 info "Copy config files into the installation."
 cp --verbose --recursive config "$INSTALL_ROOT"
-cp --verbose --recursive templates "$INSTALL_ROOT"
 
 info "Install my scripts into the installation."
 find -L tools -mindepth 1 -maxdepth 1 \
