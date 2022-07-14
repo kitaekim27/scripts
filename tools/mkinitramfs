@@ -32,9 +32,9 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 # Note that directories created here are not a complete set; You might need to
 # add some directories here in the future.
 info "Set the filesystem hierarchy layout."
-for path in /proc /sys /run /tmp /mnt/root
+for path in /proc /sys /run /tmp /mnt/root /etc /bin /sbin /usr/bin /usr/local/bin
 do
-    mkdirectory --parents "$initramfs_builddir$path"
+    mkdir --parents "$initramfs_builddir$path"
 done
 ln --symbolic /proc/self/mounts "$initramfs_builddir/etc/mtab"
 
@@ -43,7 +43,6 @@ find "$initramfs_source" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$initramfs_builddir" \;
 
 info "Copy my scripts into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/usr/local/bin"
 cp "$(locatebin mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Set up a basic shell environment in the initramfs build directory."
