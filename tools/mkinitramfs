@@ -36,7 +36,9 @@ mkdir --parents \
     "$initramfs_builddir/run" \
     "$initramfs_builddir/tmp" \
     "$initramfs_builddir/mnt/root" \
+    "$initramfs_builddir/bin" \
     "$initramfs_builddir/sbin" \
+    "$initramfs_builddir/usr/bin" \
     "$initramfs_builddir/etc" \
     "$initramfs_builddir/lib" \
     "$initramfs_builddir/lib32" \
