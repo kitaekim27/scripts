@@ -26,7 +26,7 @@ then
 fi
 
 initramfs_source="/usr/src/initramfs"
-initramfs_builddir=$(mktemp --directory "$this_script.XXXXXXXXXX")
+initramfs_builddir=$(mktemp --directory --tmpdir "$this_script.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
 # Note that directories created here are not a complete set; You might need to
