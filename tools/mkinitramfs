@@ -59,7 +59,7 @@ for target in $(busybox --list)
 do
     [ "$target" = "busybox" ] && continue
     path=$(locatebin "$target" || continue)
-    [ -n "$path" ] && ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
+    ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
 done
 
 info "Install the xxd utility into the initramfs build directory."
