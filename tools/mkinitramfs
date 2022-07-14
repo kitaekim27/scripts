@@ -46,17 +46,12 @@ info "Copy my scripts into the initramfs build directory."
 mkdir --parents "$initramfs_builddir/usr/local/bin"
 cp "$(locatebin mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
-info "Install the busybox into the initramfs build directory."
-rcopy "$(locatebin busybox)" "$initramfs_builddir"
-for target in $(busybox --list-full)
+info "Set up a basic shell environment in the initramfs build directory."
+rcopy "$(locatebin "bash")" "$initramfs_builddir"
+ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
+for target in "echo" "find" "sleep" "[" "printf" "mount" "switch_root"
 do
-    case "$target" in
-        */busybox | */init | */ginit | */run-init | */linuxrc)
-            continue
-            ;;
-    esac
-    mkdir --parents "$initramfs_builddir/${target%/*}"
-    ln --symbolic "$(locatebin busybox)" "$initramfs_builddir/$target"
+    rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
 
 info "Install the xxd utility into the initramfs build directory."
