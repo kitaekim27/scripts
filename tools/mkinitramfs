@@ -65,4 +65,4 @@ rcopy "$(locatebin cryptsetup)" "$initramfs_builddir"
 info "Build and install the initramfs into /boot."
 ( cd "$initramfs_builddir" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | lz4 --to-stdout > "/boot/initrd.img-$linux_version" )
+    | gzip > "/boot/initrd.img-$linux_version" )
