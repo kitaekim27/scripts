@@ -57,7 +57,11 @@ info "Install the busybox into the initramfs build directory."
 rcopy "$(locatebin busybox)" "$initramfs_builddir"
 for target in $(busybox --list)
 do
-    [ "$target" = "busybox" ] && continue
+    case "$target" in
+        busybox | init | ginit | run-init | linuxrc)
+            continue
+            ;;
+    esac
     path=$(locatebin "$target" || :)
     [ -n "$path" ] || continue
     mkdir --parents "$initramfs_builddir${path%/*}"
