@@ -58,8 +58,8 @@ rcopy "$(locatebin busybox)" "$initramfs_builddir"
 for target in $(busybox --list)
 do
     [ "$target" = "busybox" ] && continue
-    path=$(locatebin "$target" || exit 1)
-    [ "$?" = 0 ] && ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
+    path=$(locatebin "$target" || :)
+    [ -n "$path" ] && ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
 done
 
 info "Install the xxd utility into the initramfs build directory."
