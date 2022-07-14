@@ -62,8 +62,8 @@ do
             continue
             ;;
     esac
-    mkdir --parents "$initramfs_builddir${target%/*}"
-    ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$target"
+    mkdir --parents "$initramfs_builddir/${target%/*}"
+    ln --symbolic "$(locatebin busybox)" "$initramfs_builddir/$target"
 done
 
 info "Install the xxd utility into the initramfs build directory."
