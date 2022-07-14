@@ -43,6 +43,7 @@ find "$initramfs_source" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$initramfs_builddir" \;
 
 info "Copy my scripts into the initramfs build directory."
+mkdir --parents "$initramfs_builddir/usr/local/bin"
 cp "$(locatebin mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
