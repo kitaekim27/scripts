@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# shellcheck disable=SC3040
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
@@ -40,9 +41,14 @@ do
             cmd="${cmd#root=}"
             case "$cmd" in
                 PARTUUID=*)
-                    while ! root=$(findfs PARTUUID="${cmd#PARTUUID=}")
+                    count=0
+                    while true
                     do
-                        sleep 0.1
+                        # shellcheck disable=SC2015
+                        root=$(findfs PARTUUID="${cmd#PARTUUID=}") && break || :
+                        count=$((count+1))
+                        [ "$count" = 10 ] && exit 1
+                        sleep 0.3
                     done
                     ;;
             esac
