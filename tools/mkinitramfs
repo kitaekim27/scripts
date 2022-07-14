@@ -58,7 +58,7 @@ rcopy "$(locatebin busybox)" "$initramfs_builddir"
 for target in $(busybox --list)
 do
     [ "$target" = "busybox" ] && continue
-    path=$(locatebin "$target")
+    path=$(locatebin "$target" || continue)
     [ -n "$path" ] && ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
 done
 
