@@ -51,25 +51,25 @@ find "$initramfs_source" -mindepth 1 -maxdepth 1 \
     -exec cp --recursive --preserve --no-dereference {} "$initramfs_builddir" \;
 
 info "Copy my scripts into the initramfs build directory."
-cp "$(which mkpassphrase)" "$initramfs_builddir/usr/local/bin"
+cp "$(locatebin mkpassphrase)" "$initramfs_builddir/usr/local/bin"
 
 info "Install the busybox into the initramfs build directory."
-rcopy "$(which busybox)" "$initramfs_builddir"
+rcopy "$(locatebin busybox)" "$initramfs_builddir"
 for target in $(busybox --list)
 do
     [ "$target" = "busybox" ] && continue
-    path=$(whereis "$target" | awk '{print $2}')
-    [ -n "$path" ] && ln --symbolic "$(which busybox)" "$initramfs_builddir$path"
+    path=$(locatebin "$target" | awk '{print $2}')
+    [ -n "$path" ] && ln --symbolic "$(locatebin busybox)" "$initramfs_builddir$path"
 done
 
 info "Install the xxd utility into the initramfs build directory."
-rcopy "$(which xxd)" "$initramfs_builddir"
+rcopy "$(locatebin xxd)" "$initramfs_builddir"
 
 info "Install the tpm2-tools into the initramfs build directory."
-rcopy "$(which tpm2)" "$initramfs_builddir"
+rcopy "$(locatebin tpm2)" "$initramfs_builddir"
 
 info "Install the cryptsetup into the initramfs build directory."
-rcopy "$(which cryptsetup)" "$initramfs_builddir"
+rcopy "$(locatebin cryptsetup)" "$initramfs_builddir"
 
 info "Build and install the initramfs into /boot."
 ( cd "$initramfs_builddir" && find . -mindepth 1 -print0 \
