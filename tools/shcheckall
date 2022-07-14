@@ -1,0 +1,8 @@
+#!/bin/bash
+# Perform `shellcheck` to every shell scripts found under the given path.
+set -o errexit -o nounset -o noglob -o pipefail
+targets=$(find "${1?}" -not -path '*/.*' -type f -executable)
+for target in $targets
+do
+    file "$target" | grep shell > /dev/null && shellcheck "$target"
+done
