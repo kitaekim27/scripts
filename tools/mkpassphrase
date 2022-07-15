@@ -2,10 +2,9 @@
 # Concatenate the key in TPM and the given passphrase to generate a new
 # passphrase.
 
-set -o errexit -o nounset -o noglob
+set -o errexit -o nounset -o noglob -o pipefail
 
 passphrase="$1"
-
 tmpdir=$(mktemp --directory)
 
 tpm2 startauthsession \
