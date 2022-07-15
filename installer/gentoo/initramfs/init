@@ -29,10 +29,10 @@ sread() {
 
 trap rescue_shell EXIT
 
-mount -t devtmpfs none /dev
-mount -t proc none /proc
-mount -t sysfs none /sys
-mount -t tmpfs none /tmp
+mount -t devtmpfs udev /dev
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /tmp
 
 # We use udev here. Make sure not to use any uevnet helper.
 [ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
