@@ -78,9 +78,11 @@ then
 fi
 
 mount /dev/mapper/root /mnt/root
+mount -t btrfs -o "noatime,rw,space_cache=v2,subvolid=5,subvol=/deploy/target" \
+    /dev/mapper/root /mnt/root/deploy/target
 
 umount -R /dev
 umount /proc
 umount /sys
 
-exec switch_root /mnt/root/deploy/current /sbin/init
+exec switch_root /mnt/root/deploy/target /sbin/init
