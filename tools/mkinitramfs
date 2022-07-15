@@ -58,10 +58,12 @@ done
 
 info "Install the kmod into the initramfs build directory."
 rcopy "$(locatebin kmod)" "$initramfs_builddir"
-mkdir --parents "$(dirname "$(locatebin modprobe)")"
-ln --symbolic "$(locatebin kmod)" "$(locatebin modprobe)"
-ln --symbolic "$(locatebin kmod)" "$(locatebin modinfo)"
-ln --symbolic "$(locatebin kmod)" "$(locatebin lsmod)"
+mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modprobe)")"
+ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modprobe)"
+mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modinfo)")"
+ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modinfo)"
+mkdir --parents "$initramfs_builddir$(dirname "$(locatebin lsmod)")"
+ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin lsmod)"
 
 info "Install the udev into the initramfs build directory."
 rcopy "$(locatebin udevadm)" "$initramfs_builddir"
