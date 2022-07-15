@@ -51,10 +51,15 @@ rcopy "$(locatebin "bash")" "$initramfs_builddir"
 ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
     "switch_root" "findfs" "grep" "ls" "less" "mktemp" "base64" "sha256sum" \
-    "awk" "xxd" "whereis" "modprobe"
+    "awk" "xxd" "whereis"
 do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
+
+info "Install the kmod into the initramfs build directory."
+rcopy "$(locatebin kmod)" "$initramfs_builddir"
+mkdir --parents "$(dirname "$(locatebin modprobe)")"
+ln --symbolic "$(locatebin kmod)" "$(locatebin modprobe)"
 
 info "Install the udev into the initramfs build directory."
 rcopy "$(locatebin udevadm)" "$initramfs_builddir"
