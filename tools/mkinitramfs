@@ -50,9 +50,33 @@ rcopy "$(locatebin "bash")" "$initramfs_builddir"
 ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
     "switch_root" "findfs" "grep" "ls" "less" "mktemp" "base64" "sha256sum" \
-    "awk" "xxd"
+    "awk" "xxd" "whereis"
 do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
+done
+
+info "Install the udev into the initramfs build directory."
+rcopy "$(locatebin udevadm)" "$initramfs_builddir"
+mkdir --parents "$initramfs_builddir/lib/systemd"
+ln --symbolic "$(locatebin udevadm)" "$initramfs_builddir/lib/systemd/systemd-udevd"
+cp --preserve /etc/udev/udev.conf "$initramfs_builddir/etc/udev"
+
+info "Install udev rules into the initramfs build directory."
+mkdir --parents "$initramfs_builddir/lib/udev/rules.d"
+# Here, we also install a rule for loading kernel modules (80-drivers.rules).
+# This might fail as no kernel modules are installed using this script.
+for rules in 50-udev-default.rules 60-block.rules 60-persistent-storage.rules \
+    75-net-description.rules 80-net-setup-link.rules 80-drivers.rules
+do
+    if [ -e "/etc/udev/rules.d/$rules" ]
+    then
+        cp --verbose --preserve "/etc/udev/rules.d/$rules" \
+            "$initramfs_builddir/lib/udev/rules.d/"
+    elif [ -e "/lib/udev/rules.d/$rules" ]
+    then
+        cp --verbose --preserve "/lib/udev/rules.d/$rules" \
+            "$initramfs_builddir/lib/udev/rules.d/"
+    fi
 done
 
 info "Install the tpm2-tools into the initramfs build directory."

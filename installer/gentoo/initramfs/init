@@ -34,6 +34,14 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t tmpfs none /tmp
 
+# We use udev here. Make sure not to use any uevnet helper.
+[ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
+
+/lib/systemd/systemd-udevd --daemon --resolve-names="never"
+udevadm trigger --type="subsystems" --action="add"
+udevadm trigger --type="devices" --action="add"
+udevadm settle || :
+
 read -r cmdline < /proc/cmdline
 for cmd in $cmdline
 do
@@ -80,6 +88,8 @@ fi
 mount /dev/mapper/root /mnt/root
 mount -t btrfs -o "noatime,rw,space_cache=v2,subvolid=5,subvol=/deploy/target" \
     /dev/mapper/root /mnt/root/deploy/target
+
+udevadm control --exit
 
 umount -R /dev
 umount /proc
