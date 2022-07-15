@@ -56,14 +56,36 @@ do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
 
-info "Install the kmod into the initramfs build directory."
+info "Install kernel module tools into the initramfs build directory."
 rcopy "$(locatebin kmod)" "$initramfs_builddir"
+
 mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modprobe)")"
 ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modprobe)"
+mkdir --parents "$initramfs_builddir/lib/modprobe.d"
+find /lib/modprobe.d -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$initramfs_builddir/lib/modprobe.d" \;
+
 mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modinfo)")"
 ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modinfo)"
+
 mkdir --parents "$initramfs_builddir$(dirname "$(locatebin lsmod)")"
 ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin lsmod)"
+
+mkdir --parents "$initramfs_builddir$(dirname "$(locatebin insmod)")"
+ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin insmod)"
+
+mkdir --parents "$initramfs_builddir$(dirname "$(locatebin rmmod)")"
+ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin rmmod)"
+
+info "Install kernel modules into the initramfs build directory."
+mkdir --parents "$initramfs_builddir/lib/modules/$linux_version"
+find "/lib/modules/$linux_version" -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$initramfs_builddir/lib/modules/$linux_version" \;
+
+info "Install kernel firmwares into the initramfs build directory."
+mkdir --parents "$initramfs_builddir/lib/firmware/$linux_version"
+find "/lib/firmware/$linux_version" -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$initramfs_builddir/lib/firmware/$linux_version" \;
 
 info "Install the udev into the initramfs build directory."
 rcopy "$(locatebin udevadm)" "$initramfs_builddir"
