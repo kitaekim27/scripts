@@ -83,9 +83,9 @@ find "/lib/modules/$linux_version" -mindepth 1 -maxdepth 1 \
     -exec cp --archive {} "$initramfs_builddir/lib/modules/$linux_version" \;
 
 info "Install kernel firmwares into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/lib/firmware/$linux_version"
-find "/lib/firmware/$linux_version" -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$initramfs_builddir/lib/firmware/$linux_version" \;
+mkdir --parents "$initramfs_builddir/lib/firmware"
+find /lib/firmware -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$initramfs_builddir/lib/firmware" \;
 
 info "Install the udev into the initramfs build directory."
 rcopy "$(locatebin udevadm)" "$initramfs_builddir"
