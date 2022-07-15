@@ -103,11 +103,11 @@ for rules in 50-udev-default.rules 60-block.rules 60-persistent-storage.rules \
 do
     if [ -e "/etc/udev/rules.d/$rules" ]
     then
-        cp --verbose --preserve "/etc/udev/rules.d/$rules" \
+        cp --preserve "/etc/udev/rules.d/$rules" \
             "$initramfs_builddir/lib/udev/rules.d/"
     elif [ -e "/lib/udev/rules.d/$rules" ]
     then
-        cp --verbose --preserve "/lib/udev/rules.d/$rules" \
+        cp --preserve "/lib/udev/rules.d/$rules" \
             "$initramfs_builddir/lib/udev/rules.d/"
     fi
 done
