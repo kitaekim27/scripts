@@ -60,6 +60,8 @@ info "Install the kmod into the initramfs build directory."
 rcopy "$(locatebin kmod)" "$initramfs_builddir"
 mkdir --parents "$(dirname "$(locatebin modprobe)")"
 ln --symbolic "$(locatebin kmod)" "$(locatebin modprobe)"
+ln --symbolic "$(locatebin kmod)" "$(locatebin modinfo)"
+ln --symbolic "$(locatebin kmod)" "$(locatebin lsmod)"
 
 info "Install the udev into the initramfs build directory."
 rcopy "$(locatebin udevadm)" "$initramfs_builddir"
