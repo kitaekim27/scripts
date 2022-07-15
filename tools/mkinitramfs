@@ -49,7 +49,7 @@ info "Set up a basic shell environment in the initramfs build directory."
 rcopy "$(locatebin "bash")" "$initramfs_builddir"
 ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
-    "switch_root" "findfs"
+    "switch_root" "findfs" "grep" "ls"
 do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
