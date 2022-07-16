@@ -95,8 +95,6 @@ cp --preserve /etc/udev/udev.conf "$initramfs_builddir/etc/udev"
 
 info "Install udev rules into the initramfs build directory."
 mkdir --parents "$initramfs_builddir/lib/udev/rules.d"
-# Here, we also install a rule for loading kernel modules (80-drivers.rules).
-# This might fail as no kernel modules are installed using this script.
 for rules in 50-udev-default.rules 60-block.rules 60-persistent-storage.rules \
     75-net-description.rules 80-net-setup-link.rules 80-drivers.rules
 do
