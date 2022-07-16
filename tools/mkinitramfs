@@ -79,6 +79,8 @@ mkdir --parents "$initramfs_builddir/lib/modules/$linux_version"
 find "/lib/modules/$linux_version" -mindepth 1 -maxdepth 1 \
     -exec cp --archive {} "$initramfs_builddir/lib/modules/$linux_version" \;
 
+# TODO: This increases initramfs size drastcally. Install only firmwares that
+#       really matters into the initramfs.
 info "Install kernel firmwares into the initramfs build directory."
 mkdir --parents "$initramfs_builddir/lib/firmware"
 find /lib/firmware -mindepth 1 -maxdepth 1 \
@@ -111,6 +113,10 @@ done
 
 info "Install the tpm2-tools into the initramfs build directory."
 rcopy "$(locatebin tpm2)" "$initramfs_builddir"
+# Copy tpm2-tools runtime dependencies (TCTI).
+mkdir --parents "$initramfs_builddir/usr/lib64"
+find /usr/lib64 -iname 'libtss2-tcti-*' \
+    -exec cp --archive {} "$initramfs_builddir/usr/lib64" \;
 
 info "Install the cryptsetup into the initramfs build directory."
 rcopy "$(locatebin cryptsetup)" "$initramfs_builddir"
