@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# shellcheck disable=SC3040
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
@@ -22,7 +21,7 @@ sread() {
 
     printf "%s" "$read_prompt"
     stty -echo
-    read -r "${read_variable?}"
+    read -r "$read_variable"
     stty echo
     echo
 }
@@ -92,8 +91,7 @@ info "Decrypt the root partition..."
 while true
 do
     sread "Enter a passphrase for the root partition: " passphrase
-    luks_passphrase=$(mkpassphrase "${passphrase?}" \
-        | sed -n "s/result = \(.*\)/\1/p")
+    luks_passphrase=$(mkpassphrase "$passphrase" | sed  "s/result = \(.*\)/\1/")
 
     if ! echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
         --key-file="-" "/dev/$root" root
@@ -110,35 +108,18 @@ do
                     do
                         sread "Enter a recovery passphrase for the root partition: " \
                             recovery_passphrase
-                        if ! echo "${recovery_passphrase?}" | cryptsetup luksOpen \
+                        if echo "$recovery_passphrase" | cryptsetup luksOpen \
                             --key-file="-" "/dev/$root" root
                         then
-                            error "Failed to open the root partition! Try again."
-                        else
                             break
                         fi
+                        error "Failed to open the root partition! Try again."
                     done
                     break
                     ;;
                 n* | N*)
-                    while true
-                    do
-                        printf "Do you want to execute a shell for debugging? [y/n]: "
-                        read -r shanswer
-                        case "$shanswer" in
-                            y* | Y*)
-                                exit 1
-                                ;;
-                            n* | N*)
-                                break
-                                ;;
-                            *)
-                                error "Invalid input! Try again."
-                                ;;
-                        esac
-                    done
-                    break
-                    ;;
+                    info "Execute a shell for debugging..."
+                    exit 1
                 *)
                     error "Invalid input! Try again."
                     ;;
