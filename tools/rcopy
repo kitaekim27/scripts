@@ -23,7 +23,7 @@ newroot="$(realpath "$2")"
 
 deep_copy() {
     local file="$1"
-    if [ -e "$file" ]
+    if [ -e "$newroot$file" ]
     then
         return 0
     fi
