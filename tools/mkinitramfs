@@ -48,7 +48,7 @@ rcopy "$(locatebin "bash")" "$initramfs_builddir"
 ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
     "switch_root" "findfs" "grep" "ls" "less" "mktemp" "base64" "sha256sum" \
-    "awk" "xxd" "whereis" "cp" "nano"
+    "awk" "xxd" "whereis" "cp"
 do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
