@@ -119,9 +119,9 @@ find /usr/lib64 -iname 'libtss2-tcti-*' \
 info "Install the cryptsetup into the initramfs build directory."
 rcopy "$(locatebin cryptsetup)" "$initramfs_builddir"
 # libpthread loads libgcc_s using dlopen. Need to handle it.
-find / -maxdepth 1 -type d -iname 'lib*' \
-    -exec find {} -type f -iname 'libgcc_s.so.[1-9]' \
-        -exec deep_copy "{}" \; \;
+find / -maxdepth 1 -type d -iname 'lib*' -print0 \
+    | xargs -I{} -0 find {} -type f -iname 'libgcc_s.so.[1-9]' \
+        -exec deep_copy "{}" \;
 
 info "Build and install the initramfs into /boot."
 ( cd "$initramfs_builddir" && find . -mindepth 1 -print0 \
