@@ -106,7 +106,7 @@ getpassphrase "Enter a recovery passphrase for the root partition: " recovery_pa
 echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksAddKey \
     --key-file="-" \
     "/dev/$partition_root" \
-    <(echo "${recovery_passphrase?}")
+    <(printf "${recovery_passphrase?}")
 
 info "Decrypt the root partition."
 echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
