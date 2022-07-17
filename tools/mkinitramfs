@@ -53,6 +53,9 @@ do
     rcopy "$(locatebin "$target")" "$initramfs_builddir"
 done
 
+info "Install the ld.so into the initramfs build directory"
+find /lib -type f -iname 'ld-linux.so.*' -exec rcopy {} "$initramfs_builddir" \;
+
 info "Install kernel module tools into the initramfs build directory."
 rcopy "$(locatebin kmod)" "$initramfs_builddir"
 
