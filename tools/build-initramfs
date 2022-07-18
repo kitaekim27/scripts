@@ -21,8 +21,6 @@ cleanup() {
     umount --recursive "$BUILD_DIR/run"
 }
 
-alias chexec chroot "$BUILD_DIR"
-
 if [ "$EUID" != 0 ]
 then
     error "This script requires root privilege!"
@@ -36,6 +34,8 @@ BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
 readonly BUILD_DIR
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
+
+alias chexec chroot "$BUILD_DIR"
 
 info "Download a stage 3 tarball."
 readonly ARCH="amd64"
