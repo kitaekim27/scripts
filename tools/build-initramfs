@@ -13,11 +13,21 @@ error() {
     info "$@" >&2
 }
 
+cleanup() {
+    info "Unmount the pseudo filesystems in the initramfs build directory."
+    umount "$BUILD_DIR/proc"
+    umount "$BUILD_DIR/sys"
+    umount "$BUILD_DIR/dev"
+    umount "$BUILD_DIR/run"
+}
+
 if [ "$EUID" != 0 ]
 then
     error "This script requires root privilege!"
     exit 1
 fi
+
+trap cleanup EXIT
 
 readonly SOURCE_DIR="/usr/src/initramfs"
 BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
@@ -101,13 +111,7 @@ chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 info "Install cryptsetup into the initramfs."
 chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
 
-info "Unmount the pseudo filesystems in the initramfs build directory."
-umount "$BUILD_DIR/proc"
-umount "$BUILD_DIR/sys"
-umount "$BUILD_DIR/dev"
-umount "$BUILD_DIR/run"
-
 info "Build and install the initramfs into /boot."
-( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
+( cd "$BUILD_DIR" && find . -mindepth 1 -not -type c,b,s,p -print0 \
     | cpio --null --create --format="newc" \
     | xz --threads="0" > "/boot/initrd.img-$LINUX_VERSION" )
