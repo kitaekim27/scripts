@@ -28,15 +28,8 @@ sread() {
 
 trap rescue_shell EXIT
 
-info ' _     _____ _ _  ___               ___       _     _ _ '
-info '| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |'
-info '|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |'
-info '| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|'
-info '|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)'
-info '                     |/                                 '
-
-info "The initramfs init script successfully loaded!"
-info "Start to initialize the system..."
+# We use udev here. Make sure not to use any uevnet helper.
+[ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
 
 info "Mount the pseudo filesystesms..."
 mount -t devtmpfs udev /dev
@@ -46,8 +39,15 @@ mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t tmpfs tmpfs /tmp
 
-# We use udev here. Make sure not to use any uevnet helper.
-[ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
+info ' _     _____ _ _  ___               ___       _     _ _ '
+info '| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |'
+info '|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |'
+info '| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|'
+info '|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)'
+info '                     |/                                 '
+
+info "The initramfs init script successfully loaded!"
+info "Start to initialize the system..."
 
 info "Start the udev daemon..."
 /lib/systemd/systemd-udevd --daemon --resolve-names="never"
