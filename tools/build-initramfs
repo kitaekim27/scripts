@@ -117,10 +117,16 @@ chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 info "Install cryptsetup into the initramfs."
 chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
 
+info "Reduce size of the initramfs."
+find "$BUILD_DIR/var/db/repos/gentoo" -mindepth 1 -maxdepth 1 -exec rm --recursive {} +
+find "$BUILD_DIR/var/tmp/portage" -mindepth 1 -maxdepth 1 -exec rm --recursive {} +
+find "$BUILD_DIR/var/cache/distfiles" -mindepth 1 -maxdepth 1 -exec rm --recursive {} +
+find "$BUILD_DIR/var/cache/binpkgs" -mindepth 1 -maxdepth 1 -exec rm --recursive {} +
+
 trap - EXIT
 cleanup
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | xz --threads="0" > "/boot/initrd.img-$LINUX_VERSION" )
+    | xz -9 --threads="0" > "/boot/initrd.img-$LINUX_VERSION" )
