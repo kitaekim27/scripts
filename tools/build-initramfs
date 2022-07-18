@@ -21,6 +21,8 @@ cleanup() {
     umount --recursive "$BUILD_DIR/run"
 }
 
+alias chexec chroot "$BUILD_DIR"
+
 if [ "$EUID" != 0 ]
 then
     error "This script requires root privilege!"
@@ -87,32 +89,32 @@ info "Configure Portage of the initramfs."
 cp --archive /etc/portage/make.conf "$BUILD_DIR/etc/portage/make.conf"
 mkdir --parents "$BUILD_DIR/etc/portage/repos.conf"
 cp --archive /etc/portage/repos.conf/gentoo.conf "$BUILD_DIR/etc/portage/repos.conf/gentoo.conf"
-chroot "$BUILD_DIR" emerge --sync
-chroot "$BUILD_DIR" emerge-webrsync
+chexec emerge --sync
+chexec emerge-webrsync
 
 info "Configure timezone of the initramfs."
 cp --archive /etc/timezone "$BUILD_DIR/etc/timezone"
-chroot "$BUILD_DIR" emerge --config sys-libs/timezone-data
+chexec emerge --config sys-libs/timezone-data
 
 # TODO: Automate this.
 info "Configure locales of the initramfs."
 cp --archive /etc/locale.gen "$BUILD_DIR/etc/locale.gen"
-chroot "$BUILD_DIR" locale-gen
-chroot "$BUILD_DIR" eselect locale list
+chexec locale-gen
+chexec eselect locale list
 read -rp "Select a locale: " locale
-chroot "$BUILD_DIR" eselect locale set "$locale"
+chexec eselect locale set "$locale"
 
 info "Configure hostname of the initramfs."
 cp --archive /etc/conf.d/hostname "$BUILD_DIR/etc/conf.d/hostname"
 cp --archive /etc/hosts "$BUILD_DIR/etc/hosts"
 
 info "Install tpm2-tools into the initramfs."
-chroot "$BUILD_DIR" emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
-chroot "$BUILD_DIR" echo "u" | chroot "$BUILD_DIR" dispatch-conf
-chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
+chexec emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
+chexec echo "u" | chexec dispatch-conf
+chexec emerge app-crypt/tpm2-tools
 
 info "Install cryptsetup into the initramfs."
-chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
+chexec emerge sys-fs/cryptsetup
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -not -type c,b,s,p -print0 \
