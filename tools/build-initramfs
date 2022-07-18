@@ -15,10 +15,10 @@ error() {
 
 cleanup() {
     info "Unmount the pseudo filesystems in the initramfs build directory."
-    umount --recursive "$BUILD_DIR/proc"
-    umount --recursive "$BUILD_DIR/sys"
-    umount --recursive "$BUILD_DIR/dev"
-    umount --recursive "$BUILD_DIR/run"
+    umount --recursive "$BUILD_DIR/proc" || :
+    umount --recursive "$BUILD_DIR/sys"  || :
+    umount --recursive "$BUILD_DIR/dev"  || :
+    umount --recursive "$BUILD_DIR/run"  || :
 }
 
 if [ "$EUID" != 0 ]
