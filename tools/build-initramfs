@@ -40,7 +40,7 @@ readonly ARCH="amd64"
 readonly MIRROR="http://ftp.kaist.ac.kr/gentoo/releases"
 wget --recursive --no-parent --no-directories --quiet \
     --directory-prefix="$BUILD_DIR/download" \
-    --accept="stage3-$ARCH-musl-hardened-*" \
+    --accept="stage3-$ARCH-hardened-openrc-*" \
     "$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
 
 info "Extract the stage 3 tarball into the initramfs build directory."
