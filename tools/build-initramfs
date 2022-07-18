@@ -13,6 +13,18 @@ error() {
     info "$@" >&2
 }
 
+if [ "$EUID" != 0 ]
+then
+    error "This script requires root privilege!"
+    exit 1
+fi
+
+readonly SOURCE_DIR="/usr/src/initramfs"
+BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
+readonly BUILD_DIR
+LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
+readonly LINUX_VERSION
+
 cleanup() {
     info "Unmount the pseudo filesystems in the initramfs build directory."
     umount --recursive "$BUILD_DIR/proc" || :
@@ -21,19 +33,7 @@ cleanup() {
     umount --recursive "$BUILD_DIR/run"  || :
 }
 
-if [ "$EUID" != 0 ]
-then
-    error "This script requires root privilege!"
-    exit 1
-fi
-
 trap cleanup EXIT
-
-readonly SOURCE_DIR="/usr/src/initramfs"
-BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
-readonly BUILD_DIR
-LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
-readonly LINUX_VERSION
 
 info "Download a stage 3 tarball."
 readonly ARCH="amd64"
@@ -117,6 +117,7 @@ chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 info "Install cryptsetup into the initramfs."
 chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
 
+trap - EXIT
 cleanup
 
 info "Build and install the initramfs into /boot."
