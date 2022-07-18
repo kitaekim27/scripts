@@ -129,4 +129,4 @@ cleanup
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | xz -9 --threads="0" > "/boot/initrd.img-$LINUX_VERSION" )
+    | gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )
