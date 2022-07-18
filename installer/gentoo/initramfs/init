@@ -40,6 +40,8 @@ info "Start to initialize the system..."
 
 info "Mount the pseudo filesystesms..."
 mount -t devtmpfs udev /dev
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t tmpfs tmpfs /tmp
