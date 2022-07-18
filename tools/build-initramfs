@@ -35,7 +35,7 @@ readonly BUILD_DIR
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
-alias chexec chroot "$BUILD_DIR"
+alias chexec='chroot "$BUILD_DIR"'
 
 info "Download a stage 3 tarball."
 readonly ARCH="amd64"
