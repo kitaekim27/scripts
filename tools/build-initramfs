@@ -84,11 +84,11 @@ info "Configure DNS of the installation."
 cp --dereference /etc/resolv.conf "$BUILD_DIR/etc/resolv.conf"
 
 info "Configure Portage of the initramfs."
-cp --archive /etc/portage/make.conf "$BUILD_DIR/etc/portage/make.conf"
+echo "MAKEOPTS=\"-j$(nproc)\"" >> "$BUILD_DIR/etc/portage/make.conf"
 mkdir --parents "$BUILD_DIR/etc/portage/repos.conf"
-cp --archive /etc/portage/repos.conf/gentoo.conf "$BUILD_DIR/etc/portage/repos.conf/gentoo.conf"
-chroot "$BUILD_DIR" emerge --sync
-chroot "$BUILD_DIR" emerge-webrsync
+cp "$BUILD_DIR/usr/share/portage/config/repos.conf" "$BUILD_DIR/etc/portage/repos.conf/gentoo.conf"
+mkdir --parents "$BUILD_DIR/var/db/repos"
+cp --archive /var/db/repos/gentoo "$BUILD_DIR/var/db/repos"
 
 info "Configure timezone of the initramfs."
 cp --archive /etc/timezone "$BUILD_DIR/etc/timezone"
