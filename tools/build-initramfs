@@ -117,6 +117,8 @@ chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 info "Install cryptsetup into the initramfs."
 chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
 
+cleanup
+
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -not -type c,b,s,p -print0 \
     | cpio --null --create --format="newc" \
