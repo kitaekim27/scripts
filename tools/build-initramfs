@@ -35,8 +35,6 @@ readonly BUILD_DIR
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
-alias chexec='chroot "$BUILD_DIR"'
-
 info "Download a stage 3 tarball."
 readonly ARCH="amd64"
 readonly MIRROR="http://ftp.kaist.ac.kr/gentoo/releases"
@@ -89,35 +87,35 @@ info "Configure Portage of the initramfs."
 cp --archive /etc/portage/make.conf "$BUILD_DIR/etc/portage/make.conf"
 mkdir --parents "$BUILD_DIR/etc/portage/repos.conf"
 cp --archive /etc/portage/repos.conf/gentoo.conf "$BUILD_DIR/etc/portage/repos.conf/gentoo.conf"
-chexec emerge --sync
-chexec emerge-webrsync
+chroot "$BUILD_DIR" emerge --sync
+chroot "$BUILD_DIR" emerge-webrsync
 
 info "Configure timezone of the initramfs."
 cp --archive /etc/timezone "$BUILD_DIR/etc/timezone"
-chexec emerge --config sys-libs/timezone-data
+chroot "$BUILD_DIR" emerge --config sys-libs/timezone-data
 
 # TODO: Automate this.
 info "Configure locales of the initramfs."
 cp --archive /etc/locale.gen "$BUILD_DIR/etc/locale.gen"
-chexec locale-gen
-chexec eselect locale list
+chroot "$BUILD_DIR" locale-gen
+chroot "$BUILD_DIR" eselect locale list
 read -rp "Select a locale: " locale
-chexec eselect locale set "$locale"
+chroot "$BUILD_DIR" eselect locale set "$locale"
 
 info "Configure hostname of the initramfs."
 cp --archive /etc/conf.d/hostname "$BUILD_DIR/etc/conf.d/hostname"
 cp --archive /etc/hosts "$BUILD_DIR/etc/hosts"
 
 info "Reload the environment in the initramfs."
-chexec env-update
+chroot "$BUILD_DIR" env-update
 
 info "Install tpm2-tools into the initramfs."
-chexec emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
-chexec echo "u" | chexec dispatch-conf
-chexec emerge app-crypt/tpm2-tools
+chroot "$BUILD_DIR" emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
+chroot "$BUILD_DIR" echo "u" | chroot "$BUILD_DIR" dispatch-conf
+chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 
 info "Install cryptsetup into the initramfs."
-chexec emerge sys-fs/cryptsetup
+chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -not -type c,b,s,p -print0 \
