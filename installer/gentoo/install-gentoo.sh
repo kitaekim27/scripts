@@ -25,7 +25,7 @@ error() {
     info "$@" >&2
 }
 
-getpassphrase() {
+get_passphrase() {
     while true
     do
         read -srp "${1?}" "${2?}"
@@ -88,7 +88,7 @@ info "Seal a random key into TPM."
 tpmsealrandkey
 
 info "Create a LUKS2 passphrase for the root partition."
-getpassphrase "Enter a passphrase for the root partition: " passphrase
+get_passphrase "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
@@ -97,12 +97,12 @@ echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksFormat \
     --key-file="-" \
     "/dev/$partition_root"
 
-info "Add a recovery passphrase for the root partition."
-getpassphrase "Enter a recovery passphrase for the root partition: " recovery_passphrase
+info "Add a secondary passphrase for the root partition."
+get_passphrase "Enter a secondary phrase for the root partition: " secondary_phrase
 echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksAddKey \
     --key-file="-" \
     "/dev/$partition_root" \
-    <(printf "${recovery_passphrase?}")
+    <(printf "${recovery_phrase?}")
 
 info "Decrypt the root partition."
 echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
@@ -178,41 +178,36 @@ chroot_main() {
     PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
         envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
-    info "Configure Portage make.conf file."
-    install --mode="600" /config/etc/portage/make.conf /etc/portage/make.conf
-    echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
-
-    info "Configure Portage ebuild repositories."
-    mkdir --parents /etc/portage/repos.conf
-    cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
-    emerge --sync
-
-    info "Install system management tools."
-    emerge app-portage/gentoolkit
-    emerge app-portage/mirrorselect
-    emerge sys-fs/btrfs-progs
-
-    info "Set system-wide USE flags."
-    euse --enable elogind X bluetooth networkmanager dbus
-    euse --disable systemd
-
-    info "Configure Portage mirrors."
-    mirrorselect --interactive
-
-    info "Install a snapshot of the Gentoo ebuild repository."
-    emerge-webrsync
-
-    info "Choose a Portage profile."
-    eselect profile list
-    read -rp "Select a Portage profile: " profile
-    eselect profile set "$profile"
-
     if [ -d /etc/portage/package.use ]
     then
         info "Make the Portage package.use a single file."
         rm --recursive /etc/portage/package.use
         touch /etc/portage/package.use
     fi
+
+    info "Configure the Portage make.conf file."
+    install --mode="600" /config/etc/portage/make.conf /etc/portage/make.conf
+    echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
+
+    info "Configure the Portage ebuild repositories."
+    mkdir --parents /etc/portage/repos.conf
+    cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
+    emerge-webrsync
+
+    info "Install system management tools."
+    emerge app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs
+
+    info "Set the system-wide USE flags."
+    euse --enable elogind X bluetooth networkmanager dbus
+    euse --disable systemd
+
+    info "Configure Portage mirrors."
+    mirrorselect --interactive
+
+    info "Choose a Portage profile."
+    eselect profile list
+    read -rp "Select a Portage profile: " profile
+    eselect profile set "$profile"
 
     info "Update @world Portage set."
     emerge --update --deep --newuse @world
@@ -221,11 +216,11 @@ chroot_main() {
     echo "Asia/Seoul" > /etc/timezone
     emerge --config sys-libs/timezone-data
 
-    info "Generate the locales."
+    info "Generate system locales."
     nano -w /etc/locale.gen
     locale-gen
 
-    info "Configure the locales."
+    info "Configure system locales."
     eselect locale list
     read -rp "Select a locale: " locale
     eselect locale set "$locale"
@@ -263,11 +258,11 @@ chroot_main() {
     info "Install the linux kernel sources."
     emerge sys-kernel/gentoo-sources
 
-    # /usr/src/linux symlink refers to the source tree corresponding with the
+    # /usr/src/linux symlink refers to the source tree corresponding to the
     # currently running kernel.
     info "Create a symlink /usr/src/linux."
     eselect kernel list
-    read -rp "Select a kernel: " kernel
+    read -rp "Select a linux kernel to use: " kernel
     eselect kernel set "$kernel"
 
     make="make --directory=/usr/src/linux --jobs=$(nproc)"
@@ -283,10 +278,8 @@ chroot_main() {
     # file and the kernel configuration file.
     $make install
 
-    info "Install packages for building an initramfs."
+    info "Install packages to build an initramfs."
     emerge sys-fs/cryptsetup app-shells/fzf
-
-    info "Install tpm2-tools to build an initramfs."
     emerge --autounmask --autounmask-continue app-crypt/tpm2-tools
 
     info "Build and install an initramfs."
@@ -299,25 +292,20 @@ chroot_main() {
     info "Enable the elogind service."
     rc-update add elogind boot
 
-    info "Install system packages."
+    info "Install system daemons."
+    emerge sys-process/fcron net-misc/chrony net-misc/networkmanager app-admin/rsyslog
 
-    emerge sys-process/fcron
+    info "Register system daemons to openrc runlevels."
     rc-update add fcron default
-
-    emerge net-misc/chrony
     rc-update add chronyd default
-
-    emerge net-misc/networkmanager
     rc-update add NetworkManager default
-
-    emerge app-admin/rsyslog
     rc-update add rsyslog default
 
-    emerge app-admin/doas
-    install --mode="600" config/etc/doas.conf /etc/doas.conf
-
-    echo "app-admin/logrotate cron" >> /etc/portage/package.use
-    emerge app-admin/logrotate
+    info "Install system packages."
+    emerge app-admin/doas \
+        && install --mode="600" config/etc/doas.conf /etc/doas.conf
+    echo "app-admin/logrotate cron" >> /etc/portage/package.use \
+        && emerge app-admin/logrotate
 
     info "Install GRUB2 bootloader."
     emerge sys-boot/grub
@@ -328,12 +316,11 @@ chroot_main() {
 
     info "Create a default user."
     read -rp "Enter an user name: " user
-    useradd --create-home --groups="users,wheel,audio" \
-        --shell="/bin/bash" "$user"
+    useradd --create-home --groups="users,wheel" --shell="/bin/bash" "$user"
     passwd "$user"
-    install --mode="644" config/home/user/dot-profile "/home/$user/.profile"
+    install --mode="644" /config/home/user/dot-profile "/home/$user/.profile"
 
-    info "Install Xorg server."
+    info "Install XOrg server."
     emerge x11-base/xorg-server
     env-update
     source /etc/profile
