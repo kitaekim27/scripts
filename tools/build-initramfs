@@ -108,6 +108,9 @@ info "Configure hostname of the initramfs."
 cp --archive /etc/conf.d/hostname "$BUILD_DIR/etc/conf.d/hostname"
 cp --archive /etc/hosts "$BUILD_DIR/etc/hosts"
 
+info "Reload the environment in the initramfs."
+chexec env-update
+
 info "Install tpm2-tools into the initramfs."
 chexec emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
 chexec echo "u" | chexec dispatch-conf
