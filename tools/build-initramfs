@@ -43,7 +43,7 @@ info "Clean up the stage 3 tarball."
 rm --recursive "$BUILD_DIR/download"
 
 info "Copy files in the source directory into the build directory."
-find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" +
+find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
 
 info "Copy my scripts into the initramfs build directory."
 cp "$(locatebin mkpassphrase)" "$BUILD_DIR$(locatebin mkpassphrase)"
@@ -58,7 +58,7 @@ find "/lib/modules/$LINUX_VERSION" -mindepth 1 -maxdepth 1 \
 info "Install kernel firmwares into the initramfs build directory."
 mkdir --parents "$BUILD_DIR/lib/firmware"
 find /lib/firmware -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$BUILD_DIR/lib/firmware" +
+    -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
 
 info "Configure Portage of the initramfs."
 cp --archive /etc/portage/make.conf "$BUILD_DIR/etc/portage/make.conf"
