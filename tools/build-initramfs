@@ -63,6 +63,7 @@ find /lib/firmware -mindepth 1 -maxdepth 1 \
 
 info "Configure Portage of the initramfs."
 cp --archive /etc/portage/make.conf "$BUILD_DIR/etc/portage/make.conf"
+mkdir --parents "$BUILD_DIR/etc/portage/repos.conf"
 cp --archive /etc/portage/repos.conf/gentoo.conf "$BUILD_DIR/etc/portage/repos.conf/gentoo.conf"
 chroot "$BUILD_DIR" emerge --sync
 chroot "$BUILD_DIR" emerge-webrsync
