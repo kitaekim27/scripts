@@ -43,6 +43,15 @@ find "$BUILD_DIR/download" -iname "stage3-*.tar.xz" \
 info "Clean up the stage 3 tarball."
 rm --recursive "$BUILD_DIR/download"
 
+info "Mount the pseudo filesystems into the initramfs build directory."
+mount --types="proc" /proc "$BUILD_DIR/proc"
+mount --rbind /sys "$BUILD_DIR/sys"
+mount --make-rslave "$BUILD_DIR/sys"
+mount --rbind /dev "$BUILD_DIR/dev"
+mount --make-rslave "$BUILD_DIR/dev"
+mount --bind /run "$BUILD_DIR/run"
+mount --make-rslave "$BUILD_DIR/run"
+
 info "Copy files in the source directory into the build directory."
 find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
 
@@ -91,6 +100,12 @@ chroot "$BUILD_DIR" emerge app-crypt/tpm2-tools
 
 info "Install cryptsetup into the initramfs."
 chroot "$BUILD_DIR" emerge sys-fs/cryptsetup
+
+info "Unmount the pseudo filesystems in the initramfs build directory."
+umount "$BUILD_DIR/proc"
+umount "$BUILD_DIR/sys"
+umount "$BUILD_DIR/dev"
+umount "$BUILD_DIR/run"
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
