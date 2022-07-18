@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+readonly NEWROOT="${1?}"
+
+mount --types="proc" /proc "$NEWROOT/proc"
+
+mount --rbind /sys "$NEWROOT/sys"
+mount --make-rslave "$NEWROOT/sys"
+
+mount --rbind /dev "$NEWROOT/dev"
+mount --make-rslave "$NEWROOT/dev"
+
+mount --bind /run "$NEWROOT/run"
+mount --make-rslave "$NEWROOT/run"
