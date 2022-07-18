@@ -62,7 +62,7 @@ find -L tools -mindepth 1 -maxdepth 1 \
 #       it to install. Remove --autounmask flag when it's in stable branch.
 info "Install package tpm2-tools."
 emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
-echo "u" | dispatch-conf
+dispatch-conf
 emerge app-crypt/tpm2-tools
 
 if ! nc -zw1 google.com 443
@@ -294,7 +294,7 @@ chroot_main() {
     #       it to install. Remove --autounmask flag when it's in stable branch.
     info "Install tpm2-tools to build an initramfs."
     emerge --autounmask --autounmask-write --autounmask-only app-crypt/tpm2-tools
-    echo "u" | dispatch-conf
+    dispatch-conf
     emerge app-crypt/tpm2-tools
 
     info "Build and install an initramfs."
