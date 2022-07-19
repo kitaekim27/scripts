@@ -2,9 +2,9 @@
 # Mount important pseudo filesystems in the given root.
 readonly NEW_ROOT="${1?}"
 mount --types="proc" /proc "$NEW_ROOT/proc"
-mount --rbind /sys "$NEW_ROOT/sys"
+mount --rbind /sys "$NEW_ROOT/sys" \
     && mount --make-rslave "$NEW_ROOT/sys"
-mount --rbind /dev "$NEW_ROOT/dev"
+mount --rbind /dev "$NEW_ROOT/dev" \
     && mount --make-rslave "$NEW_ROOT/dev"
-mount --rbind /run "$NEW_ROOT/run"
+mount --rbind /run "$NEW_ROOT/run" \
     && mount --make-rslave "$NEW_ROOT/run"
