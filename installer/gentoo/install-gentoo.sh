@@ -42,7 +42,7 @@ get_passphrase() {
 	done
 }
 
-if [ "$EUID" != 0 ]
+if [ "${EUID}" != 0 ]
 then
 	error "This script requires root privilege!"
 	exit 1
@@ -133,35 +133,35 @@ mount --types="btrfs" --options="noatime,subvol=/deploy/target" \
 
 # TODO: Verify the downloaded files.
 info "Download a stage 3 tarball."
-readonly ARCH="amd64"
-readonly MIRROR="http://ftp.kaist.ac.kr/gentoo/releases"
+arch="amd64"
+mirror="http://ftp.kaist.ac.kr/gentoo/releases"
 wget --recursive --no-parent --no-directories \
 	--directory-prefix="download" \
-	--accept="stage3-$ARCH-hardened-openrc-*" \
-	"$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
+	--accept="stage3-${arch}-hardened-openrc-*" \
+	"${mirror}/${arch}/autobuilds/current-stage3-${arch}-openrc/"
 
-readonly INSTALL_ROOT="/mnt/root/deploy/image-a"
+install_root="/mnt/root/deploy/image-a"
 
-info "Extract the stage 3 tarball into $INSTALL_ROOT."
+info "Extract the stage 3 tarball into ${install_root}."
 find download -iname "stage3-*.tar.xz" -exec tar \
-	--directory="$INSTALL_ROOT" \
+	--directory="${install_root}" \
 	--extract --preserve-permissions --file={} \
 	--xattrs-include='*.*' --numeric-owner \;
 
 info "Mount the proc filesystem in the installation."
-mount --types="proc" /proc "$INSTALL_ROOT/proc"
+mount --types="proc" /proc "${install_root}/proc"
 
 info "Mount the sys fileseystem in the installation."
-mount --rbind /sys "$INSTALL_ROOT/sys"
-mount --make-rslave "$INSTALL_ROOT/sys"
+mount --rbind /sys "${install_root}/sys"
+mount --make-rslave "${install_root}/sys"
 
 info "Mount the dev filesystem in the installation."
-mount --rbind /dev "$INSTALL_ROOT/dev"
-mount --make-rslave "$INSTALL_ROOT/dev"
+mount --rbind /dev "${install_root}/dev"
+mount --make-rslave "${install_root}/dev"
 
 info "Mount the run filesystem in the installation."
-mount --bind /run "$INSTALL_ROOT/run"
-mount --make-rslave "$INSTALL_ROOT/run"
+mount --bind /run "${install_root}/run"
+mount --make-rslave "${install_root}/run"
 
 chroot_cleanup() {
 	info "Clean up installation artiparcts."
@@ -327,21 +327,21 @@ chroot_main() {
 }
 
 info "Configure DNS of the installation."
-cp --dereference /etc/resolv.conf "$INSTALL_ROOT/etc/resolv.conf"
+cp --dereference /etc/resolv.conf "${install_root}/etc/resolv.conf"
 
 info "Set the initramfs source directory in the installation."
 find initramfs -mindepth 1 -maxdepth 1 \
-	-exec cp --verbose --preserve --recursive {} "$INSTALL_ROOT/usr/src/initramfs" \;
+	-exec cp --verbose --preserve --recursive {} "${install_root}/usr/src/initramfs" \;
 
 info "Copy config files into the installation."
-cp --verbose --recursive config "$INSTALL_ROOT"
+cp --verbose --recursive config "${install_root}"
 
 info "Install my scripts into the installation."
 find -L tools -mindepth 1 -maxdepth 1 \
-	-exec cp --verbose --recursive {} "$INSTALL_ROOT/usr/local/bin/" \;
+	-exec cp --verbose --recursive {} "${install_root}/usr/local/bin/" \;
 
-info "chroot into $INSTALL_ROOT and execute chroot_main()."
-chroot "$INSTALL_ROOT" /bin/bash -c "
+info "chroot into ${install_root} and execute chroot_main()."
+chroot "${install_root}" /bin/bash -c "
 	set -o errexit -o nounset -o noglob -o pipefail
 	this_script=${this_script}
 	root_storage=${root_storage}

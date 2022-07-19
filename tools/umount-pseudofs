@@ -1,8 +1,8 @@
 #!/bin/bash
 # Unmount important pseudo filesystems in the given root.
 readonly NEW_ROOT="${1?}"
-umount --recursive "$NEW_ROOT/proc"
-umount --recursive "$NEW_ROOT/sys"
-umount --recursive "$NEW_ROOT/dev"
-umount --recursive "$NEW_ROOT/run"
+umount --recursive "${NEW_ROOT}/proc"
+umount --recursive "${NEW_ROOT}/sys"
+umount --recursive "${NEW_ROOT}/dev"
+umount --recursive "${NEW_ROOT}/run"
 

@@ -16,7 +16,7 @@ error() {
 	info "$@" >&2
 }
 
-if [ "$EUID" != 0 ]
+if [ "${EUID}" != 0 ]
 then
 	error "This script requires root privilege!"
 	exit 1
