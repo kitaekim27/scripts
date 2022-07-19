@@ -47,10 +47,10 @@ mkdir --parents "$BUILD_DIR/lib/modules/$LINUX_VERSION"
 find "/lib/modules/$LINUX_VERSION" -mindepth 1 -maxdepth 1 \
     -exec cp --archive {} "$BUILD_DIR/lib/modules/$LINUX_VERSION" \;
 
-info "Install kernel firmwares into the initramfs build directory."
-mkdir --parents "$BUILD_DIR/lib/firmware"
-find /lib/firmware -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
+# info "Install kernel firmwares into the initramfs build directory."
+# mkdir --parents "$BUILD_DIR/lib/firmware"
+# find /lib/firmware -mindepth 1 -maxdepth 1 \
+#     -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
