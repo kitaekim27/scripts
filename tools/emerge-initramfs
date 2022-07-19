@@ -31,9 +31,8 @@ KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
 GENERAL_USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib
              -xattr -pcre -ipv6 -acl -multilib -man -bash-completion -systemd"
 USE="$GENERAL_USE make-symlinks" \
-    emerge --root="$BUILD_DIR" sys-apps/busybox
-USE="$GENERAL_USE" \
-    emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
+    emerge --ignore-world --emptytree --root="$BUILD_DIR" \
+        sys-apps/busybox app-crypt/tpm2-tools sys-fs/cryptsetup
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."
 for directory in /proc /sys /run /dev
