@@ -30,13 +30,16 @@ readonly LINUX_VERSION
 # XXX: Note that it's better to disable some USE flags enabled system-wide here
 #      (e.g, bluetooth).
 GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
+readonly GENERAL_USE
 
 info "Install busybox in the initramfs build directory."
-KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE make-symlinks" \
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
+USE="$GENERAL_USE make-symlinks" \
     emerge --root="$BUILD_DIR" sys-apps/busybox
 
 info "Install tpm2-tools and cryptsetup in the initramfs build directory."
-KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
+USE="$GENERAL_USE" \
     emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
 # Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
@@ -85,7 +88,7 @@ find "/lib/modules/$LINUX_VERSION" -mindepth 1 -maxdepth 1 \
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )
+    | gzip > "/boot/initrd.img-$LINUX_VERSION" )
 
 info "Successfully built the initramfs!"
 info "Clean up the initramfs build directory."
