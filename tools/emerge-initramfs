@@ -28,12 +28,12 @@ LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
-USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib -xattr
-     -pcre -ipv6 -acl -multilib" \
-    emerge --root="$BUILD_DIR" \
-        sys-apps/busybox \
-        app-crypt/tpm2-tools \
-        sys-fs/cryptsetup
+GENERAL_USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib
+             -xattr -pcre -ipv6 -acl -multilib"
+USE="$GENERAL_USE make-symlinks" \
+    emerge --root="$BUILD_DIR" sys-apps/busybox
+USE="$GENERAL_USE" \
+    emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
 info "Copy files in the source directory into the build directory."
 find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
