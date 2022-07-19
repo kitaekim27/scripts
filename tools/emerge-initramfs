@@ -35,6 +35,12 @@ USE="$GENERAL_USE make-symlinks" \
 USE="$GENERAL_USE" \
     emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
+info "Create pseudo filesystem mounts points in the iniramfs build directory."
+for directory in /proc /sys /run /dev
+do
+    mkdir --parents "$BUILD_DIR$directory"
+done
+
 info "Copy files in the source directory into the build directory."
 find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
 
