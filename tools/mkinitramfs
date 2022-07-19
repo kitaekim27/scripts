@@ -47,8 +47,8 @@ info "Set up a basic shell environment in the initramfs build directory."
 rcopy "$(locatebin "bash")" "${build_dir}"
 ln --symbolic "$(locatebin bash)" "${build_dir}/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
-	"switch_root" "findfs" "grep" "ls" "less" "mktemp" "base64" "sha256sum" \
-	"awk" "xxd" "whereis" "cp"
+	"switch_root" "findfs" "grep" "ls" "mktemp" "base64" "sha256sum" "awk" \
+	"xxd" "whereis"
 do
 	rcopy "$(locatebin "${target}")" "${build_dir}"
 done
@@ -133,8 +133,11 @@ find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \
 	-exec cp --archive "{}" "${build_dir}/etc/ld.so.conf.d" \;
 chroot "${build_dir}" ldconfig
 
-
 info "Build and install the initramfs into /boot."
 ( cd "${build_dir}" && find . -mindepth 1 -print0 \
 	| cpio --null --create --format="newc" \
 	| gzip > "/boot/initrd.img-${linux_version}" )
+
+info "Successfully built the initramfs!"
+info "Clean up the initramfs build directory."
+rm --recursive "${build_dir}"
