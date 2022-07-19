@@ -39,7 +39,8 @@ info "Copy files in the source directory into the build directory."
 find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
 
 info "Copy my scripts into the initramfs build directory."
-cp "$(locatebin mkpassphrase)" "$BUILD_DIR$(locatebin mkpassphrase)"
+mkdir --parents "$BUILD_DIR/usr/local/bin"
+cp "$(locatebin mkpassphrase)" "$BUILD_DIR/usr/local/bin"
 
 info "Install kernel modules into the initramfs build directory."
 mkdir --parents "$BUILD_DIR/lib/modules/$LINUX_VERSION"
