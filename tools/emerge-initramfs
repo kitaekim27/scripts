@@ -24,7 +24,8 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
 # XXX: Note that it's better to disable some USE flags enabled system-wide here
 #	  (e.g, bluetooth).
-general_use="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
+general_use="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man
+             lto"
 export COMMON_FLAGS="-Os -march=native -pipe"
 
 info "Install busybox in the initramfs build directory."
