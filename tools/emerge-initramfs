@@ -52,12 +52,12 @@ KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
 # that is too complicated to emit inline code for.
 info "Copy libgcc_s.so.1 into the initramfs build directory."
 GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
-LIBGCC_FILES="$(find "/usr/lib/gcc/x86_64-pc-linux-gnu/$GCC_VERSION" -name "libgcc_s.so.[1-9]")"
-for file in $LIBGCC_FILES
-do
-    rcopy "$file" "$BUILD_DIR"
-done
-cp --archive /etc/ld.so.conf.d/05gcc-x86_64-pc-linux-gnu.conf "$BUILD_DIR/etc/ld.so.conf.d"
+find "/usr/lib/gcc/x86_64-pc-linux-gnu/$GCC_VERSION" -name "libgcc_s.so.[1-9]" \
+    -exec rcopy "{}" "$BUILD_DIR"
+# XXX: You need to call `ldconfig` in the init script to make ld to load the
+#      libgcc_s.so.1 properly.
+find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \
+    -exec cp --archive "{}" "$BUILD_DIR/etc/ld.so.conf.d"
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."
 for directory in /proc /sys /run /dev
