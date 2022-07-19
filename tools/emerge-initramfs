@@ -28,7 +28,8 @@ LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
-USE="-elogind -X -bluetooth -networkmanager -dbus -mime" \
+USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib -xattr
+     -pcre -ipv6 -acl -multilib -ncurses" \
     emerge --root="$BUILD_DIR" \
         sys-apps/busybox \
         app-crypt/tpm2-tools \
