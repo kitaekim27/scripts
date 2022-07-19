@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+THIS_SCRIPT=$(basename "$0")
+readonly THIS_SCRIPT
+
+info() {
+    echo "$THIS_SCRIPT:" "$@"
+}
+
+error() {
+    info "$@" >&2
+}
+
+if [ "$EUID" != 0 ]
+then
+    error "This script requires root privilege!"
+    exit 1
+fi
+
+readonly SOURCE_DIR="/usr/src/initramfs"
+
+BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
+readonly BUILD_DIR
+
+LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
+readonly LINUX_VERSION
+
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
+USE="-elogind -X -bluetooth -networkmanager -dbus -mime" \
+    emerge --root="$BUILD_DIR" \
+        sys-apps/busybox \
+        app-crypt/tpm2-tools \
+        sys-fs/cryptsetup
+
+info "Copy files in the source directory into the build directory."
+find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
+
+info "Copy my scripts into the initramfs build directory."
+cp "$(locatebin mkpassphrase)" "$BUILD_DIR$(locatebin mkpassphrase)"
+
+info "Install kernel modules into the initramfs build directory."
+mkdir --parents "$BUILD_DIR/lib/modules/$LINUX_VERSION"
+find "/lib/modules/$LINUX_VERSION" -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$BUILD_DIR/lib/modules/$LINUX_VERSION" \;
+
+# TODO: This increases initramfs size drastcally. Install only firmwares that
+#       really matters into the initramfs.
+info "Install kernel firmwares into the initramfs build directory."
+mkdir --parents "$BUILD_DIR/lib/firmware"
+find /lib/firmware -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
+
+info "Build and install the initramfs into /boot."
+( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
+    | cpio --null --create --format="newc" \
+    | gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )
