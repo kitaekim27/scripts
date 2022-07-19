@@ -29,7 +29,7 @@ readonly LINUX_VERSION
 
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
 USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib -xattr
-     -pcre -ipv6 -acl -multilib -ncurses" \
+     -pcre -ipv6 -acl -multilib" \
     emerge --root="$BUILD_DIR" \
         sys-apps/busybox \
         app-crypt/tpm2-tools \
