@@ -7,6 +7,12 @@ set -o errexit -o nounset -o noglob -o pipefail
 passphrase="$1"
 tmpdir=$(mktemp --directory)
 
+cleanup() {
+    rm -r "$tpmdir"
+}
+
+trap cleanup EXIT
+
 tpm2 startauthsession \
     --policy-session \
     --session="$tmpdir/session.bin"
