@@ -32,6 +32,10 @@ readonly LINUX_VERSION
 GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE make-symlinks" \
     emerge --root="$BUILD_DIR" sys-apps/busybox
+# Here, we need to install gcc for libgcc_s.so which is a hidden dependency
+# for pthread for cryptsetup...
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE -cxx" \
+    emerge --root="$BUILD_DIR" sys-devel/gcc
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
     emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
