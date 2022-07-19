@@ -27,13 +27,13 @@ readonly BUILD_DIR
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
-KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" \
-GENERAL_USE="-elogind -X -bluetooth -networkmanager -dbus -mime -bzip2 -zlib
-             -xattr -pcre -ipv6 -acl -multilib -man -bash-completion -systemd
-             -su busybox"
-USE="$GENERAL_USE make-symlinks" \
-    emerge --root="$BUILD_DIR" \
-        sys-apps/busybox app-crypt/tpm2-tools sys-fs/cryptsetup
+# XXX: Note that it's better to disable some USE flags enabled system-wide here
+#      (e.g, bluetooth).
+GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE make-symlinks" \
+    emerge --root="$BUILD_DIR" sys-apps/busybox
+KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
+    emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."
 for directory in /proc /sys /run /dev
