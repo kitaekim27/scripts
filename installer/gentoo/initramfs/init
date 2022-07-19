@@ -3,27 +3,27 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-    echo "init:" "$@"
+	echo "init:" "$@"
 }
 
 error() {
-    info "$@" >&2
+	info "$@" >&2
 }
 
 rescue_shell() {
-    error "Something went wrong! Dropping to a rescue shell."
-    exec sh
+	error "Something went wrong! Dropping to a rescue shell."
+	exec sh
 }
 
 sread() {
-    read_prompt="${1?}"
-    read_variable="${2?}"
+	read_prompt="${1?}"
+	read_variable="${2?}"
 
-    printf "%s" "${read_prompt}"
-    stty -echo
-    read -r "${read_variable}"
-    stty echo
-    echo
+	printf "%s" "${read_prompt}"
+	stty -echo
+	read -r "${read_variable}"
+	stty echo
+	echo
 }
 
 trap rescue_shell EXIT
@@ -62,82 +62,82 @@ info "Parse kernel parameters..."
 read -r cmdline < /proc/cmdline
 for cmd in ${cmdline}
 do
-    case "${cmd}" in
-        root=*)
-            cmd="${cmd#root=}"
-            case "${cmd}" in
-                PARTUUID=*)
-                    count=0
-                    while true
-                    do
-                        if root=$(findfs PARTUUID="${cmd#PARTUUID=}")
-                        then
-                            info "Detected the root partition."
-                            info "root=${root}"
-                            break
-                        fi
+	case "${cmd}" in
+		root=*)
+			cmd="${cmd#root=}"
+			case "${cmd}" in
+				PARTUUID=*)
+					count=0
+					while true
+					do
+						if root=$(findfs PARTUUID="${cmd#PARTUUID=}")
+						then
+							info "Detected the root partition."
+							info "root=${root}"
+							break
+						fi
 
-                        count=$((count+1))
-                        if [ "${count}" = 50 ]
-                        then
-                            error "Failed to detect the root partition!"
-                            exit 1
-                        fi
+						count=$((count+1))
+						if [ "${count}" = 50 ]
+						then
+							error "Failed to detect the root partition!"
+							exit 1
+						fi
 
-                        sleep 0.3
-                    done
-                    ;;
-            esac
-            ;;
-    esac
+						sleep 0.3
+					done
+					;;
+			esac
+			;;
+	esac
 done
 
 info "Decrypt the root partition..."
 while true
 do
-    sread "Enter a passphrase for the root partition: " passphrase
-    luks_passphrase=$(mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/")
+	sread "Enter a passphrase for the root partition: " passphrase
+	luks_passphrase=$(mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/")
 
-    if ! echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
-        --key-file="-" "/dev/${root}" root
-    then
-        error "Failed to open the root partition!"
-        error "The system you're on might be modified to steal your information!"
-        while true
-        do
-            printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
-            read -r answer
-            case "${answer}" in
-                y* | Y*)
-                    while true
-                    do
-                        sread "Enter a recovery passphrase for the root partition: " \
-                            recovery_passphrase
-                        if echo "${recovery_passphrase}" | cryptsetup luksOpen \
-                            --key-file="-" "/dev/${root}" root
-                        then
-                            break
-                        fi
-                        error "Failed to open the root partition! Try again."
-                    done
-                    break
-                    ;;
-                n* | N*)
-                    info "Execute a shell for debugging..."
-                    exit 1
-                    ;;
-                *)
-                    error "Invalid input! Try again."
-                    ;;
-            esac
-        done
-    fi
+	if ! echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
+		--key-file="-" "/dev/${root}" root
+	then
+		error "Failed to open the root partition!"
+		error "The system you're on might be modified to steal your information!"
+		while true
+		do
+			printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
+			read -r answer
+			case "${answer}" in
+				y* | Y*)
+					while true
+					do
+						sread "Enter a recovery passphrase for the root partition: " \
+							recovery_passphrase
+						if echo "${recovery_passphrase}" | cryptsetup luksOpen \
+							--key-file="-" "/dev/${root}" root
+						then
+							break
+						fi
+						error "Failed to open the root partition! Try again."
+					done
+					break
+					;;
+				n* | N*)
+					info "Execute a shell for debugging..."
+					exit 1
+					;;
+				*)
+					error "Invalid input! Try again."
+					;;
+			esac
+		done
+	fi
 done
 
 info "Mount the root partition!"
 mount /dev/mapper/root /mnt/root
 mount -t btrfs -o noatime,rw,space_cache=v2,subvolid=5,subvol=/deploy/target \
-    /dev/mapper/root /mnt/root/deploy/target
+	/dev/mapper/root /mnt/root/deploy/target
 
 info "Stop the udev daemon..."
 udevadm control --exit

@@ -46,7 +46,7 @@ gcc_version="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
 # Why use `find` here? Note two things:
 # 1. There may be two or more libgcc_s.so.1 (e.g, for x86 and x64).
 # 2. Postfix ".1" is just for represeting binary interface... It's very unlikely
-#    but it might be changed in the futhre.
+#	but it might be changed in the futhre.
 find "/usr/lib/gcc/x86_64-pc-linux-gnu/${gcc_version}" -name "libgcc_s.so.[1-9]" \
 	-exec rcopy "{}" "${build_dir}" \;
 find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \

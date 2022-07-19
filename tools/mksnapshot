@@ -4,17 +4,17 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-    echo "$(basename "$0"):" "$@"
+	echo "$(basename "$0"):" "$@"
 }
 
 error() {
-    info "$@" >&2
+	info "$@" >&2
 }
 
 if [ "$EUID" != 0 ]
 then
-    error "This script requires root privilege!"
-    exit 1
+	error "This script requires root privilege!"
+	exit 1
 fi
 
 snapshot=$(date -Iseconds)
@@ -23,7 +23,7 @@ info "Create a snapshot ${snapshot}."
 
 # Make a read-only snapshot in the `/host-rootfs/snapshots` directory.
 btrfs subvolume snapshot -r \
-    /host-rootfs/deploy/current \
-    "/host-rootfs/snapshots/${snapshot}"
+	/host-rootfs/deploy/current \
+	"/host-rootfs/snapshots/${snapshot}"
 
 info "Done."

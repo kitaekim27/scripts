@@ -6,17 +6,17 @@ THIS_SCRIPT=$(basename "$0")
 readonly THIS_SCRIPT
 
 info() {
-    echo "$THIS_SCRIPT:" "$@"
+	echo "$THIS_SCRIPT:" "$@"
 }
 
 error() {
-    info "$@" >&2
+	info "$@" >&2
 }
 
 if [ "$EUID" != 0 ]
 then
-    error "This script requires root privilege!"
-    exit 1
+	error "This script requires root privilege!"
+	exit 1
 fi
 
 readonly SOURCE_DIR="/usr/src/initramfs"
@@ -28,8 +28,8 @@ LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
 cleanup() {
-    info "Unmount pseudo filesystems in the initramfs build directory."
-    unmount-pseudofs "$BUILD_DIR"
+	info "Unmount pseudo filesystems in the initramfs build directory."
+	unmount-pseudofs "$BUILD_DIR"
 }
 
 trap cleanup EXIT
@@ -38,16 +38,16 @@ info "Download a stage 3 tarball."
 readonly ARCH="amd64"
 readonly MIRROR="http://ftp.kaist.ac.kr/gentoo/releases"
 wget --recursive --no-parent --no-directories --quiet \
-    --directory-prefix="$BUILD_DIR/download" \
-    --accept="stage3-$ARCH-musl-hardened-*" \
-    "$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
+	--directory-prefix="$BUILD_DIR/download" \
+	--accept="stage3-$ARCH-musl-hardened-*" \
+	"$MIRROR/$ARCH/autobuilds/current-stage3-$ARCH-openrc/"
 
 info "Extract the stage 3 tarball into the initramfs build directory."
 find "$BUILD_DIR/download" -iname "stage3-*.tar.xz" \
-    -exec tar --directory="$BUILD_DIR" \
-        --use-compress-program="xz --threads=0" \
-        --extract --preserve-permissions --file={} \
-        --xattrs-include='*.*' --numeric-owner \;
+	-exec tar --directory="$BUILD_DIR" \
+		--use-compress-program="xz --threads=0" \
+		--extract --preserve-permissions --file={} \
+		--xattrs-include='*.*' --numeric-owner \;
 
 info "Clean up the stage 3 tarball."
 rm --recursive "$BUILD_DIR/download"
@@ -64,14 +64,14 @@ cp "$(locatebin mkpassphrase)" "$BUILD_DIR$(locatebin mkpassphrase)"
 info "Install kernel modules into the initramfs build directory."
 mkdir --parents "$BUILD_DIR/lib/modules/$LINUX_VERSION"
 find "/lib/modules/$LINUX_VERSION" -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$BUILD_DIR/lib/modules/$LINUX_VERSION" \;
+	-exec cp --archive {} "$BUILD_DIR/lib/modules/$LINUX_VERSION" \;
 
 # TODO: This increases initramfs size drastcally. Install only firmwares that
-#       really matters into the initramfs.
+#	   really matters into the initramfs.
 # info "Install kernel firmwares into the initramfs build directory."
 # mkdir --parents "$BUILD_DIR/lib/firmware"
 # find /lib/firmware -mindepth 1 -maxdepth 1 \
-#     -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
+#	 -exec cp --archive {} "$BUILD_DIR/lib/firmware" \;
 
 info "Configure DNS of the installation."
 cp --dereference /etc/resolv.conf "$BUILD_DIR/etc/resolv.conf"
@@ -121,5 +121,5 @@ cleanup
 
 info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
-    | cpio --null --create --format="newc" \
-    | gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )
+	| cpio --null --create --format="newc" \
+	| gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )

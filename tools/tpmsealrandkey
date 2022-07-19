@@ -4,23 +4,23 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-    echo "$(basename "$0"):" "$@"
+	echo "$(basename "$0"):" "$@"
 }
 
 error() {
-    info "$@" >&2
+	info "$@" >&2
 }
 
 if [ "$EUID" != 0 ]
 then
-    error "This script requires root privilege!"
-    exit 1
+	error "This script requires root privilege!"
+	exit 1
 fi
 
 tmpdir=$(mktemp --directory)
 
 cleanup() {
-    rm -r "${tmpdir}"
+	rm -r "${tmpdir}"
 }
 
 trap cleanup EXIT
@@ -33,18 +33,18 @@ tpm2 startauthsession --session="${tmpdir}/session.bin"
 
 info "Generate a TPM policy with sha256 bank of PCR 0,2,4,8,9."
 tpm2 policypcr \
-    --quiet \
-    --session="${tmpdir}/session.bin" \
-    --pcr-list="sha256:0,2,4,8,9" \
-    --policy="${tmpdir}/policy.bin"
+	--quiet \
+	--session="${tmpdir}/session.bin" \
+	--pcr-list="sha256:0,2,4,8,9" \
+	--policy="${tmpdir}/policy.bin"
 
 info "Seal a random key into a TPM object with the policy."
 dd if=/dev/urandom bs=128 count=1 status=none | tpm2 create \
-    --quiet \
-    --parent-context="${tmpdir}/primary.ctx" \
-    --policy="${tmpdir}/policy.bin" \
-    --key-context="${tmpdir}/key.ctx" \
-    --sealing-input="-"
+	--quiet \
+	--parent-context="${tmpdir}/primary.ctx" \
+	--policy="${tmpdir}/policy.bin" \
+	--key-context="${tmpdir}/key.ctx" \
+	--sealing-input="-"
 
 # Note that 0x81018000 is the first non-reserved persistent object handle in the
 # endorsement hierarchy.
