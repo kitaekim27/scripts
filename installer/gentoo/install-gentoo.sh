@@ -98,11 +98,11 @@ echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksFormat \
 	"/dev/${partition_root}"
 
 info "Add a secondary passphrase for the root partition."
-get_passphrase "Enter a secondary phrase for the root partition: " secondary_phrase
+get_passphrase "Enter a secondary passphrase for the root partition: " secondary_passphrase
 echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
 	--key-file="-" \
 	"/dev/${partition_root}" \
-	<(printf "%s" "${recovery_phrase?}")
+	<(printf "%s" "${secondary_passphrase}")
 
 info "Decrypt the root partition."
 echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
