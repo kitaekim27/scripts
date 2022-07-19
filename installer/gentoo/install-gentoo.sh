@@ -15,14 +15,14 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "$0")
+this_script=$(basename "${0}")
 
 info() {
-	echo "${this_script}:" "$@"
+	echo "${this_script}:" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 get_passphrase() {

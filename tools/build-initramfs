@@ -2,15 +2,15 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-THIS_SCRIPT=$(basename "$0")
+THIS_SCRIPT=$(basename "${0}")
 readonly THIS_SCRIPT
 
 info() {
-	echo "${THIS_SCRIPT}:" "$@"
+	echo "${THIS_SCRIPT}:" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 if [ "${EUID}" != 0 ]

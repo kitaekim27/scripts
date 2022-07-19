@@ -4,11 +4,11 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-	echo "$(basename "$0"):" "$@"
+	echo "$(basename "${0}"):" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 if [ "${EUID}" != 0 ]
@@ -18,11 +18,11 @@ then
 fi
 
 cp="cp --archive"
-target="$(realpath "$1")"
-newroot="$(realpath "$2")"
+target="$(realpath "${1}")"
+newroot="$(realpath "${2}")"
 
 deep_copy() {
-	local file="$1"
+	local file="${1}"
 	if [ -e "${newroot}${file}" ]
 	then
 		return 0

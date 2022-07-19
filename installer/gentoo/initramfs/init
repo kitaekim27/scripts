@@ -3,11 +3,11 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-	echo "init:" "$@"
+	echo "init:" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 rescue_shell() {

@@ -4,11 +4,11 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-	echo "$(basename "$0"):" "$@"
+	echo "$(basename "${0}"):" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 if [ "${EUID}" != 0 ]

@@ -4,11 +4,11 @@
 set -o errexit -o nounset -o noglob -o pipefail
 
 info() {
-	echo "$(basename "$0"):" "$@"
+	echo "$(basename "${0}"):" "${@}"
 }
 
 error() {
-	info "$@" >&2
+	info "${@}" >&2
 }
 
 if [ "${EUID}" != 0 ]
@@ -17,7 +17,7 @@ then
 	exit 1
 fi
 
-readonly snapshot="$1"
+readonly snapshot="${1}"
 
 if [ ! -e "/host-rootfs/snapshots/${snapshot}" ]
 then
