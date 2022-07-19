@@ -28,6 +28,9 @@ sread() {
 
 trap rescue_shell EXIT
 
+# Create dynamic linker run-time bindings and cache.
+ldconfig
+
 # We use udev here. Make sure not to use any uevnet helper.
 [ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
 
