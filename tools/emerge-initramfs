@@ -56,10 +56,8 @@ LIBGCC_FILES="$(find "/usr/lib/gcc/x86_64-pc-linux-gnu/$GCC_VERSION" -name "libg
 for file in $LIBGCC_FILES
 do
     rcopy "$file" "$BUILD_DIR"
-    # Make symlinks so that ld.so can load the object properly.
-    # We also can do this by modifying /etc/ld.so.conf or /etc/ld.so.conf.d.
-    ld --symbolic "$file" "$BUILD_DIR/usr/lib/$(basename "$file")"
 done
+cp --archive /etc/ld.so.conf.d/05gcc-x86_64-pc-linux-gnu.conf "$BUILD_DIR/etc/ld.so.conf.d"
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."
 for directory in /proc /sys /run /dev
