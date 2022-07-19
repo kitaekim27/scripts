@@ -20,17 +20,16 @@ then
 fi
 
 readonly SOURCE_DIR="/usr/src/initramfs"
+
 BUILD_DIR=$(mktemp --directory --tmpdir "$THIS_SCRIPT.XXXXXXXXXX")
 readonly BUILD_DIR
+
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
 cleanup() {
-    info "Unmount the pseudo filesystems in the initramfs build directory."
-    umount --recursive "$BUILD_DIR/proc" || :
-    umount --recursive "$BUILD_DIR/sys"  || :
-    umount --recursive "$BUILD_DIR/dev"  || :
-    umount --recursive "$BUILD_DIR/run"  || :
+    info "Unmount pseudo filesystems in the initramfs build directory."
+    unmount-pseudofs "$BUILD_DIR"
 }
 
 trap cleanup EXIT
@@ -53,14 +52,8 @@ find "$BUILD_DIR/download" -iname "stage3-*.tar.xz" \
 info "Clean up the stage 3 tarball."
 rm --recursive "$BUILD_DIR/download"
 
-info "Mount the pseudo filesystems into the initramfs build directory."
-mount --types="proc" /proc "$BUILD_DIR/proc"
-mount --rbind /sys "$BUILD_DIR/sys"
-mount --make-rslave "$BUILD_DIR/sys"
-mount --rbind /dev "$BUILD_DIR/dev"
-mount --make-rslave "$BUILD_DIR/dev"
-mount --bind /run "$BUILD_DIR/run"
-mount --make-rslave "$BUILD_DIR/run"
+info "Mount pseudo filesystems in the initramfs build directory."
+mount-pseudofs "$BUILD_DIR"
 
 info "Copy files in the source directory into the build directory."
 find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec cp --archive {} "$BUILD_DIR" \;
