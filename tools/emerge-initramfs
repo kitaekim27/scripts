@@ -27,15 +27,27 @@ readonly BUILD_DIR
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 readonly LINUX_VERSION
 
+# Here, we need to install libgcc_s.so.1 which is a hidden runtime dependency
+# for pthread for cryptsetup...
+#
+# GCC provides a low-level runtime library, libgcc.a or libgcc_s.so.1 on some
+# platforms. GCC generates calls to routines in this library automatically,
+# whenever it needs to perform some operation that is too complicated to emit
+# inline code for.
+info "Copy libgcc_s.so.1 into the initramfs build directory."
+GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
+cp --archive "/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libgcc_s.so.1" \
+    -exec rcopy {} "$BUILD_DIR" \;
+
 # XXX: Note that it's better to disable some USE flags enabled system-wide here
 #      (e.g, bluetooth).
 GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
+
+info "Install busybox in the initramfs build directory."
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE make-symlinks" \
     emerge --root="$BUILD_DIR" sys-apps/busybox
-# Here, we need to install gcc for libgcc_s.so which is a hidden dependency
-# for pthread for cryptsetup...
-KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE -cxx" \
-    emerge --root="$BUILD_DIR" sys-devel/gcc
+
+info "Install tpm2-tools and cryptsetup in the initramfs build directory."
 KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
     emerge --root="$BUILD_DIR" app-crypt/tpm2-tools sys-fs/cryptsetup
 
