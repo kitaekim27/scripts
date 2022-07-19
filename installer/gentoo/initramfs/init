@@ -19,9 +19,9 @@ sread() {
     read_prompt="${1?}"
     read_variable="${2?}"
 
-    printf "%s" "$read_prompt"
+    printf "%s" "${read_prompt}"
     stty -echo
-    read -r "$read_variable"
+    read -r "${read_variable}"
     stty echo
     echo
 }
@@ -60,12 +60,12 @@ udevadm settle || :
 
 info "Parse kernel parameters..."
 read -r cmdline < /proc/cmdline
-for cmd in $cmdline
+for cmd in ${cmdline}
 do
-    case "$cmd" in
+    case "${cmd}" in
         root=*)
             cmd="${cmd#root=}"
-            case "$cmd" in
+            case "${cmd}" in
                 PARTUUID=*)
                     count=0
                     while true
@@ -73,12 +73,12 @@ do
                         if root=$(findfs PARTUUID="${cmd#PARTUUID=}")
                         then
                             info "Detected the root partition."
-                            info "root=$root"
+                            info "root=${root}"
                             break
                         fi
 
                         count=$((count+1))
-                        if [ "$count" = 50 ]
+                        if [ "${count}" = 50 ]
                         then
                             error "Failed to detect the root partition!"
                             exit 1
@@ -96,10 +96,10 @@ info "Decrypt the root partition..."
 while true
 do
     sread "Enter a passphrase for the root partition: " passphrase
-    luks_passphrase=$(mkpassphrase "$passphrase" | sed  "s/result = \(.*\)/\1/")
+    luks_passphrase=$(mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/")
 
-    if ! echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
-        --key-file="-" "/dev/$root" root
+    if ! echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
+        --key-file="-" "/dev/${root}" root
     then
         error "Failed to open the root partition!"
         error "The system you're on might be modified to steal your information!"
@@ -107,14 +107,14 @@ do
         do
             printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
             read -r answer
-            case "$answer" in
+            case "${answer}" in
                 y* | Y*)
                     while true
                     do
                         sread "Enter a recovery passphrase for the root partition: " \
                             recovery_passphrase
-                        if echo "$recovery_passphrase" | cryptsetup luksOpen \
-                            --key-file="-" "/dev/$root" root
+                        if echo "${recovery_passphrase}" | cryptsetup luksOpen \
+                            --key-file="-" "/dev/${root}" root
                         then
                             break
                         fi

@@ -48,9 +48,9 @@ gcc_version="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
 # 2. Postfix ".1" is just for represeting binary interface... It's very unlikely
 #    but it might be changed in the futhre.
 find "/usr/lib/gcc/x86_64-pc-linux-gnu/${gcc_version}" -name "libgcc_s.so.[1-9]" \
-	-exec rcopy "{}" "${build_dir}"
+	-exec rcopy "{}" "${build_dir}" \;
 find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \
-	-exec cp --archive "{}" "${build_dir}/etc/ld.so.conf.d"
+	-exec cp --archive "{}" "${build_dir}/etc/ld.so.conf.d" \;
 chroot "${build_dir}" ldconfig
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."

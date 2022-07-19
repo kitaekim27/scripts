@@ -23,36 +23,36 @@ newroot="$(realpath "$2")"
 
 deep_copy() {
     local file="$1"
-    if [ -e "$newroot$file" ]
+    if [ -e "${newroot}${file}" ]
     then
         return 0
     fi
 
-    mkdir --parents "$newroot${file%/*}"
-    $cp "$file" "$newroot$file"
-    if [ -L "$file" ]
+    mkdir --parents "${newroot}${file%/*}"
+    ${cp} "${file}" "${newroot}${file}"
+    if [ -L "${file}" ]
     then
-        realfile=$(readlink -f "$file")
-        mkdir --parents "$newroot${realfile%/*}"
-        $cp "$realfile" "$newroot$realfile"
+        realfile=$(readlink -f "${file}")
+        mkdir --parents "${newroot}${realfile%/*}"
+        ${cp} "${realfile}" "${newroot}${realfile}"
     fi
 
-    dependencies=$(env --unset="LD_PRELOAD" ldd "$file" 2>/dev/null | sed -e '
+    dependencies=$(env --unset="LD_PRELOAD" ldd "${file}" 2>/dev/null | sed -e '
         /\//!d;
         /=>/ {s/.*=>[[:blank:]]*\([^[:blank:]]*\).*/\1/};
         s/[[:blank:]]*\([^[:blank:]]*\) (.*)/\1/
     ') || :
 
-    for dependency in $dependencies
+    for dependency in ${dependencies}
     do
-        deep_copy "$dependency"
+        deep_copy "${dependency}"
     done
 }
 
-if [ ! -d "$newroot" ]
+if [ ! -d "${newroot}" ]
 then
-    error "$newroot is not a directory!"
+    error "${newroot} is not a directory!"
     exit 1
 fi
 
-deep_copy "$target"
+deep_copy "${target}"

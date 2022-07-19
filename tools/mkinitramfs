@@ -9,7 +9,7 @@ set -o errexit -o nounset -o noglob -o pipefail
 this_script=$(basename "$0")
 
 info() {
-    echo "$this_script:" "$@"
+    echo "${this_script}:" "$@"
 }
 
 error() {
@@ -23,7 +23,7 @@ then
 fi
 
 initramfs_source="/usr/src/initramfs"
-initramfs_builddir=$(mktemp --directory --tmpdir "$this_script.XXXXXXXXXX")
+initramfs_builddir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
 # Note that directories created here are not a complete set; You might need to
@@ -32,101 +32,101 @@ info "Set the filesystem hierarchy layout."
 for path in /proc /sys /run /tmp /mnt/root /etc /bin /sbin /usr/bin \
     /usr/local/bin
 do
-    mkdir --parents "$initramfs_builddir$path"
+    mkdir --parents "${initramfs_builddir}${path}"
 done
-ln --symbolic /proc/self/mounts "$initramfs_builddir/etc/mtab"
+ln --symbolic /proc/self/mounts "${initramfs_builddir}/etc/mtab"
 
 info "Copy files in the source directory into the build directory."
-find "$initramfs_source" -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$initramfs_builddir" \;
+find "${initramfs_source}" -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "${initramfs_builddir}" \;
 
 info "Copy my scripts into the initramfs build directory."
-cp "$(locatebin mkpassphrase)" "$initramfs_builddir/usr/local/bin"
+cp "$(locatebin mkpassphrase)" "${initramfs_builddir}/usr/local/bin"
 
 info "Set up a basic shell environment in the initramfs build directory."
-rcopy "$(locatebin "bash")" "$initramfs_builddir"
-ln --symbolic "$(locatebin bash)" "$initramfs_builddir/bin/sh"
+rcopy "$(locatebin "bash")" "${initramfs_builddir}"
+ln --symbolic "$(locatebin bash)" "${initramfs_builddir}/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
     "switch_root" "findfs" "grep" "ls" "less" "mktemp" "base64" "sha256sum" \
     "awk" "xxd" "whereis" "cp"
 do
-    rcopy "$(locatebin "$target")" "$initramfs_builddir"
+    rcopy "$(locatebin "${target}")" "${initramfs_builddir}"
 done
 
 info "Install the ld.so into the initramfs build directory"
-find /lib -type f -iname 'ld-linux.so.*' -exec rcopy {} "$initramfs_builddir" \;
+find /lib -type f -iname 'ld-linux.so.*' -exec rcopy {} "${initramfs_builddir}" \;
 
 info "Install kernel module tools into the initramfs build directory."
-rcopy "$(locatebin kmod)" "$initramfs_builddir"
+rcopy "$(locatebin kmod)" "${initramfs_builddir}"
 
-mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modprobe)")"
-ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modprobe)"
-mkdir --parents "$initramfs_builddir/lib/modprobe.d"
+mkdir --parents "${initramfs_builddir}$(dirname "$(locatebin modprobe)")"
+ln --symbolic "$(locatebin kmod)" "${initramfs_builddir}$(locatebin modprobe)"
+mkdir --parents "${initramfs_builddir}/lib/modprobe.d"
 find /lib/modprobe.d -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$initramfs_builddir/lib/modprobe.d" \;
+    -exec cp --archive {} "${initramfs_builddir}/lib/modprobe.d" \;
 
-mkdir --parents "$initramfs_builddir$(dirname "$(locatebin modinfo)")"
-ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin modinfo)"
+mkdir --parents "${initramfs_builddir}$(dirname "$(locatebin modinfo)")"
+ln --symbolic "$(locatebin kmod)" "${initramfs_builddir}$(locatebin modinfo)"
 
-mkdir --parents "$initramfs_builddir$(dirname "$(locatebin lsmod)")"
-ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin lsmod)"
+mkdir --parents "${initramfs_builddir}$(dirname "$(locatebin lsmod)")"
+ln --symbolic "$(locatebin kmod)" "${initramfs_builddir}$(locatebin lsmod)"
 
-mkdir --parents "$initramfs_builddir$(dirname "$(locatebin insmod)")"
-ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin insmod)"
+mkdir --parents "${initramfs_builddir}$(dirname "$(locatebin insmod)")"
+ln --symbolic "$(locatebin kmod)" "${initramfs_builddir}$(locatebin insmod)"
 
-mkdir --parents "$initramfs_builddir$(dirname "$(locatebin rmmod)")"
-ln --symbolic "$(locatebin kmod)" "$initramfs_builddir$(locatebin rmmod)"
+mkdir --parents "${initramfs_builddir}$(dirname "$(locatebin rmmod)")"
+ln --symbolic "$(locatebin kmod)" "${initramfs_builddir}$(locatebin rmmod)"
 
 info "Install kernel modules into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/lib/modules/$linux_version"
-find "/lib/modules/$linux_version" -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$initramfs_builddir/lib/modules/$linux_version" \;
+mkdir --parents "${initramfs_builddir}/lib/modules/${linux_version}"
+find "/lib/modules/${linux_version}" -mindepth 1 -maxdepth 1 \
+    -exec cp --archive {} "${initramfs_builddir}/lib/modules/${linux_version}" \;
 
 # TODO: This increases initramfs size drastcally. Install only firmwares that
 #       really matters into the initramfs.
 info "Install kernel firmwares into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/lib/firmware"
+mkdir --parents "${initramfs_builddir}/lib/firmware"
 find /lib/firmware -mindepth 1 -maxdepth 1 \
-    -exec cp --archive {} "$initramfs_builddir/lib/firmware" \;
+    -exec cp --archive {} "${initramfs_builddir}/lib/firmware" \;
 
 info "Install the udev into the initramfs build directory."
-rcopy "$(locatebin udevadm)" "$initramfs_builddir"
-mkdir --parents "$initramfs_builddir/lib/systemd"
-ln --symbolic "$(locatebin udevadm)" "$initramfs_builddir/lib/systemd/systemd-udevd"
-mkdir --parents "$initramfs_builddir/etc/udev"
-cp --archive /etc/udev/udev.conf "$initramfs_builddir/etc/udev"
+rcopy "$(locatebin udevadm)" "${initramfs_builddir}"
+mkdir --parents "${initramfs_builddir}/lib/systemd"
+ln --symbolic "$(locatebin udevadm)" "${initramfs_builddir}/lib/systemd/systemd-udevd"
+mkdir --parents "${initramfs_builddir}/etc/udev"
+cp --archive /etc/udev/udev.conf "${initramfs_builddir}/etc/udev"
 
 info "Install udev rules into the initramfs build directory."
-mkdir --parents "$initramfs_builddir/lib/udev/rules.d"
+mkdir --parents "${initramfs_builddir}/lib/udev/rules.d"
 for rules in 50-udev-default.rules 60-block.rules 60-persistent-storage.rules \
     75-net-description.rules 80-net-setup-link.rules 80-drivers.rules
 do
-    if [ -e "/etc/udev/rules.d/$rules" ]
+    if [ -e "/etc/udev/rules.d/${rules}" ]
     then
-        cp --archive "/etc/udev/rules.d/$rules" \
-            "$initramfs_builddir/lib/udev/rules.d/"
-    elif [ -e "/lib/udev/rules.d/$rules" ]
+        cp --archive "/etc/udev/rules.d/${rules}" \
+            "${initramfs_builddir}/lib/udev/rules.d/"
+    elif [ -e "/lib/udev/rules.d/${rules}" ]
     then
-        cp --archive "/lib/udev/rules.d/$rules" \
-            "$initramfs_builddir/lib/udev/rules.d/"
+        cp --archive "/lib/udev/rules.d/${rules}" \
+            "${initramfs_builddir}/lib/udev/rules.d/"
     fi
 done
 
 info "Install the tpm2-tools into the initramfs build directory."
-rcopy "$(locatebin tpm2)" "$initramfs_builddir"
+rcopy "$(locatebin tpm2)" "${initramfs_builddir}"
 # Copy tpm2-tools runtime dependencies (TCTI).
-mkdir --parents "$initramfs_builddir/usr/lib64"
+mkdir --parents "${initramfs_builddir}/usr/lib64"
 find /usr/lib64 -iname 'libtss2-tcti-*' \
-    -exec cp --archive {} "$initramfs_builddir/usr/lib64" \;
+    -exec cp --archive {} "${initramfs_builddir}/usr/lib64" \;
 
 info "Install the cryptsetup into the initramfs build directory."
-rcopy "$(locatebin cryptsetup)" "$initramfs_builddir"
+rcopy "$(locatebin cryptsetup)" "${initramfs_builddir}"
 # libpthread loads libgcc_s using dlopen. Need to handle it.
 find /usr -maxdepth 1 -type d -iname 'lib*' -print0 \
     | xargs -I '()' -0 find '()' -type f -iname 'libgcc_s.so.[1-9]' \
-        -exec rcopy "{}" "$initramfs_builddir" \;
+        -exec rcopy "{}" "${initramfs_builddir}" \;
 
 info "Build and install the initramfs into /boot."
-( cd "$initramfs_builddir" && find . -mindepth 1 -print0 \
+( cd "${initramfs_builddir}" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
-    | gzip > "/boot/initrd.img-$linux_version" )
+    | gzip > "/boot/initrd.img-${linux_version}" )

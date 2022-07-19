@@ -19,9 +19,9 @@ fi
 
 readonly snapshot="$1"
 
-if [ ! -e "/host-rootfs/snapshots/$snapshot" ]
+if [ ! -e "/host-rootfs/snapshots/${snapshot}" ]
 then
-    error "The given snapshot $snapshot does not exist!"
+    error "The given snapshot ${snapshot} does not exist!"
 fi
 
 if [ "$(readlink -f /host-rootfs/deploy/current)" = "image-a" ]
@@ -31,13 +31,13 @@ else
     next_image="image-a"
 fi
 
-info "Load a snapshot $snapshot as $next_image."
+info "Load a snapshot ${snapshot} as ${next_image}."
 
 btrfs subvolume snapshot \
-    "/host-rootfs/snapshots/$snapshot" \
-    "/host-rootfs/deploy/$next_image"
+    "/host-rootfs/snapshots/${snapshot}" \
+    "/host-rootfs/deploy/${next_image}"
 
 rm /host-rootfs/deploy/target
-ln --symbolic --force "$next_image" /host-rootfs/deploy/target
+ln --symbolic --force "${next_image}" /host-rootfs/deploy/target
 
 info "Done."

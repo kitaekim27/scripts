@@ -18,7 +18,7 @@ set -o errexit -o nounset -o noglob -o pipefail
 this_script=$(basename "$0")
 
 info() {
-    echo "$this_script:" "$@"
+    echo "${this_script}:" "$@"
 }
 
 error() {
@@ -69,7 +69,7 @@ fi
 
 lsblk
 read -rp "Select a root storage: " root_storage
-fdisk "/dev/$root_storage"
+fdisk "/dev/${root_storage}"
 sync
 
 lsblk
@@ -78,11 +78,11 @@ read -rp "Select an efi partition: " partition_uefi
 read -rp "Select a swap partition: " partition_swap
 
 info "Format an efi partition in vfat."
-mkfs.vfat "/dev/$partition_uefi"
+mkfs.vfat "/dev/${partition_uefi}"
 
-info "Set swap on $partition_swap."
-mkswap "/dev/$partition_swap"
-swapon "/dev/$partition_swap"
+info "Set swap on ${partition_swap}."
+mkswap "/dev/${partition_swap}"
+swapon "/dev/${partition_swap}"
 
 info "Seal a random key into TPM."
 tpmsealrandkey
@@ -92,22 +92,22 @@ get_passphrase "Enter a passphrase for the root partition: " passphrase
 luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
-echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksFormat \
+echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksFormat \
     --type="luks2" \
     --key-file="-" \
-    "/dev/$partition_root"
+    "/dev/${partition_root}"
 
 info "Add a secondary passphrase for the root partition."
 get_passphrase "Enter a secondary phrase for the root partition: " secondary_phrase
-echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksAddKey \
+echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
     --key-file="-" \
-    "/dev/$partition_root" \
-    <(printf "${recovery_phrase?}")
+    "/dev/${partition_root}" \
+    <(printf "%s" "${recovery_phrase?}")
 
 info "Decrypt the root partition."
-echo "$luks_passphrase" | xxd -revert -plain | cryptsetup luksOpen \
+echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
     --key-file="-" \
-    "/dev/$partition_root" \
+    "/dev/${partition_root}" \
     root
 
 info "Format the root partition in btrfs."
@@ -170,12 +170,12 @@ chroot_cleanup() {
 
 chroot_main() {
     info "Mount an efi partition."
-    mount "/dev/$partition_uefi" /boot
+    mount "/dev/${partition_uefi}" /boot
 
     info "Generate the fstab into the installation."
-    PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/$partition_uefi") \
-    PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/$partition_swap") \
-    PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/$partition_root") \
+    PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \
+    PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${partition_swap}") \
+    PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${partition_root}") \
         envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
     if [ -d /etc/portage/package.use ]
@@ -207,7 +207,7 @@ chroot_main() {
     info "Choose a Portage profile."
     eselect profile list
     read -rp "Select a Portage profile: " profile
-    eselect profile set "$profile"
+    eselect profile set "${profile}"
 
     info "Update @world Portage set."
     emerge --update --deep --newuse @world
@@ -223,7 +223,7 @@ chroot_main() {
     info "Configure system locales."
     eselect locale list
     read -rp "Select a locale: " locale
-    eselect locale set "$locale"
+    eselect locale set "${locale}"
 
     info "Reload the environment."
     env-update
@@ -263,20 +263,20 @@ chroot_main() {
     info "Create a symlink /usr/src/linux."
     eselect kernel list
     read -rp "Select a linux kernel to use: " kernel
-    eselect kernel set "$kernel"
+    eselect kernel set "${kernel}"
 
     make="make --directory=/usr/src/linux --jobs=$(nproc)"
 
     info "Configure the linux kernel."
-    $make defconfig
-    $make menuconfig
+    ${make} defconfig
+    ${make} menuconfig
 
     info "Compile and install the linux kernel."
-    $make
-    $make modules_install
+    ${make}
+    ${make} modules_install
     # This will copy the kernel image into /boot together with the System.map
     # file and the kernel configuration file.
-    $make install
+    ${make} install
 
     info "Install packages to build an initramfs."
     emerge sys-fs/cryptsetup app-shells/fzf
@@ -287,7 +287,7 @@ chroot_main() {
 
     info "Set the hostname."
     read -rp "Enter the hostname: " hostname
-    sed -i "s/localhost/$hostname/g" /etc/conf.d/hostname /etc/hosts
+    sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
 
     info "Enable the elogind service."
     rc-update add elogind boot
@@ -310,15 +310,15 @@ chroot_main() {
     info "Install GRUB2 bootloader."
     emerge sys-boot/grub
     grub-install --target="x86_64-efi" --efi-directory="/boot" --removable
-    echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"$partition_root")\"" \
+    echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
         >> /etc/default/grub
     grub-mkconfig --output="/boot/grub/grub.cfg"
 
     info "Create a default user."
     read -rp "Enter an user name: " user
-    useradd --create-home --groups="users,wheel" --shell="/bin/bash" "$user"
-    passwd "$user"
-    install --mode="644" /config/home/user/dot-profile "/home/$user/.profile"
+    useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${user}"
+    passwd "${user}"
+    install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
 
     info "Install XOrg server."
     emerge x11-base/xorg-server
@@ -343,11 +343,11 @@ find -L tools -mindepth 1 -maxdepth 1 \
 info "chroot into $INSTALL_ROOT and execute chroot_main()."
 chroot "$INSTALL_ROOT" /bin/bash -c "
     set -o errexit -o nounset -o noglob -o pipefail
-    this_script=$this_script
-    root_storage=$root_storage
-    partition_uefi=$partition_uefi
-    partition_swap=$partition_swap
-    partition_root=$partition_root
+    this_script=${this_script}
+    root_storage=${root_storage}
+    partition_uefi=${partition_uefi}
+    partition_swap=${partition_swap}
+    partition_root=${partition_root}
     $(declare -f info)
     $(declare -f error)
     $(declare -f chroot_cleanup)

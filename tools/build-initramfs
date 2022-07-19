@@ -93,7 +93,7 @@ cp --archive /etc/locale.gen "$BUILD_DIR/etc/locale.gen"
 chroot "$BUILD_DIR" locale-gen
 chroot "$BUILD_DIR" eselect locale list
 read -rp "Select a locale: " locale
-chroot "$BUILD_DIR" eselect locale set "$locale"
+chroot "$BUILD_DIR" eselect locale set "${locale}"
 
 info "Configure hostname of the initramfs."
 cp --archive /etc/conf.d/hostname "$BUILD_DIR/etc/conf.d/hostname"

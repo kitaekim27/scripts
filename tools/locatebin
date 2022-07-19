@@ -3,5 +3,5 @@
 # `which` prints some weird strings (e.g. "ls: aliased to ls --color=tty")
 path=$(whereis -b "${1?}" | awk '{print $2}')
 # `whereis` returns 0 even if it can't find any path.
-[ -z "$path" ] && exit 1
-echo "$path"
+[ -z "${path}" ] && exit 1
+echo "${path}"
