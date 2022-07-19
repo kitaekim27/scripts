@@ -56,3 +56,7 @@ info "Build and install the initramfs into /boot."
 ( cd "$BUILD_DIR" && find . -mindepth 1 -print0 \
     | cpio --null --create --format="newc" \
     | gzip -9  > "/boot/initrd.img-$LINUX_VERSION" )
+
+info "Successfully built the initramfs!"
+info "Clean up the initramfs build directory."
+rm --recursive "$BUILD_DIR"
