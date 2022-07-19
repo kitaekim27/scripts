@@ -29,8 +29,8 @@ readonly LINUX_VERSION
 
 # XXX: Note that it's better to disable some USE flags enabled system-wide here
 #      (e.g, bluetooth).
-GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man"
-readonly GENERAL_USE
+readonly GENERAL_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus
+    -mime -man"
 
 info "Install busybox in the initramfs build directory."
 USE="$GENERAL_USE make-symlinks" \
