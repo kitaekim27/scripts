@@ -52,7 +52,7 @@ KERNEL_DIR="/usr/src/linux-$LINUX_VERSION" USE="$GENERAL_USE" \
 # that is too complicated to emit inline code for.
 info "Copy libgcc_s.so.1 into the initramfs build directory."
 GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
-LIBGCC_FILES="$(find "/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION" -name "libgcc_s.so.[1-9]")"
+LIBGCC_FILES="$(find "/usr/lib/gcc/x86_64-pc-linux-gnu/$GCC_VERSION" -name "libgcc_s.so.[1-9]")"
 for file in $LIBGCC_FILES
 do
     rcopy "$file" "$BUILD_DIR"
