@@ -28,6 +28,8 @@ sread() {
 
 trap rescue_shell EXIT
 
+export PATH="${PATH}:/usr/local/bin"
+
 # We use udev here. Make sure not to use any uevnet helper.
 [ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
 
