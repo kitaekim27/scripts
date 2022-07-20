@@ -4,3 +4,4 @@ PARTUUID=$PARTUUID_SWAP   none    swap    sw                                    
 # always need to be copied as it's CoW filesystem. It seems this makes huge
 # difference when there are many snapshots.
 /dev/mapper/root          /       btrfs   noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/target   0 1
+tmpfs                     /tmp    tmpfs   rw,nosuid,noatime,nodev,mode=1777                            0 0
