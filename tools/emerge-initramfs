@@ -73,10 +73,16 @@ mkdir --parents "${build_dir}/lib/modules/${linux_version}"
 find "/lib/modules/${linux_version}" -mindepth 1 -maxdepth 1 \
 	-exec cp --archive {} "${build_dir}/lib/modules/${linux_version}" \;
 
-# info "Install kernel firmwares into the initramfs build directory."
-# mkdir --parents "${build_dir}/lib/firmware"
-# find /lib/firmware -mindepth 1 -maxdepth 1 \
-#	 -exec cp --archive {} "${build_dir}/lib/firmware" \;
+# XXX: This code blindly install all firmwares into the initramfs. That means,
+# it can increase the size of the initramfs drastcailly. An assumption here is
+# that there should be only *necessary* firmwares in /lib/firmware.
+#
+# This is quite different from other distro's approach but in Gentoo Linux this
+# is the natural way for it. (at least, I think.)
+info "Install kernel firmwares into the initramfs build directory."
+mkdir --parents "${build_dir}/lib/firmware"
+find /lib/firmware -mindepth 1 -maxdepth 1 \
+	-exec cp --archive {} "${build_dir}/lib/firmware" \;
 
 info "Build and install the initramfs into /boot."
 ( cd "${build_dir}" && find . -mindepth 1 -print0 \
