@@ -148,20 +148,8 @@ find download -iname "stage3-*.tar.xz" -exec tar \
 	--extract --preserve-permissions --file={} \
 	--xattrs-include='*.*' --numeric-owner \;
 
-info "Mount the proc filesystem in the installation."
-mount --types="proc" /proc "${install_root}/proc"
-
-info "Mount the sys fileseystem in the installation."
-mount --rbind /sys "${install_root}/sys"
-mount --make-rslave "${install_root}/sys"
-
-info "Mount the dev filesystem in the installation."
-mount --rbind /dev "${install_root}/dev"
-mount --make-rslave "${install_root}/dev"
-
-info "Mount the run filesystem in the installation."
-mount --bind /run "${install_root}/run"
-mount --make-rslave "${install_root}/run"
+info "Mount pseudo filesystems in the installation."
+mount-pseudofs "${install_root}"
 
 chroot_cleanup() {
 	info "Clean up installation artiparcts."
