@@ -5,3 +5,4 @@ PARTUUID=$PARTUUID_SWAP   none        swap    sw                                
 # difference when there are many snapshots.
 /dev/mapper/root          /           btrfs   noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/target   0 1
 tmpfs                     /tmp        tmpfs   rw,nosuid,noatime,nodev,mode=1777                            0 0
+tmpfs                     /var/tmp/portage   tmpfs   uid=portage,gid=portage,mode=775,nosuid,noatime,nodev 0 0

@@ -161,6 +161,9 @@ chroot_main() {
 	mkdir /boot/efi || :
 	mount "/dev/${partition_uefi}" /boot/efi
 
+	info "Mount the portage build directory as a tmpfs."
+	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
+
 	info "Generate the fstab into the installation."
 	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \
 	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${partition_swap}") \
