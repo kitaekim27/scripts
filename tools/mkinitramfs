@@ -27,7 +27,7 @@ build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
 info "Create pseudo filesystem mount points in the initramfs build directory."
-for directory in /proc /sys /run
+for directory in /proc /sys /run /tmp
 do
 	mkdir --parents "${build_dir}${directory}"
 done
