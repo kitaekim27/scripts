@@ -267,9 +267,8 @@ chroot_main() {
 	# file and the kernel configuration file.
 	${make} install
 
-	info "Install packages to build an initramfs."
-	emerge sys-fs/cryptsetup app-shells/fzf
-	emerge --autounmask --autounmask-continue app-crypt/tpm2-tools
+	info "Install fzf to build an initramfs."
+	emerge app-shells/fzf
 
 	info "Build and install an initramfs."
 	emerge-initramfs
