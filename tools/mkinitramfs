@@ -26,17 +26,17 @@ source_dir="/usr/src/initramfs"
 build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
-# Note that directories created here are not a complete set; You might need to
-# add some directories here in the future.
-info "Set the filesystem hierarchy layout."
-for path in /proc /sys /run /tmp /mnt/root /etc /bin /sbin /usr/bin \
-	/usr/local/bin
+info "Create pseudo filesystem mount points in the initramfs build directory."
+for directory in /proc /sys /run
 do
 	mkdir --parents "${build_dir}${path}"
 done
+
+info "Create a mount table symbolic link ini the initramfs build directory."
+mkdir --parents "${build_dir}/etc"
 ln --symbolic /proc/self/mounts "${build_dir}/etc/mtab"
 
-info "Copy files in the source directory into the build directory."
+info "Copy the initramfs source directory into the initramfs build directory."
 find "${source_dir}" -mindepth 1 -maxdepth 1 \
 	-exec cp --archive {} "${build_dir}" \;
 
@@ -48,15 +48,15 @@ rcopy "$(locatebin "bash")" "${build_dir}"
 ln --symbolic "$(locatebin bash)" "${build_dir}/bin/sh"
 for target in "sed" "stty" "echo" "find" "sleep" "[" "printf" "mount" "umount" \
 	"switch_root" "findfs" "grep" "ls" "mktemp" "base64" "sha256sum" "awk" \
-	"xxd" "whereis" "ldconfig" "mkdir"
+	"xxd" "whereis" "ldconfig" "mkdir" "cat"
 do
 	rcopy "$(locatebin "${target}")" "${build_dir}"
 done
 
-info "Install the ld.so into the initramfs build directory"
+info "Install the ld.so dynamic linker into the initramfs build directory"
 find /lib -type f -iname 'ld-linux.so.*' -exec rcopy {} "${build_dir}" \;
 
-info "Install kernel module tools into the initramfs build directory."
+info "Install kernel module utils into the initramfs build directory."
 rcopy "$(locatebin kmod)" "${build_dir}"
 
 mkdir --parents "${build_dir}$(dirname "$(locatebin modprobe)")"

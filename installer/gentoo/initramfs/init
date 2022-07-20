@@ -135,6 +135,7 @@ do
 done
 
 info "Mount the root partition!"
+mkdir /mnt/root
 mount /dev/mapper/root /mnt/root
 mount -t btrfs -o noatime,rw,space_cache=v2,subvolid=5,subvol=/deploy/target \
 	/dev/mapper/root /mnt/root/deploy/target
