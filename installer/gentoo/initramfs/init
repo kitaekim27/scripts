@@ -93,42 +93,43 @@ info "Decrypt the root partition..."
 while true
 do
 	sread "Enter a passphrase for the root partition: " passphrase
-	luks_passphrase=$(mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/")
-
-	if ! echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
-		--key-file="-" "/dev/${root}" root
+	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" \
+		| xxd -revert -plain | cryptsetup luksOpen \
+			--key-file="-" "/dev/${root}" root
 	then
-		error "Failed to open the root partition!"
-		error "The system you're on might be modified to steal your information!"
-		while true
-		do
-			printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
-			read -r answer
-			case "${answer}" in
-				y* | Y*)
-					while true
-					do
-						sread "Enter a recovery passphrase for the root partition: " \
-							recovery_passphrase
-						if echo "${recovery_passphrase}" | cryptsetup luksOpen \
-							--key-file="-" "/dev/${root}" root
-						then
-							break
-						fi
-						error "Failed to open the root partition! Try again."
-					done
-					break
-					;;
-				n* | N*)
-					info "Execute a shell for debugging..."
-					exit 1
-					;;
-				*)
-					error "Invalid input! Try again."
-					;;
-			esac
-		done
+		break
 	fi
+
+	error "Failed to open the root partition!"
+	error "The system you're on might be modified to steal your information!"
+	while true
+	do
+		printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
+		read -r answer
+		case "${answer}" in
+			y* | Y*)
+				while true
+				do
+					sread "Enter a recovery passphrase for the root partition: " \
+						recovery_passphrase
+					if echo "${recovery_passphrase}" | cryptsetup luksOpen \
+						--key-file="-" "/dev/${root}" root
+					then
+						break
+					fi
+					error "Failed to open the root partition! Try again."
+				done
+				break
+				;;
+			n* | N*)
+				info "Execute a shell for debugging..."
+				exit 1
+				;;
+			*)
+				error "Invalid input! Try again."
+				;;
+		esac
+	done
 done
 
 info "Mount the root partition!"
