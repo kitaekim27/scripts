@@ -158,7 +158,8 @@ chroot_cleanup() {
 
 chroot_main() {
 	info "Mount an efi partition."
-	mount "/dev/${partition_uefi}" /boot
+	mkdir /boot/efi || :
+	mount "/dev/${partition_uefi}" /boot/efi
 
 	info "Generate the fstab into the installation."
 	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \

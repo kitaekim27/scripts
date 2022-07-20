@@ -1,7 +1,7 @@
-PARTUUID=$PARTUUID_UEFI   /boot   vfat    noauto,noatime                                               0 0
-PARTUUID=$PARTUUID_SWAP   none    swap    sw                                                           0 0
+PARTUUID=$PARTUUID_UEFI   /boot/efi   vfat    noauto,noatime                                               0 0
+PARTUUID=$PARTUUID_SWAP   none        swap    sw                                                           0 0
 # Note that it seems btrfs requires noatime because without it, metadata blocks
 # always need to be copied as it's CoW filesystem. It seems this makes huge
 # difference when there are many snapshots.
-/dev/mapper/root          /       btrfs   noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/target   0 1
-tmpfs                     /tmp    tmpfs   rw,nosuid,noatime,nodev,mode=1777                            0 0
+/dev/mapper/root          /           btrfs   noatime,rw,space_cache=v2,subvloid=5,subvol=/deploy/target   0 1
+tmpfs                     /tmp        tmpfs   rw,nosuid,noatime,nodev,mode=1777                            0 0
