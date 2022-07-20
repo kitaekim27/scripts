@@ -56,7 +56,7 @@ find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \
 chroot "${build_dir}" ldconfig
 
 info "Create pseudo filesystem mounts points in the iniramfs build directory."
-for directory in /proc /sys /run /dev
+for directory in /proc /sys /run /dev /tmp
 do
 	mkdir --parents "${build_dir}${directory}"
 done
