@@ -41,6 +41,7 @@ find "${source_dir}" -mindepth 1 -maxdepth 1 \
 	-exec cp --archive {} "${build_dir}" \;
 
 info "Copy my scripts into the initramfs build directory."
+mkdir --parents "${build_dir}/usr/local/bin"
 cp "$(locatebin mkpassphrase)" "${build_dir}/usr/local/bin"
 
 info "Set up a basic shell environment in the initramfs build directory."
