@@ -29,7 +29,7 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 info "Create pseudo filesystem mount points in the initramfs build directory."
 for directory in /proc /sys /run
 do
-	mkdir --parents "${build_dir}${path}"
+	mkdir --parents "${build_dir}${directory}"
 done
 
 info "Create a mount table symbolic link ini the initramfs build directory."
