@@ -297,7 +297,7 @@ chroot_main() {
 
 	info "Install GRUB2 bootloader."
 	emerge sys-boot/grub
-	grub-install --target="x86_64-efi" --efi-directory="/boot" --removable
+	grub-install
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
 		>> /etc/default/grub
 	grub-mkconfig --output="/boot/grub/grub.cfg"
