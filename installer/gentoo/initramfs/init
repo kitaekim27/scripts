@@ -36,8 +36,9 @@ export PATH="${PATH}:/usr/local/bin"
 info "Mount the pseudo filesystesms..."
 mount -t proc proc /proc
 mount -t devtmpfs udev /dev
-mount -t devpts devpts /dev/pts
 mount -t sysfs sysfs /sys
+mkdir /dev/pts || :
+mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /tmp
 
 info ' _     _____ _ _  ___               ___       _     _ _ '
