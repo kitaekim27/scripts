@@ -16,8 +16,8 @@ rescue_shell() {
 }
 
 sread() {
-	read_prompt="${1?}"
-	read_variable="${2?}"
+	read_prompt="${1}"
+	read_variable="${2}"
 
 	printf "%s" "${read_prompt}"
 	stty -echo
@@ -33,7 +33,6 @@ export PATH="${PATH}:/usr/local/bin"
 # We use udev here. Make sure not to use any uevnet helper.
 [ -w /sys/kernel/uevent_helper ] && echo > /sys/kernel/uevent_helper
 
-info "Mount the pseudo filesystesms..."
 mount -t proc proc /proc
 mount -t devtmpfs udev /dev
 mount -t sysfs sysfs /sys
@@ -41,12 +40,14 @@ mkdir /dev/pts || :
 mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /tmp
 
-info ' _     _____ _ _  ___               ___       _     _ _ '
-info '| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |'
-info '|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |'
-info '| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|'
-info '|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)'
-info '                     |/                                 '
+cat <<"EOF"
+ _     _____ _ _  ___               ___       _     _ _
+| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |
+|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |
+| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|
+|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)
+                     |/
+EOF
 
 info "The initramfs init script successfully loaded!"
 info "Start to initialize the system..."
