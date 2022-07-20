@@ -283,7 +283,7 @@ chroot_main() {
 	emerge --autounmask --autounmask-continue app-crypt/tpm2-tools
 
 	info "Build and install an initramfs."
-	mkinitramfs
+	emerge-initramfs
 
 	info "Set the hostname."
 	read -rp "Enter the hostname: " hostname
