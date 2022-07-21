@@ -187,7 +187,8 @@ chroot_main() {
 	emerge-webrsync
 
 	info "Install system management tools."
-	emerge app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs
+	emerge app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
+		app-portage/cpuid2cpuflags
 
 	info "Set the system-wide USE flags."
 	euse --enable elogind X bluetooth networkmanager dbus
@@ -200,6 +201,9 @@ chroot_main() {
 	eselect profile list
 	read -rp "Select a Portage profile: " profile
 	eselect profile set "${profile}"
+
+	info "Set CPU-specific compliation flag."
+	echo "*/* $(cpuid2cpuflags)" >> /etc/portage/package.use
 
 	info "Update @world Portage set."
 	emerge --update --deep --newuse @world
@@ -227,7 +231,6 @@ chroot_main() {
 		# AMD microcodes are shipped in the sys-kernel/linux-firmware package.
 		info "Enable USE flag \"initramfs\" of sys-kernel/linux-firmware"
 		echo "sys-kernel/linux-firmware initramfs" >> /etc/portage/package.use
-
 	elif grep --quiet --ignore-case "Intel" /proc/cpuinfo
 	then
 		info "Intel CPU detected. Install Intel microcodes."
