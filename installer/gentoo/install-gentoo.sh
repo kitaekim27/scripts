@@ -58,10 +58,8 @@ info "Install my scripts into the system."
 find -L tools -mindepth 1 -maxdepth 1 \
 	-exec cp --verbose --recursive {} /usr/local/bin/ \;
 
-emerge="emerge --quiet-build"
-
 info "Install package tpm2-tools."
-${emerge} --autounmask --autounmask-continue app-crypt/tpm2-tools
+emerge --quiet-build --autounmask --autounmask-continue app-crypt/tpm2-tools
 
 if ! nc -zw1 google.com 443
 then
@@ -188,6 +186,8 @@ chroot_main() {
 	mkdir --parents /etc/portage/repos.conf
 	cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 	emerge-webrsync
+
+	emerge="emerge --quiet-build"
 
 	info "Install system management tools."
 	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
