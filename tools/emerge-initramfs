@@ -30,11 +30,11 @@ export COMMON_FLAGS="-Os -march=native -pipe"
 
 info "Install busybox in the initramfs build directory."
 USE="${common_use} make-symlinks" emerge \
-	--jobs="2" --root="${build_dir}" sys-apps/busybox
+	--jobs="$(nproc)" --root="${build_dir}" sys-apps/busybox
 
 info "Install tpm2-tools and cryptsetup in the initramfs build directory."
 USE="${common_use}" emerge \
-	--jobs="2" --root="${build_dir}" app-crypt/tpm2-tools sys-fs/cryptsetup
+	--jobs="$(nproc)" --root="${build_dir}" app-crypt/tpm2-tools sys-fs/cryptsetup
 
 # Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
 # for pthread for cryptsetup...

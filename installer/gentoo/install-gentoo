@@ -209,12 +209,12 @@ chroot_main() {
 	echo "*/* $(cpuid2cpuflags)" >> /etc/portage/package.use
 
 	info "Update @world Portage set."
-	# Here, we use `--jobs="8"` flag which may cause memory exhaustion.
-	# The assumptions are as we use a bare minimum stage 3 tarball, we don't
-	# have any packages consume memory drastcally such as a desktop
-	# environment and the @world set contains many packages that actually
-	# does not build anything but just setting up the system.
-	${emerge} --jobs="8" --update --deep --newuse @world
+	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
+	# exhaustion. The assumptions are as we will use a bare minimum profile,
+	# we don't have any packages consume memory drastcally such as a desktop
+	# environment and the @world set usually contain many packages that
+	# actually does not build anything but just setting up the system.
+	${emerge} --jobs="$(nproc)" --update --deep --newuse @world
 
 	info "Set the timezone to Asia/Seoul."
 	echo "Asia/Seoul" > /etc/timezone
