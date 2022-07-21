@@ -310,6 +310,7 @@ chroot_main() {
 	${emerge} app-admin/logrotate
 
 	info "Install GRUB2 bootloader."
+	echo "sys-boot/grub device-mapper" >> /etc/portage/package.use
 	${emerge} sys-boot/grub
 	grub-install
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
