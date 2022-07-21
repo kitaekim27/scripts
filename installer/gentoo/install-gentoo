@@ -187,7 +187,7 @@ chroot_main() {
 	cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 	emerge-webrsync
 
-	emerge="emerge --quiet-build"
+	emerge="nice --12 emerge --quiet-build"
 
 	info "Install system management tools."
 	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
