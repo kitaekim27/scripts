@@ -206,7 +206,7 @@ chroot_main() {
 	eselect profile set "${profile}"
 
 	info "Set CPU-specific compliation flag."
-	echo "*/* $(cpuid2cpuflags)" >> /etc/portage/package.use
+	echo "$(cpuid2cpuflags | sed 's/\(.*\): \(.*\)/\1="\2"/')" >> /etc/portage/make.conf
 
 	info "Update @world Portage set."
 	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
