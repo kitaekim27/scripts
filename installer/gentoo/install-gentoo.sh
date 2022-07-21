@@ -162,6 +162,7 @@ chroot_main() {
 	mount "/dev/${partition_uefi}" /boot/efi
 
 	info "Mount the portage build directory as a tmpfs."
+	mkdir --parents /var/tmp/portage
 	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
 
 	info "Generate the fstab into the installation."
