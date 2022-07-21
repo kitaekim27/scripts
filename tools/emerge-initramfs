@@ -24,17 +24,17 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 
 # XXX: Note that it's better to disable some USE flags enabled system-wide here
 #	  (e.g, bluetooth).
-general_use="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man
-             -su -pam lto"
+common_use="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man
+	-su -pam lto"
 export COMMON_FLAGS="-Os -march=native -pipe"
 
 info "Install busybox in the initramfs build directory."
-USE="${general_use} make-symlinks" \
-	emerge --root="${build_dir}" sys-apps/busybox
+USE="${common_use} make-symlinks" emerge \
+	--jobs="2" --root="${build_dir}" sys-apps/busybox
 
 info "Install tpm2-tools and cryptsetup in the initramfs build directory."
-USE="${general_use}" \
-	emerge --root="${build_dir}" app-crypt/tpm2-tools sys-fs/cryptsetup
+USE="${common_use}" emerge \
+	--jobs="2" --root="${build_dir}" app-crypt/tpm2-tools sys-fs/cryptsetup
 
 # Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
 # for pthread for cryptsetup...

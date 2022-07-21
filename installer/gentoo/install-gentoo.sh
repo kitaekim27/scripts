@@ -28,12 +28,12 @@ error() {
 get_passphrase() {
 	while true
 	do
-		read -srp "${1?}" "${2?}"
+		read -srp "${1}" "${2}"
 		echo
 		read -srp "Enter a passphrase again: " checkphrase
 		echo
 
-		if [ "$(eval echo "\$${2?}")" = "${checkphrase?}" ]
+		if [ "$(eval echo "\$${2}")" = "${checkphrase}" ]
 		then
 			break
 		else
@@ -58,8 +58,10 @@ info "Install my scripts into the system."
 find -L tools -mindepth 1 -maxdepth 1 \
 	-exec cp --verbose --recursive {} /usr/local/bin/ \;
 
+emerge="emerge --quiet-build"
+
 info "Install package tpm2-tools."
-emerge --autounmask --autounmask-continue app-crypt/tpm2-tools
+${emerge} --autounmask --autounmask-continue app-crypt/tpm2-tools
 
 if ! nc -zw1 google.com 443
 then
@@ -89,7 +91,7 @@ tpmsealrandkey
 
 info "Create a LUKS2 passphrase for the root partition."
 get_passphrase "Enter a passphrase for the root partition: " passphrase
-luks_passphrase=$(mkpassphrase "${passphrase?}" | sed -n "s/result = \(.*\)/\1/p")
+luks_passphrase=$(mkpassphrase "${passphrase}" | sed -n "s/result = \(.*\)/\1/p")
 
 info "Encrypt the root partition."
 echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksFormat \
@@ -188,7 +190,7 @@ chroot_main() {
 	emerge-webrsync
 
 	info "Install system management tools."
-	emerge app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
+	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
 		app-portage/cpuid2cpuflags
 
 	info "Set the system-wide USE flags."
@@ -207,11 +209,15 @@ chroot_main() {
 	echo "*/* $(cpuid2cpuflags)" >> /etc/portage/package.use
 
 	info "Update @world Portage set."
-	emerge --update --deep --newuse @world
+	# Here, we use `--jobs="3"` flag which may cause memory exhaustion.
+	# The assumption is that as we use a bare minimum stage 3 tarball, we
+	# don't have any packages that consume memory drastcally such as a
+	# desktop environment.
+	${emerge} --jobs="3" --update --deep --newuse @world
 
 	info "Set the timezone to Asia/Seoul."
 	echo "Asia/Seoul" > /etc/timezone
-	emerge --config sys-libs/timezone-data
+	${emerge} --config sys-libs/timezone-data
 
 	info "Generate system locales."
 	nano -w /etc/locale.gen
@@ -241,7 +247,7 @@ chroot_main() {
 		echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
 
 		info "Install the intel microcode package."
-		emerge sys-firmware/intel-microcode
+		${emerge} sys-firmware/intel-microcode
 	else
 		info "Can not determine CPU manufacturer. Do not install microcodes."
 	fi
@@ -249,10 +255,10 @@ chroot_main() {
 	info "Install the linux firmwares."
 	echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
 		>> /etc/portage/package.license
-	emerge sys-kernel/linux-firmware
+	${emerge} sys-kernel/linux-firmware
 
 	info "Install the linux kernel sources."
-	emerge sys-kernel/gentoo-sources
+	${emerge} sys-kernel/gentoo-sources
 
 	# /usr/src/linux symlink refers to the source tree corresponding to the
 	# currently running kernel.
@@ -275,7 +281,7 @@ chroot_main() {
 	${make} install
 
 	info "Install fzf to build an initramfs."
-	emerge app-shells/fzf
+	${emerge} app-shells/fzf
 
 	info "Build and install an initramfs."
 	emerge-initramfs
@@ -288,7 +294,7 @@ chroot_main() {
 	rc-update add elogind boot
 
 	info "Install system daemons."
-	emerge sys-process/fcron net-misc/chrony net-misc/networkmanager app-admin/rsyslog
+	${emerge} sys-process/fcron net-misc/chrony net-misc/networkmanager app-admin/rsyslog
 
 	info "Register system daemons to openrc runlevels."
 	rc-update add fcron default
@@ -297,13 +303,13 @@ chroot_main() {
 	rc-update add rsyslog default
 
 	info "Install system packages."
-	emerge app-admin/doas \
-		&& install --mode="600" config/etc/doas.conf /etc/doas.conf
-	echo "app-admin/logrotate cron" >> /etc/portage/package.use \
-		&& emerge app-admin/logrotate
+	${emerge} app-admin/doas
+	install --mode="600" config/etc/doas.conf /etc/doas.conf
+	echo "app-admin/logrotate cron" >> /etc/portage/package.use
+	${emerge} app-admin/logrotate
 
 	info "Install GRUB2 bootloader."
-	emerge sys-boot/grub
+	${emerge} sys-boot/grub
 	grub-install
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
 		>> /etc/default/grub
@@ -316,7 +322,7 @@ chroot_main() {
 	install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
 
 	info "Install XOrg server."
-	emerge x11-base/xorg-server
+	${emerge} x11-base/xorg-server
 	env-update
 	source /etc/profile
 }
