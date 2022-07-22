@@ -194,7 +194,7 @@ chroot_main() {
 		app-portage/cpuid2cpuflags
 
 	info "Set the system-wide USE flags."
-	euse --enable elogind X bluetooth networkmanager dbus
+	euse --enable elogind X bluetooth networkmanager dbus dist-kernel
 	euse --disable systemd
 
 	info "Configure Portage mirrors."
@@ -258,8 +258,9 @@ chroot_main() {
 		>> /etc/portage/package.license
 	${emerge} sys-kernel/linux-firmware
 
-	info "Install the linux kernel sources."
-	${emerge} sys-kernel/gentoo-sources
+	info "Install the linux kernel."
+	echo "sys-kernel/gentoo-kernel-bin hardened" >> /etc/portage/package.use
+	${emerge} sys-kernel/gentoo-kernel-bin
 
 	# /usr/src/linux symlink refers to the source tree corresponding to the
 	# currently running kernel.
@@ -267,19 +268,6 @@ chroot_main() {
 	eselect kernel list
 	read -rp "Select a linux kernel to use: " kernel
 	eselect kernel set "${kernel}"
-
-	make="make --directory=/usr/src/linux --jobs=$(nproc)"
-
-	info "Configure the linux kernel."
-	${make} defconfig
-	${make} menuconfig
-
-	info "Compile and install the linux kernel."
-	${make}
-	${make} modules_install
-	# This will copy the kernel image into /boot together with the System.map
-	# file and the kernel configuration file.
-	${make} install
 
 	info "Install fzf to build an initramfs."
 	${emerge} app-shells/fzf
