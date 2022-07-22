@@ -162,28 +162,20 @@ main_prepare_chroot() {
 		-exec cp --verbose --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
 }
 
-chroot_cleanup() {
-	info "Clean up installation artiparcts."
-	rm --recursive /config
-}
-
-chroot_main() {
+# Mount fimesystems like fstab.
+chroot_mountfs() {
 	info "Mount an efi partition."
 	mount "/dev/${PARTITION_UEFI}" /boot
 
 	info "Mount the portage build directory as a tmpfs."
 	mkdir --parents /var/tmp/portage
 	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
+}
 
+chroot_configure_portage() {
 	info "Install Portage environment config files."
 	mkdir --parents /etc/portage/env
 	find /config/etc/portage/env -type f -exec cp {} /etc/portage/env \;
-
-	info "Generate the fstab into the installation."
-	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${PARTITION_UEFI}") \
-	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${PARTITION_SWAP}") \
-	PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${PARTITION_ROOT}") \
-		envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
 	if [ -d /etc/portage/package.use ]
 	then
@@ -193,39 +185,30 @@ chroot_main() {
 	fi
 
 	info "Configure the Portage make.conf file."
-	install --mode="600" /config/etc/portage/make.conf /etc/portage/make.conf
-	echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
+	cat <<-EOF >> /etc/portage/make.conf
+	MAKEOPTS="-j$(nproc)"
+	USE="minimal elogind X bluetooth networkmanager dbus dist-kernel -systemd"
+	${PORTAGE_MIRRORS}
+	EOF
 
 	info "Configure the Portage ebuild repositories."
 	mkdir --parents /etc/portage/repos.conf
 	cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 	emerge-webrsync
 
-	emerge="nice --12 emerge --quiet-build"
-
-	info "Install system management tools."
-	${EMERGE} app-portage/gentoolkit sys-fs/btrfs-progs
-
-	info "Set the system-wide USE flags."
-	euse --enable minimal elogind X bluetooth networkmanager dbus \
-		dist-kernel
-	euse --disable systemd
-
-	info "Configure Portage mirrors."
-	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
-
-	info "Choose a Portage profile."
+	info "Select a Portage profile."
+	local profile
 	eselect profile list
 	read -rp "Select a Portage profile: " profile
 	eselect profile set "${profile}"
+}
 
-	info "Update @world Portage set."
-	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
-	# exhaustion. The assumptions are as we will use a bare minimum profile,
-	# we don't have any packages consume memory drastcally such as a desktop
-	# environment and the @world set usually contain many packages that
-	# actually does not build anything but just setting up the system.
-	${EMERGE} --jobs="$(nproc)" --update --deep --newuse @world
+chroot_configure_system() {
+	info "Generate the fstab."
+	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${PARTITION_UEFI}") \
+	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${PARTITION_SWAP}") \
+	PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${PARTITION_ROOT}") \
+		envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
 	info "Set the timezone to Asia/Seoul."
 	echo "Asia/Seoul" > /etc/timezone
@@ -236,14 +219,28 @@ chroot_main() {
 	locale-gen
 
 	info "Configure system locales."
+	local locale
 	eselect locale list
 	read -rp "Select a locale: " locale
 	eselect locale set "${locale}"
 
+	info "Set the hostname."
+	read -rp "Enter the hostname: " hostname
+	sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
+
+	info "Create a default user."
+	local username
+	read -rp "Enter an user name: " username
+	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${username}"
+	passwd "${username}"
+	install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
+
 	info "Reload the environment."
 	env-update
 	source /etc/profile
+}
 
+chroot_install_firmwares() {
 	if grep --quiet --ignore-case "AMD" /proc/cpuinfo
 	then
 		info "AMD CPU detected. Install AMD microcodes."
@@ -268,7 +265,9 @@ chroot_main() {
 	echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
 		>> /etc/portage/package.license
 	${EMERGE} sys-kernel/linux-firmware
+}
 
+chroot_install_kernel() {
 	info "Install the linux kernel."
 	echo "sys-kernel/gentoo-kernel-bin hardened" >> /etc/portage/package.use
 	${EMERGE} sys-kernel/gentoo-kernel-bin
@@ -276,16 +275,19 @@ chroot_main() {
 	# /usr/src/linux symlink refers to the source tree corresponding to the
 	# currently running kernel.
 	info "Create a symlink /usr/src/linux."
+	local kernel
 	eselect kernel list
 	read -rp "Select a linux kernel to use: " kernel
 	eselect kernel set "${kernel}"
+}
 
+chroot_build_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
 
 	info "Download Alpine Linux rootfs to build an initramfs."
-	arch="x86_64"
-	mirror="https://dl-cdn.alpinelinux.org"
+	local arch="x86_64"
+	local mirror="https://dl-cdn.alpinelinux.org"
 	wget --recursive --no-parent --no-directories --no-verbose \
 		--directory-prefix="/var/lib/initramfs" \
 		--accept-regex="alpine-minirootfs-[0-9.]*-${arch}.tar.gz$" \
@@ -293,42 +295,68 @@ chroot_main() {
 
 	info "Build and install an initramfs."
 	mkalpineinitfs
+}
 
-	info "Set the hostname."
-	read -rp "Enter the hostname: " hostname
-	sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
-
+chroot_install_daemons() {
 	info "Enable the elogind service."
 	rc-update add elogind boot
 
 	info "Install system daemons."
-	${EMERGE} sys-process/fcron net-misc/chrony net-misc/networkmanager \
+	${EMERGE} \
+		sys-process/fcron \
+		net-misc/chrony \
+		net-misc/networkmanager \
 		app-admin/rsyslog
 
-	info "Register system daemons to openrc runlevels."
+	info "Enable system daemons."
 	rc-update add fcron default
 	rc-update add chronyd default
 	rc-update add NetworkManager default
 	rc-update add rsyslog default
+}
 
-	info "Install system packages."
+chroot_install_system_utils() {
+	info "Install system utils."
 	${EMERGE} app-admin/doas
-	install --mode="600" config/etc/doas.conf /etc/doas.conf
+	install --mode="600" /config/etc/doas.conf /etc/doas.conf
 	echo "app-admin/logrotate cron" >> /etc/portage/package.use
 	${EMERGE} app-admin/logrotate
+}
 
+chroot_install_bootloader() {
 	info "Install GRUB2 bootloader."
 	${EMERGE} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")\"" \
 		>> /etc/default/grub
 	grub-mkconfig --output="/boot/grub/grub.cfg"
+}
 
-	info "Create a default user."
-	read -rp "Enter an user name: " user
-	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${user}"
-	passwd "${user}"
-	install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
+chroot_cleanup() {
+	info "Clean up installation artiparcts."
+	rm --recursive /config
+}
+
+chroot_main() {
+	chroot_mountfs
+	chroot_configure_portage
+	chroot_configure_system
+
+	info "Update @world Portage set."
+	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
+	# exhaustion. The assumptions are as we will use a bare minimum profile,
+	# we don't have any packages consume memory drastcally such as a desktop
+	# environment and the @world set usually contain many packages that
+	# actually does not build anything but just setting up the system.
+	${EMERGE} --jobs="$(nproc)" --update --deep --newuse @world
+
+	chroot_install_firmwares
+	chroot_install_kernel
+	chroot_build_initramfs
+	chroot_install_bootloader
+
+	chroot_install_daemons
+	chroot_install_system_utils
 
 	info "Install XOrg server."
 	${EMERGE} x11-base/xorg-server
