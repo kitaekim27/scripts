@@ -25,7 +25,7 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 info "Download Alpine Linux rootfs tarball."
 arch="x86_64"
 mirror="https://ap.edge.kernel.org"
-wget --recursive --no-parent --no-directories \
+wget --recursive --no-parent --no-directories --no-verbose \
 	--directory-prefix="${build_dir}/download" \
 	--accept="alpine-minirootfs-*" \
 	"${mirror}/alpine/latest-stable/releases/${arch}/"
