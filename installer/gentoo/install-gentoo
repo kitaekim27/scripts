@@ -131,7 +131,7 @@ main_install_stage3() {
 	local arch="amd64"
 	local mirror="http://ftp.kaist.ac.kr/gentoo/releases"
 	wget --recursive --no-parent --no-directories --no-verbose \
-		--directory-prefix="download" \
+		--directory-prefix="${THIS_DIR}/download" \
 		--accept="stage3-${arch}-hardened-openrc-*.tar.xz" \
 		"${mirror}/${arch}/autobuilds/current-stage3-${arch}-openrc/"
 
