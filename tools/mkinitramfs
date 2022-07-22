@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build and install an initramfs.
 #
-# Note that this script expects that `/usr/src/initramfs` directory contains all
+# Note that this script expects that `/var/lib/initramfs` directory contains all
 # the necessary files.
 
 set -o errexit -o nounset -o noglob -o pipefail
@@ -22,7 +22,7 @@ then
 	exit 1
 fi
 
-source_dir="/usr/src/initramfs"
+source_dir="/var/lib/initramfs"
 build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 

@@ -18,7 +18,7 @@ then
 	exit 1
 fi
 
-source_dir="/usr/src/initramfs"
+source_dir="/var/lib/initramfs"
 build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 

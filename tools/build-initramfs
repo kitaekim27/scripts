@@ -19,7 +19,7 @@ then
 	exit 1
 fi
 
-readonly SOURCE_DIR="/usr/src/initramfs"
+readonly SOURCE_DIR="/var/lib/initramfs"
 
 BUILD_DIR=$(mktemp --directory --tmpdir "${THIS_SCRIPT}.XXXXXXXXXX")
 readonly BUILD_DIR

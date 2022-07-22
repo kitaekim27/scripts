@@ -330,9 +330,9 @@ info "Configure DNS of the installation."
 cp --dereference /etc/resolv.conf "${install_root}/etc/resolv.conf"
 
 info "Set the initramfs source directory in the installation."
-mkdir --parents "${install_root}/usr/src/initramfs"
+mkdir --parents "${install_root}/var/lib/initramfs"
 find initramfs -mindepth 1 -maxdepth 1 \
-	-exec cp --verbose --preserve --recursive {} "${install_root}/usr/src/initramfs" \;
+	-exec cp --archive {} "${install_root}/var/lib/initramfs" \;
 
 info "Copy config files into the installation."
 cp --verbose --recursive config "${install_root}"
