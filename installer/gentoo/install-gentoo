@@ -165,6 +165,9 @@ chroot_main() {
 	mkdir --parents /var/tmp/portage
 	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
 
+	info "Install Portage environment config files."
+	find /config/etc/portage/env/ -type f -exec cp {} /etc/portage/env/ \;
+
 	info "Generate the fstab into the installation."
 	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \
 	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${partition_swap}") \
@@ -268,6 +271,12 @@ chroot_main() {
 
 	info "Install fzf to build an initramfs."
 	${emerge} app-shells/fzf
+
+	info "Enable ccache for the initramfs build."
+	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env/ccache
+	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env/ccache
+	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env/ccache
+	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env/ccache
 
 	info "Build and install an initramfs."
 	emerge-initramfs
