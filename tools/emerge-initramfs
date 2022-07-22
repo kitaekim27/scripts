@@ -16,7 +16,7 @@ main() {
 
 	info "Install utilities in the initramfs build directory."
 	USE="${COMMON_USE}" ${EMERGE} app-crypt/tpm2-tools sys-fs/cryptsetup \
-		app-editors/vim-core
+		sys-apps/kbd app-editors/vim-core
 
 	# Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
 	# for pthread for cryptsetup...

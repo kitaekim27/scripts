@@ -40,10 +40,6 @@ mkdir -p /dev/pts
 mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /tmp
 
-info "The initramfs init script successfully loaded!"
-info "Start to initialize the system..."
-
-info "Start the udev daemon..."
 /lib/systemd/systemd-udevd --daemon --resolve-names="never"
 udevadm trigger --type="subsystems" --action="add"
 udevadm trigger --type="devices" --action="add"
@@ -57,6 +53,15 @@ cat <<"EOF"
 |_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)
                      |/
 EOF
+
+info "The initramfs is successfully loaded!"
+info "Start to initialize the system..."
+
+# XXX: Hard-coded keyboard config.
+#      You can find all keymaps at /usr/share/keymaps.
+info "Configure the keyboard."
+loadkeys us
+kbd_mode -u
 
 info "Parse kernel parameters..."
 read -r cmdline < /proc/cmdline
