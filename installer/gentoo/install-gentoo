@@ -165,7 +165,7 @@ main_prepare_chroot() {
 }
 
 # Mount fimesystems like fstab.
-chroot_mountfs() {
+chroot_mount_filesystems() {
 	info "Mount an efi partition."
 	mount "/dev/${PARTITION_UEFI}" /boot
 
@@ -340,7 +340,7 @@ chroot_cleanup() {
 }
 
 chroot_main() {
-	chroot_mountfs
+	chroot_mount_filesystems
 	chroot_configure_portage
 	chroot_configure_system
 
@@ -385,7 +385,7 @@ main() {
 		EMERGE='${EMERGE}'
 		$(declare -f info)
 		$(declare -f error)
-		$(declare -f chroot_mountfs)
+		$(declare -f chroot_mount_filesystems)
 		$(declare -f chroot_configure_portage)
 		$(declare -f chroot_configure_system)
 		$(declare -f chroot_install_firmwares)
