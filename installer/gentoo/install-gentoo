@@ -302,11 +302,13 @@ chroot_install_daemons() {
 	rc-update add elogind boot
 
 	info "Install system daemons."
+	echo "app-admin/logrotate cron" >> /etc/portage/package.use
 	${EMERGE} \
 		sys-process/fcron \
 		net-misc/chrony \
 		net-misc/networkmanager \
-		app-admin/rsyslog
+		app-admin/rsyslog \
+		app-admin/logrotate
 
 	info "Enable system daemons."
 	rc-update add fcron default
@@ -317,10 +319,8 @@ chroot_install_daemons() {
 
 chroot_install_system_utils() {
 	info "Install system utils."
-	${EMERGE} app-admin/doas
+	${EMERGE} app-admin/doas sys-fs/btrfs-progs
 	install --mode="600" /config/etc/doas.conf /etc/doas.conf
-	echo "app-admin/logrotate cron" >> /etc/portage/package.use
-	${EMERGE} app-admin/logrotate
 }
 
 chroot_install_bootloader() {
