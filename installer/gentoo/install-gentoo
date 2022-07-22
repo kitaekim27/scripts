@@ -190,8 +190,7 @@ chroot_main() {
 	emerge="nice --12 emerge --quiet-build"
 
 	info "Install system management tools."
-	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs \
-		app-portage/cpuid2cpuflags
+	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs
 
 	info "Set the system-wide USE flags."
 	euse --enable elogind X bluetooth networkmanager dbus dist-kernel
@@ -204,9 +203,6 @@ chroot_main() {
 	eselect profile list
 	read -rp "Select a Portage profile: " profile
 	eselect profile set "${profile}"
-
-	info "Set CPU-specific compliation flag."
-	echo "$(cpuid2cpuflags | sed 's/\(.*\): \(.*\)/\1="\2"/')" >> /etc/portage/make.conf
 
 	info "Update @world Portage set."
 	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
