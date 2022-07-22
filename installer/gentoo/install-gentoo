@@ -166,7 +166,8 @@ chroot_main() {
 	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
 
 	info "Install Portage environment config files."
-	find /config/etc/portage/env/ -type f -exec cp {} /etc/portage/env/ \;
+	mkdir --parents /etc/portage/env
+	find /config/etc/portage/env -type f -exec cp {} /etc/portage/env \;
 
 	info "Generate the fstab into the installation."
 	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \
