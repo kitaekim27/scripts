@@ -55,8 +55,7 @@ info "Configure Portage mirrors."
 mirrorselect --interactive
 
 info "Install my scripts into the system."
-find -L tools -mindepth 1 -maxdepth 1 \
-	-exec cp --verbose --recursive {} /usr/local/bin/ \;
+find -L tools -mindepth 1 -maxdepth 1 -exec cp --recursive {} /usr/local/bin \;
 
 info "Install package tpm2-tools."
 emerge --quiet-build --autounmask --autounmask-continue app-crypt/tpm2-tools
