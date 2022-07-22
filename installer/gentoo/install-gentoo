@@ -51,7 +51,7 @@ main_prepare_installer() {
 		-exec cp --recursive {} /usr/local/bin \;
 
 	info "Install tpm2-tools in the installer."
-	${emerge} --autounmask --autounmask-continue app-crypt/tpm2-tools
+	${EMERGE} --autounmask --autounmask-continue app-crypt/tpm2-tools
 
 	info "Configure Portage mirrors."
 	PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
@@ -204,7 +204,7 @@ chroot_main() {
 	emerge="nice --12 emerge --quiet-build"
 
 	info "Install system management tools."
-	${emerge} app-portage/gentoolkit sys-fs/btrfs-progs
+	${EMERGE} app-portage/gentoolkit sys-fs/btrfs-progs
 
 	info "Set the system-wide USE flags."
 	euse --enable minimal elogind X bluetooth networkmanager dbus \
@@ -225,11 +225,11 @@ chroot_main() {
 	# we don't have any packages consume memory drastcally such as a desktop
 	# environment and the @world set usually contain many packages that
 	# actually does not build anything but just setting up the system.
-	${emerge} --jobs="$(nproc)" --update --deep --newuse @world
+	${EMERGE} --jobs="$(nproc)" --update --deep --newuse @world
 
 	info "Set the timezone to Asia/Seoul."
 	echo "Asia/Seoul" > /etc/timezone
-	${emerge} --config sys-libs/timezone-data
+	${EMERGE} --config sys-libs/timezone-data
 
 	info "Generate system locales."
 	nano /etc/locale.gen
@@ -259,7 +259,7 @@ chroot_main() {
 		echo "sys-firmware/intel-microcode initramfs" >> /etc/portage/package.use
 
 		info "Install the intel microcode package."
-		${emerge} sys-firmware/intel-microcode
+		${EMERGE} sys-firmware/intel-microcode
 	else
 		info "Can not determine CPU manufacturer. Do not install microcodes."
 	fi
@@ -267,11 +267,11 @@ chroot_main() {
 	info "Install the linux firmwares."
 	echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
 		>> /etc/portage/package.license
-	${emerge} sys-kernel/linux-firmware
+	${EMERGE} sys-kernel/linux-firmware
 
 	info "Install the linux kernel."
 	echo "sys-kernel/gentoo-kernel-bin hardened" >> /etc/portage/package.use
-	${emerge} sys-kernel/gentoo-kernel-bin
+	${EMERGE} sys-kernel/gentoo-kernel-bin
 
 	# /usr/src/linux symlink refers to the source tree corresponding to the
 	# currently running kernel.
@@ -281,7 +281,7 @@ chroot_main() {
 	eselect kernel set "${kernel}"
 
 	info "Install fzf to build an initramfs."
-	${emerge} app-shells/fzf
+	${EMERGE} app-shells/fzf
 
 	info "Download Alpine Linux rootfs to build an initramfs."
 	arch="x86_64"
@@ -302,7 +302,7 @@ chroot_main() {
 	rc-update add elogind boot
 
 	info "Install system daemons."
-	${emerge} sys-process/fcron net-misc/chrony net-misc/networkmanager \
+	${EMERGE} sys-process/fcron net-misc/chrony net-misc/networkmanager \
 		app-admin/rsyslog
 
 	info "Register system daemons to openrc runlevels."
@@ -312,13 +312,13 @@ chroot_main() {
 	rc-update add rsyslog default
 
 	info "Install system packages."
-	${emerge} app-admin/doas
+	${EMERGE} app-admin/doas
 	install --mode="600" config/etc/doas.conf /etc/doas.conf
 	echo "app-admin/logrotate cron" >> /etc/portage/package.use
-	${emerge} app-admin/logrotate
+	${EMERGE} app-admin/logrotate
 
 	info "Install GRUB2 bootloader."
-	${emerge} sys-boot/grub
+	${EMERGE} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")\"" \
 		>> /etc/default/grub
@@ -331,7 +331,7 @@ chroot_main() {
 	install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
 
 	info "Install XOrg server."
-	${emerge} x11-base/xorg-server
+	${EMERGE} x11-base/xorg-server
 	env-update
 	source /etc/profile
 }
@@ -351,6 +351,7 @@ main() {
 		PARTITION_SWAP=${PARTITION_SWAP}
 		PARTITION_ROOT=${PARTITION_ROOT}
 		PORTAGE_MIRRORS=${PORTAGE_MIRRORS}
+		EMERGE=${EMERGE}
 		$(declare -f info)
 		$(declare -f error)
 		$(declare -f chroot_cleanup)
@@ -377,6 +378,6 @@ PARTITION_ROOT=""
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
 
-readonly emerge="nice --12 emerge --quiet-build"
+readonly EMERGE="nice --12 emerge --quiet-build"
 
 main "${@}"
