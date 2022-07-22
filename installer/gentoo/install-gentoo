@@ -179,6 +179,13 @@ chroot_configure_portage() {
 	mkdir --parents /etc/portage/env
 	find /config/etc/portage/env -type f -exec cp {} /etc/portage/env \;
 
+	info "Enable ccache for some specific packages."
+	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
+	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
+	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
+	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
+	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
+
 	if [ -d /etc/portage/package.use ]
 	then
 		info "Make the Portage package.use a single file."
@@ -287,16 +294,8 @@ chroot_build_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
 
-	info "Download Alpine Linux rootfs to build an initramfs."
-	local arch="x86_64"
-	local mirror="https://dl-cdn.alpinelinux.org"
-	wget --recursive --no-parent --no-directories --no-verbose \
-		--directory-prefix="/var/lib/initramfs" \
-		--accept-regex="alpine-minirootfs-[0-9.]*-${arch}.tar.gz$" \
-		"${mirror}/alpine/latest-stable/releases/${arch}/"
-
 	info "Build and install an initramfs."
-	mkalpineinitfs
+	emerge-initramfs
 }
 
 chroot_install_daemons() {
