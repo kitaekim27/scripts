@@ -1,6 +1,10 @@
-if shopt -q login_shell; then
-    [[ -f ~/.bashrc ]] && source ~/.bashrc
-    [[ -t 0 && $(tty) == /dev/tty1 && ! $DISPLAY ]] && exec startx
+if shopt -q login_shell
+then
+    [ -n "${BASH_VERSION}" ] && [ -f "${HOME}/.bashrc" ] && source "${HOME}/.bashrc"
+    [ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx
 else
-    exit 1 # Somehow this is a non-bash or non-login shell.
+    exit 1
 fi
+
+[ -e "${HOME}/.local/bin" ] && PATH="${PATH}:${HOME}/.local/bin"
+[ -e "${HOME}/bin" ] && PATH="${PATH}:${HOME}/bin"
