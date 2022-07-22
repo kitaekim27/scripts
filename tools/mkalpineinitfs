@@ -25,10 +25,8 @@ linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
 info "Download Alpine Linux rootfs tarball."
 arch="x86_64"
 mirror="https://ap.edge.kernel.org"
-wget --recursive --no-parent --no-directories --no-verbose \
-	--directory-prefix="${build_dir}/download" \
-	--accept="alpine-minirootfs-*" \
-	"${mirror}/alpine/latest-stable/releases/${arch}/"
+wget ---no-verbose \
+	"${mirror}/alpine/v3.16/releases/${arch}/alpine-minirootfs-3.16.0-x86_64.tar.gz"
 
 info "Extract Alpine Linux rootfs tarball into the initramfs buid directory."
 find "${build_dir}/download" -name "aline-minirootfs-*.tar.gz" -exec tar \
