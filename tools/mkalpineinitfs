@@ -1,0 +1,69 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+this_script=$(basename "${0}")
+
+info() {
+	echo "${this_script}:" "${@}"
+}
+
+error() {
+	info "${@}" >&2
+}
+
+if [ "${EUID}" != 0 ]
+then
+	error "This script requires root privilege!"
+	exit 1
+fi
+
+source_dir="/usr/src/initramfs"
+build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
+linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
+
+info "Download Alpine Linux rootfs tarball."
+arch="x86_64"
+mirror="https://ap.edge.kernel.org"
+wget --recursive --no-parent --no-directories \
+	--directory-prefix="${build_dir}/download" \
+	--accept="alpine-minirootfs-*" \
+	"${mirror}/alpine/latest-stable/releases/${arch}/"
+
+info "Extract Alpine Linux rootfs tarball into the initramfs buid directory."
+find download -name "aline-minirootfs-*.tar.gz" -exec tar \
+	--directory="${build_dir}" \
+	--extract --preserve-permissions --file={} \
+	--xattrs-include="*.*" --numeric-owner \;
+
+info "Copy files in the source directory into the build directory."
+find "${source_dir}" -mindepth 1 -maxdepth 1 -exec cp --archive {} "${build_dir}" \;
+
+info "Copy my scripts into the initramfs build directory."
+mkdir --parents "${build_dir}/usr/local/bin"
+cp "$(locatebin mkpassphrase)" "${build_dir}/usr/local/bin"
+
+info "Install kernel modules into the initramfs build directory."
+mkdir --parents "${build_dir}/lib/modules/${linux_version}"
+find "/lib/modules/${linux_version}" -mindepth 1 -maxdepth 1 \
+	-exec cp --archive {} "${build_dir}/lib/modules/${linux_version}" \;
+
+# XXX: This code blindly install all firmwares into the initramfs. That means,
+# it can increase the size of the initramfs drastcailly. An assumption here is
+# that there should be only *necessary* firmwares in /lib/firmware.
+#
+# This is quite different from other distro's approach but in Gentoo Linux this
+# is the natural way for it. (at least, I think.)
+info "Install kernel firmwares into the initramfs build directory."
+mkdir --parents "${build_dir}/lib/firmware"
+find /lib/firmware -mindepth 1 -maxdepth 1 \
+	-exec cp --archive {} "${build_dir}/lib/firmware" \;
+
+info "Build and install the initramfs into /boot."
+( cd "${build_dir}" && find . -mindepth 1 -print0 \
+	| cpio --null --create --format="newc" \
+	| gzip > "/boot/initrd.img-${linux_version}" )
+
+info "Successfully built the initramfs!"
+info "Clean up the initramfs build directory."
+rm --recursive "${build_dir}"
