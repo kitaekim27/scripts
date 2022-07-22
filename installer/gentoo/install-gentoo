@@ -222,7 +222,7 @@ chroot_main() {
 	${emerge} --config sys-libs/timezone-data
 
 	info "Generate system locales."
-	nano -w /etc/locale.gen
+	nano /etc/locale.gen
 	locale-gen
 
 	info "Configure system locales."
