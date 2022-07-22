@@ -84,13 +84,15 @@ main_configure_storage() {
 	info "Create a LUKS2 passphrase for the root partition."
 	local passphrase
 	get_passphrase "Enter a passphrase for the root partition: " passphrase
-	local luksphrase=$(mkpassphrase "${passphrase}" | sed "s/result = \(.*\)/\1/")
+	local luksphrase
+	luksphrase=$(mkpassphrase "${passphrase}" | sed "s/result = \(.*\)/\1/")
 
 	info "Encrypt the root partition."
 	echo "${luksphrase}" | xxd -revert -plain | cryptsetup luksFormat \
 		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 
 	info "Add a secondary passphrase for the root partition."
+	local secondphrase
 	get_passphrase "Enter a secondary passphrase for the root partition: " secondphrase
 	echo "${luksphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
 		--key-file="-" "/dev/${PARTITION_ROOT}" \
@@ -233,7 +235,7 @@ chroot_configure_system() {
 	read -rp "Enter an user name: " username
 	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${username}"
 	passwd "${username}"
-	install --mode="644" /config/home/user/dot-profile "/home/${user}/.profile"
+	install --mode="644" /config/home/user/dot-profile "/home/${username}/.profile"
 
 	info "Reload the environment."
 	env-update
