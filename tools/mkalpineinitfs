@@ -43,7 +43,7 @@ sed 's/\(.*\):\/\/\(.*\)\/alpine\/\(.*\)\/\(.*$\)/\1:\/\/\2\/alpine\/\3\/testing
 		>> "${build_dir}/etc/apk/repositories"
 
 info "Install utilities in the Alpine Linux."
-chroot "${build_dir}" apk add tpm2-tools cryptsetup
+chroot "${build_dir}" apk add tpm2-tools cryptsetup xxd
 
 info "Copy files in the source directory into the build directory."
 find "${source_dir}" -mindepth 1 -maxdepth 1 -exec cp --archive {} "${build_dir}" \;
