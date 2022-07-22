@@ -115,7 +115,7 @@ do
 				do
 					sread "Enter a recovery passphrase for the root partition: " \
 						recovery_passphrase
-					if echo "${recovery_passphrase}" | cryptsetup luksOpen \
+					if printf "${recovery_passphrase}" | cryptsetup luksOpen \
 						--key-file="-" "/dev/${root}" root
 					then
 						break
