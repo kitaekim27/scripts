@@ -21,18 +21,13 @@ fi
 source_dir="/var/lib/initramfs"
 build_dir=$(mktemp --directory --tmpdir "${this_script}.XXXXXXXXXX")
 linux_version=$(lslinux | fzf --header="Select a target linux kernel version.")
+tarball=$(find "${source_dir}" -name "alpine-minirootfs-*.tar.gz" -type f \
+	| fzf --header="Select a tarball to build an initramfs.")
+[ -z "${tarball}" ] && exit 1
 
-info "Download Alpine Linux rootfs tarball."
-arch="x86_64"
-mirror="https://ap.edge.kernel.org"
-wget ---no-verbose \
-	"${mirror}/alpine/v3.16/releases/${arch}/alpine-minirootfs-3.16.0-x86_64.tar.gz"
-
-info "Extract Alpine Linux rootfs tarball into the initramfs buid directory."
-find "${build_dir}/download" -name "aline-minirootfs-*.tar.gz" -exec tar \
-	--directory="${build_dir}" \
-	--extract --preserve-permissions --file={} \
-	--xattrs-include="*.*" --numeric-owner \;
+info "Extract Alpine Linux rootfs tarball into the initramfs build directory."
+echo "${tarball}" | xargs -I {} tar --directory="${build_dir}" --extract \
+	--preserve-permissions --file={} --xattrs-include="*.*" --numeric-owner
 
 # TODO: This looks sucks.
 info "Enable the testing branch of Alpine Linux."

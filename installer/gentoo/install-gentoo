@@ -273,12 +273,13 @@ chroot_main() {
 	info "Install fzf to build an initramfs."
 	${emerge} app-shells/fzf
 
-	info "Enable ccache for the initramfs build."
-	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
-	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
-	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
-	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
-	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
+	info "Download Alpine Linux rootfs to build an initramfs."
+	arch="x86_64"
+	mirror="https://dl-cdn.alpinelinux.org"
+	wget --recursive --no-parent --no-directories --no-verbose \
+		--directory-prefix="/var/lib/initramfs" \
+		--accept-regex="alpine-minirootfs-[0-9.]*-${arch}.tar.gz$" \
+		"${mirror}/alpine/latest-stable/releases/${arch}/"
 
 	info "Build and install an initramfs."
 	mkalpineinitfs
