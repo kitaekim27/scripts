@@ -204,7 +204,7 @@ chroot_main() {
 	emerge="nice --12 emerge --quiet-build"
 
 	info "Install system management tools."
-	${emerge} app-portage/gentoolkit app-portage/mirrorselect sys-fs/btrfs-progs
+	${emerge} app-portage/gentoolkit sys-fs/btrfs-progs
 
 	info "Set the system-wide USE flags."
 	euse --enable minimal elogind X bluetooth networkmanager dbus \
@@ -212,7 +212,7 @@ chroot_main() {
 	euse --disable systemd
 
 	info "Configure Portage mirrors."
-	mirrorselect --interactive
+	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
 
 	info "Choose a Portage profile."
 	eselect profile list
@@ -350,6 +350,7 @@ main() {
 		PARTITION_UEFI=${PARTITION_UEFI}
 		PARTITION_SWAP=${PARTITION_SWAP}
 		PARTITION_ROOT=${PARTITION_ROOT}
+		PORTAGE_MIRRORS=${PORTAGE_MIRRORS}
 		$(declare -f info)
 		$(declare -f error)
 		$(declare -f chroot_cleanup)
