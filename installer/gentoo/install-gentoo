@@ -127,7 +127,7 @@ main_configure_storage() {
 	INSTALL_ROOT="/mnt/root/deploy/image-a"
 }
 
-main_install_stage3() {
+main_bootstrap_system() {
 	# TODO: Verify the downloaded files.
 	info "Download a stage 3 tarball."
 	local arch="amd64"
@@ -371,7 +371,7 @@ main() {
 	main_prepare_installer
 	main_prepare_storage
 	main_configure_storage
-	main_install_stage3
+	main_bootstrap_system
 	main_prepare_chroot
 	info "chroot into ${INSTALL_ROOT} and execute chroot_main()."
 	chroot "${INSTALL_ROOT}" /bin/bash -c "
