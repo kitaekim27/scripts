@@ -40,15 +40,6 @@ mkdir -p /dev/pts
 mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /tmp
 
-cat <<"EOF"
- _     _____ _ _  ___               ___       _     _ _
-| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |
-|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |
-| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|
-|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)
-                     |/
-EOF
-
 info "The initramfs init script successfully loaded!"
 info "Start to initialize the system..."
 
@@ -57,6 +48,15 @@ info "Start the udev daemon..."
 udevadm trigger --type="subsystems" --action="add"
 udevadm trigger --type="devices" --action="add"
 udevadm settle || :
+
+cat <<"EOF"
+ _     _____ _ _  ___               ___       _     _ _
+| |__ |___ /| | |/ _ \   __      __/ _ \ _ __| | __| | |
+|  _ \  |_ \| | | | | |  \ \ /\ / / | | |  __| |/ _` | |
+| | | |___) | | | |_| |   \ V  V /| |_| | |  | | (_| |_|
+|_| |_|____/|_|_|\___( )   \_/\_/  \___/|_|  |_|\__,_(_)
+                     |/
+EOF
 
 info "Parse kernel parameters..."
 read -r cmdline < /proc/cmdline
