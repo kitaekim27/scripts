@@ -111,6 +111,7 @@ do
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
+				count=0
 				while true
 				do
 					sread "Enter a recovery passphrase for the root partition: " \
@@ -119,6 +120,12 @@ do
 						--key-file="-" "/dev/${root}" root
 					then
 						break
+					fi
+					count=$((count+1))
+					if [ "${count}" = 10 ]
+					then
+						error "Failed to open the root partition!"
+						exit 1
 					fi
 					error "Failed to open the root partition! Try again."
 				done
