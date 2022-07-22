@@ -31,7 +31,7 @@ wget --recursive --no-parent --no-directories \
 	"${mirror}/alpine/latest-stable/releases/${arch}/"
 
 info "Extract Alpine Linux rootfs tarball into the initramfs buid directory."
-find download -name "aline-minirootfs-*.tar.gz" -exec tar \
+find "${build_dir}download" -name "aline-minirootfs-*.tar.gz" -exec tar \
 	--directory="${build_dir}" \
 	--extract --preserve-permissions --file={} \
 	--xattrs-include="*.*" --numeric-owner \;
