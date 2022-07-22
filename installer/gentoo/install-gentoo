@@ -383,6 +383,15 @@ main() {
 		EMERGE=${EMERGE}
 		$(declare -f info)
 		$(declare -f error)
+		$(declare -f chroot_mountfs)
+		$(declare -f chroot_configure_portage)
+		$(declare -f chroot_configure_system)
+		$(declare -f chroot_install_firmwares)
+		$(declare -f chroot_install_kernel)
+		$(declare -f chroot_build_initramfs)
+		$(declare -f chroot_install_bootloader)
+		$(declare -f chroot_install_daemons)
+		$(declare -f chroot_install_system_utils)
 		$(declare -f chroot_cleanup)
 		$(declare -f chroot_main)
 		chroot_main
