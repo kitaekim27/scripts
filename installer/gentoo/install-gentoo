@@ -15,10 +15,8 @@
 
 set -o errexit -o nounset -o noglob -o pipefail
 
-this_script=$(basename "${0}")
-
 info() {
-	echo "${this_script}:" "${@}"
+	echo "${THIS_SCRIPT}:" "${@}"
 }
 
 error() {
@@ -26,129 +24,143 @@ error() {
 }
 
 get_passphrase() {
+	local checkphrase
 	while true
 	do
-		read -srp "${1}" "${2}"
-		echo
-		read -srp "Enter a passphrase again: " checkphrase
-		echo
-
-		if [ "$(eval echo "\$${2}")" = "${checkphrase}" ]
-		then
-			break
-		else
-			info "You've entered different passphrases! Try again."
-		fi
+		read -srp "${1}" "${2}"; echo
+		read -srp "Enter the passphrase again: " checkphrase; echo
+		[ "$(eval echo "\$${2}")" = "${checkphrase}" ] && break
+		info "You've entered different passphrases! Try again."
 	done
 }
 
-if [ "${EUID}" != 0 ]
-then
-	error "This script requires root privilege!"
-	exit 1
-fi
+main_check_network() {
+	if ! nc -zw1 google.com 443
+	then
+		error "Can not connect to the internet!"
+		exit 1
+	fi
+}
 
-info "Sync the system time with ntp.org."
-ntpd -q -g
+main_prepare_installer() {
+	info "Sync the installer time with ntp.org."
+	ntpd -q -g
 
-info "Configure Portage mirrors."
-mirrorselect --interactive
+	info "Install the scripts into the installer."
+	find -L "${THIS_DIR}/tools" -mindepth 1 -maxdepth 1 \
+		-exec cp --recursive {} /usr/local/bin \;
 
-info "Install my scripts into the system."
-find -L tools -mindepth 1 -maxdepth 1 -exec cp --recursive {} /usr/local/bin \;
+	info "Install tpm2-tools in the installer."
+	${emerge} --autounmask --autounmask-continue app-crypt/tpm2-tools
 
-info "Install package tpm2-tools."
-emerge --quiet-build --autounmask --autounmask-continue app-crypt/tpm2-tools
+	info "Configure Portage mirrors."
+	PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
+	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
+}
 
-if ! nc -zw1 google.com 443
-then
-	error "Can not connect to the internet!"
-	exit 1
-fi
+main_prepare_storage() {
+	lsblk
+	read -rp "Select a root storage: " ROOT_STORAGE
+	fdisk "/dev/${ROOT_STORAGE}"
+	sync
 
-lsblk
-read -rp "Select a root storage: " root_storage
-fdisk "/dev/${root_storage}"
-sync
+	lsblk
+	read -rp "Select an efi partition: " PARTITION_UEFI
+	read -rp "Select a swap partition: " PARTITION_SWAP
+	read -rp "Select a root partition: " PARTITION_ROOT
+}
 
-lsblk
-read -rp "Select a root partition: " partition_root
-read -rp "Select an efi partition: " partition_uefi
-read -rp "Select a swap partition: " partition_swap
+main_configure_storage() {
+	info "Format an efi partition in vfat."
+	mkfs.vfat "/dev/${PARTITION_UEFI}"
 
-info "Format an efi partition in vfat."
-mkfs.vfat "/dev/${partition_uefi}"
+	info "Set swap on ${PARTITION_SWAP}."
+	mkswap "/dev/${PARTITION_SWAP}"
+	swapon "/dev/${PARTITION_SWAP}"
 
-info "Set swap on ${partition_swap}."
-mkswap "/dev/${partition_swap}"
-swapon "/dev/${partition_swap}"
+	info "Seal a random key into TPM."
+	tpmsealrandkey
 
-info "Seal a random key into TPM."
-tpmsealrandkey
+	info "Create a LUKS2 passphrase for the root partition."
+	local passphrase
+	get_passphrase "Enter a passphrase for the root partition: " passphrase
+	local luksphrase=$(mkpassphrase "${passphrase}" | sed "s/result = \(.*\)/\1/")
 
-info "Create a LUKS2 passphrase for the root partition."
-get_passphrase "Enter a passphrase for the root partition: " passphrase
-luks_passphrase=$(mkpassphrase "${passphrase}" | sed -n "s/result = \(.*\)/\1/p")
+	info "Encrypt the root partition."
+	echo "${luksphrase}" | xxd -revert -plain | cryptsetup luksFormat \
+		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 
-info "Encrypt the root partition."
-echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksFormat \
-	--type="luks2" \
-	--key-file="-" \
-	"/dev/${partition_root}"
+	info "Add a secondary passphrase for the root partition."
+	get_passphrase "Enter a secondary passphrase for the root partition: " secondphrase
+	echo "${luksphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
+		--key-file="-" "/dev/${PARTITION_ROOT}" \
+		<(printf "%s" "${secondphrase}")
 
-info "Add a secondary passphrase for the root partition."
-get_passphrase "Enter a secondary passphrase for the root partition: " secondary_passphrase
-echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
-	--key-file="-" \
-	"/dev/${partition_root}" \
-	<(printf "%s" "${secondary_passphrase}")
+	info "Decrypt the root partition for further installation."
+	echo "${luksphrase}" | xxd -revert -plain | cryptsetup luksOpen \
+		--key-file="-" "/dev/${PARTITION_ROOT}" root
 
-info "Decrypt the root partition."
-echo "${luks_passphrase}" | xxd -revert -plain | cryptsetup luksOpen \
-	--key-file="-" \
-	"/dev/${partition_root}" \
-	root
+	info "Format the root partition in btrfs."
+	mkfs.btrfs /dev/mapper/root
 
-info "Format the root partition in btrfs."
-mkfs.btrfs /dev/mapper/root
+	info "Mount the root partition."
+	mkdir --parents /mnt/root
+	mount /dev/mapper/root /mnt/root
 
-info "Mount the root partition."
-mkdir --parents /mnt/root
-mount /dev/mapper/root /mnt/root
+	info "Set the filesystem hierarchy layout in the root partition."
+	mkdir --parents /mnt/root/boot
+	mkdir --parents /mnt/root/deploy
+	mkdir --parents /mnt/root/snapshots
 
-info "Set the filesystem hierarchy layout in the root partition."
-mkdir --parents /mnt/root/boot
-mkdir --parents /mnt/root/deploy
-mkdir --parents /mnt/root/snapshots
+	info "Create a btrfs subvolume to install the system."
+	# Here, note that our initial subvolume is image-a.
+	btrfs subvolume create /mnt/root/deploy/image-a
+	ln --symbolic /deploy/image-a /mnt/root/deploy/target
+	ln --symbolic /deploy/none /mnt/root/deploy/current
+	# This makes mounttab valid so that we can see / mount entry inside the
+	# chroot.
+	mount --types="btrfs" --options="subvol=/deploy/target" \
+		/dev/mapper/root /mnt/root/deploy/image-a
 
-info "Create a btrfs subvolume to install the system."
-# Here, note that our initial subvolume is image-a.
-btrfs subvolume create /mnt/root/deploy/image-a
-ln --symbolic /deploy/image-a /mnt/root/deploy/current
-ln --symbolic /deploy/image-a /mnt/root/deploy/target
-# This makes mounttab valid so that we can see / mount entry inside the chroot.
-mount --types="btrfs" --options="noatime,subvol=/deploy/target" \
-	/dev/mapper/root /mnt/root/deploy/image-a
+	INSTALL_ROOT="/mnt/root/deploy/image-a"
+}
 
-# TODO: Verify the downloaded files.
-info "Download a stage 3 tarball."
-arch="amd64"
-mirror="http://ftp.kaist.ac.kr/gentoo/releases"
-wget --recursive --no-parent --no-directories \
-	--directory-prefix="download" \
-	--accept="stage3-${arch}-hardened-openrc-*" \
-	"${mirror}/${arch}/autobuilds/current-stage3-${arch}-openrc/"
+prepare_installation() {
+	# TODO: Verify the downloaded files.
+	info "Download a stage 3 tarball."
+	arch="amd64"
+	mirror="http://ftp.kaist.ac.kr/gentoo/releases"
+	wget --recursive --no-parent --no-directories \
+		--directory-prefix="download" \
+		--accept="stage3-${arch}-hardened-openrc-*" \
+		"${mirror}/${arch}/autobuilds/current-stage3-${arch}-openrc/"
 
-install_root="/mnt/root/deploy/image-a"
+	info "Extract the stage 3 tarball into ${INSTALL_ROOT}."
+	find "${THIS_DIR}/download" -iname "stage3-*.tar.xz" -exec tar \
+		--directory="${INSTALL_ROOT}" \
+		--extract --preserve-permissions --file={} \
+		--xattrs-include='*.*' --numeric-owner \;
+}
 
-info "Extract the stage 3 tarball into ${install_root}."
-find download -iname "stage3-*.tar.xz" -exec tar \
-	--directory="${install_root}" \
-	--extract --preserve-permissions --file={} \
-	--xattrs-include='*.*' --numeric-owner \;
+main_prepare_chroot() {
+	info "Mount pseudo filesystems in the installation."
+	mount-pseudofs "${INSTALL_ROOT}"
 
-info "Mount pseudo filesystems in the installation."
-mount-pseudofs "${install_root}"
+	info "Configure DNS of the installation."
+	cp --dereference /etc/resolv.conf "${INSTALL_ROOT}/etc/resolv.conf"
+
+	info "Set the initramfs source directory in the installation."
+	mkdir --parents "${INSTALL_ROOT}/var/lib/initramfs"
+	find initramfs -mindepth 1 -maxdepth 1 \
+		-exec cp --archive {} "${INSTALL_ROOT}/var/lib/initramfs" \;
+
+	info "Copy config files into the installation."
+	cp --verbose --recursive config "${INSTALL_ROOT}"
+
+	info "Install my scripts into the installation."
+	find -L tools -mindepth 1 -maxdepth 1 \
+		-exec cp --verbose --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
+}
 
 chroot_cleanup() {
 	info "Clean up installation artiparcts."
@@ -157,7 +169,7 @@ chroot_cleanup() {
 
 chroot_main() {
 	info "Mount an efi partition."
-	mount "/dev/${partition_uefi}" /boot
+	mount "/dev/${PARTITION_UEFI}" /boot
 
 	info "Mount the portage build directory as a tmpfs."
 	mkdir --parents /var/tmp/portage
@@ -168,9 +180,9 @@ chroot_main() {
 	find /config/etc/portage/env -type f -exec cp {} /etc/portage/env \;
 
 	info "Generate the fstab into the installation."
-	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${partition_uefi}") \
-	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${partition_swap}") \
-	PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${partition_root}") \
+	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${PARTITION_UEFI}") \
+	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${PARTITION_SWAP}") \
+	PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${PARTITION_ROOT}") \
 		envsubst < /config/etc/fstab.tmpl > /etc/fstab
 
 	if [ -d /etc/portage/package.use ]
@@ -308,7 +320,7 @@ chroot_main() {
 	info "Install GRUB2 bootloader."
 	${emerge} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
-	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
+	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")\"" \
 		>> /etc/default/grub
 	grub-mkconfig --output="/boot/grub/grub.cfg"
 
@@ -324,33 +336,46 @@ chroot_main() {
 	source /etc/profile
 }
 
-info "Configure DNS of the installation."
-cp --dereference /etc/resolv.conf "${install_root}/etc/resolv.conf"
+main() {
+	main_check_network
+	main_prepare_installer
+	main_prepare_storage
+	main_configure_storage
+	main_prepare_chroot
+	info "chroot into ${INSTALL_ROOT} and execute chroot_main()."
+	chroot "${INSTALL_ROOT}" /bin/bash -c "
+		set -o errexit -o nounset -o noglob -o pipefail
+		THIS_SCRIPT=${THIS_SCRIPT}
+		ROOT_STORAGE=${ROOT_STORAGE}
+		PARTITION_UEFI=${PARTITION_UEFI}
+		PARTITION_SWAP=${PARTITION_SWAP}
+		PARTITION_ROOT=${PARTITION_ROOT}
+		$(declare -f info)
+		$(declare -f error)
+		$(declare -f chroot_cleanup)
+		$(declare -f chroot_main)
+		chroot_main
+		chroot_cleanup
+	"
+}
 
-info "Set the initramfs source directory in the installation."
-mkdir --parents "${install_root}/var/lib/initramfs"
-find initramfs -mindepth 1 -maxdepth 1 \
-	-exec cp --archive {} "${install_root}/var/lib/initramfs" \;
+if [ "${EUID}" != 0 ]
+then
+	error "This script requires root privilege!"
+	exit 1
+fi
 
-info "Copy config files into the installation."
-cp --verbose --recursive config "${install_root}"
+THIS_SCRIPT=$(basename "${BASH_SOURCE[0]}")
+THIS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
-info "Install my scripts into the installation."
-find -L tools -mindepth 1 -maxdepth 1 \
-	-exec cp --verbose --recursive {} "${install_root}/usr/local/bin/" \;
+ROOT_STORAGE=""
+PARTITION_UEFI=""
+PARTITION_SWAP=""
+PARTITION_ROOT=""
 
-info "chroot into ${install_root} and execute chroot_main()."
-chroot "${install_root}" /bin/bash -c "
-	set -o errexit -o nounset -o noglob -o pipefail
-	this_script=${this_script}
-	root_storage=${root_storage}
-	partition_uefi=${partition_uefi}
-	partition_swap=${partition_swap}
-	partition_root=${partition_root}
-	$(declare -f info)
-	$(declare -f error)
-	$(declare -f chroot_cleanup)
-	$(declare -f chroot_main)
-	chroot_main
-	chroot_cleanup
-"
+INSTALL_ROOT=""
+PORTAGE_MIRRORS=""
+
+readonly emerge="nice --12 emerge --quiet-build"
+
+main "${@}"
