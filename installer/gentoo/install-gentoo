@@ -274,10 +274,11 @@ chroot_main() {
 	${emerge} app-shells/fzf
 
 	info "Enable ccache for the initramfs build."
-	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env/ccache
-	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env/ccache
-	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env/ccache
-	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env/ccache
+	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
+	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
+	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
+	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
+	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
 
 	info "Build and install an initramfs."
 	mkalpineinitfs
