@@ -125,21 +125,21 @@ main_configure_storage() {
 	INSTALL_ROOT="/mnt/root/deploy/image-a"
 }
 
-prepare_installation() {
+main_install_stage3() {
 	# TODO: Verify the downloaded files.
 	info "Download a stage 3 tarball."
-	arch="amd64"
-	mirror="http://ftp.kaist.ac.kr/gentoo/releases"
+	local arch="amd64"
+	local mirror="http://ftp.kaist.ac.kr/gentoo/releases"
 	wget --recursive --no-parent --no-directories \
 		--directory-prefix="download" \
-		--accept="stage3-${arch}-hardened-openrc-*" \
+		--accept="stage3-${arch}-hardened-openrc-*.tar.xz" \
 		"${mirror}/${arch}/autobuilds/current-stage3-${arch}-openrc/"
 
 	info "Extract the stage 3 tarball into ${INSTALL_ROOT}."
-	find "${THIS_DIR}/download" -iname "stage3-*.tar.xz" -exec tar \
-		--directory="${INSTALL_ROOT}" \
-		--extract --preserve-permissions --file={} \
-		--xattrs-include='*.*' --numeric-owner \;
+	find "${THIS_DIR}/download" -iname "stage3-*.tar.xz" \
+		-exec tar --directory="${INSTALL_ROOT}" \
+			--extract --preserve-permissions --file={} \
+			--xattrs-include='*.*' --numeric-owner \;
 }
 
 main_prepare_chroot() {
@@ -151,14 +151,14 @@ main_prepare_chroot() {
 
 	info "Set the initramfs source directory in the installation."
 	mkdir --parents "${INSTALL_ROOT}/var/lib/initramfs"
-	find initramfs -mindepth 1 -maxdepth 1 \
+	find "${THIS_DIR}/initramfs" -mindepth 1 -maxdepth 1 \
 		-exec cp --archive {} "${INSTALL_ROOT}/var/lib/initramfs" \;
 
 	info "Copy config files into the installation."
-	cp --verbose --recursive config "${INSTALL_ROOT}"
+	cp --verbose --recursive "${THIS_DIR}/config" "${INSTALL_ROOT}"
 
 	info "Install my scripts into the installation."
-	find -L tools -mindepth 1 -maxdepth 1 \
+	find -L "${THIS_DIR}/tools" -mindepth 1 -maxdepth 1 \
 		-exec cp --verbose --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
 }
 
@@ -341,6 +341,7 @@ main() {
 	main_prepare_installer
 	main_prepare_storage
 	main_configure_storage
+	main_install_stage3
 	main_prepare_chroot
 	info "chroot into ${INSTALL_ROOT} and execute chroot_main()."
 	chroot "${INSTALL_ROOT}" /bin/bash -c "
