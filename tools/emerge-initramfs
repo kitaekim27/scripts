@@ -32,8 +32,9 @@ emerge="nice --12 emerge --jobs=$(nproc) --root=${build_dir}"
 info "Install busybox in the initramfs build directory."
 USE="${common_use} make-symlinks" ${emerge} sys-apps/busybox
 
-info "Install tpm2-tools and cryptsetup in the initramfs build directory."
-USE="${common_use}" ${emerge} app-crypt/tpm2-tools sys-fs/cryptsetup
+info "Install utilities in the initramfs build directory."
+USE="${common_use}" ${emerge} app-crypt/tpm2-tools sys-fs/cryptsetup \
+	app-editors/vim-core
 
 # Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
 # for pthread for cryptsetup...
