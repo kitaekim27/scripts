@@ -158,8 +158,7 @@ chroot_cleanup() {
 
 chroot_main() {
 	info "Mount an efi partition."
-	mkdir /boot/efi || :
-	mount "/dev/${partition_uefi}" /boot/efi
+	mount "/dev/${partition_uefi}" /boot
 
 	info "Mount the portage build directory as a tmpfs."
 	mkdir --parents /var/tmp/portage
@@ -308,9 +307,8 @@ chroot_main() {
 	${emerge} app-admin/logrotate
 
 	info "Install GRUB2 bootloader."
-	echo "sys-boot/grub device-mapper" >> /etc/portage/package.use
 	${emerge} sys-boot/grub
-	grub-install --removable
+	grub-install --efi-directory="/boot" --removable
 	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${partition_root}")\"" \
 		>> /etc/default/grub
 	grub-mkconfig --output="/boot/grub/grub.cfg"
