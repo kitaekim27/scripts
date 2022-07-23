@@ -1,3 +1,6 @@
+[ -e "${HOME}/.local/bin" ] && PATH="${PATH}:${HOME}/.local/bin"
+[ -e "${HOME}/bin" ] && PATH="${PATH}:${HOME}/bin"
+
 if shopt -q login_shell
 then
     [ -n "${BASH_VERSION}" ] && [ -f "${HOME}/.bashrc" ] && source "${HOME}/.bashrc"
@@ -5,6 +8,3 @@ then
 else
     exit 1
 fi
-
-[ -e "${HOME}/.local/bin" ] && PATH="${PATH}:${HOME}/.local/bin"
-[ -e "${HOME}/bin" ] && PATH="${PATH}:${HOME}/bin"
