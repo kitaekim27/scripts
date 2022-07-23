@@ -112,16 +112,15 @@ do
 	error "The system you're on might be modified to steal your information!"
 	while true
 	do
-		printf "Do you want to open the root partition using a recovery passphrase? [y/n]: "
+		printf "Do you want to open the root partition using a secondary passphrase? [y/n]: "
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
 				count=0
 				while true
 				do
-					sread "Enter a recovery passphrase for the root partition: " \
-						recovery_passphrase
-					if printf "${recovery_passphrase}" | cryptsetup luksOpen \
+					sread "Enter a secondary passphrase for the root partition: " secondphrase
+					if printf "%s" "${secondphrase}" | cryptsetup luksOpen \
 						--key-file="-" "/dev/${root}" root
 					then
 						break
