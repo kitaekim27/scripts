@@ -282,6 +282,8 @@ chroot_install_firmwares() {
 }
 
 chroot_install_kernel() {
+	# Install binary distribution kernel as a solid default kernel so that
+	# you can customize the kernel without worrying system breakage.
 	info "Install the linux kernel."
 	echo "sys-kernel/gentoo-kernel-bin hardened" >> /etc/portage/package.use
 	${EMERGE} sys-kernel/gentoo-kernel-bin
