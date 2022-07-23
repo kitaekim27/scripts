@@ -90,8 +90,8 @@ BUILD_DIR=$(mktemp --directory --tmpdir "${THIS_SCRIPT}.XXXXXXXXXX")
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
 
-COMMON_USE="-elogind -systemd -X -bluetooth -networkmanager -dbus -mime -man
-	-su -pam minimal lto"
+COMMON_USE="-elogind -systemd -bluetooth -networkmanager -dbus -mime -man
+	-su -pam -X -kde -qt -gnome -gtk minimal lto"
 export COMMON_FLAGS="-Os -march=native -pipe"
 
 EMERGE="nice --12 emerge --jobs=$(nproc) --root=${BUILD_DIR}"
