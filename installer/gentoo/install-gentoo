@@ -231,6 +231,7 @@ chroot_configure_system() {
 	eselect locale set "${locale}"
 
 	info "Set the hostname."
+	local hostname
 	read -rp "Enter the hostname: " hostname
 	sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
 
