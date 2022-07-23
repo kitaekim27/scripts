@@ -116,9 +116,7 @@ main_configure_storage() {
 
 	info "Set the filesystem hierarchy layout in the root partition."
 	mkdir --parents /mnt/root/deploy
-
-	info "Create a btrfs subvolume to store snapshots."
-	btrfs subvolume create /mnt/root/snapshots
+	mkdir --parents /mnt/root/snapshots
 
 	info "Create a btrfs subvolume to install the system."
 	# Here, note that our initial subvolume is image-a.
@@ -148,9 +146,6 @@ main_bootstrap_system() {
 		-exec tar --directory="${INSTALL_ROOT}" \
 			--extract --preserve-permissions --file={} \
 			--xattrs-include='*.*' --numeric-owner \;
-
-	info "Create a mount point for the snapshots subvolume."
-	mkdir --parents "${INSTALL_ROOT}/snapshots"
 }
 
 main_prepare_chroot() {
