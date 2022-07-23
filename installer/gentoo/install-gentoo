@@ -115,7 +115,6 @@ main_configure_storage() {
 	mount /dev/mapper/root /mnt/root
 
 	info "Set the filesystem hierarchy layout in the root partition."
-	mkdir --parents /mnt/root/boot
 	mkdir --parents /mnt/root/deploy
 	mkdir --parents /mnt/root/snapshots
 
