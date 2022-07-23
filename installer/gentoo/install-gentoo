@@ -190,6 +190,13 @@ chroot_configure_portage() {
 		touch /etc/portage/package.use
 	fi
 
+	if [ -d /etc/portage/package.env ]
+	then
+		info "Make the Portage package.env a single file."
+		rm --recursisve /etc/portage/package.env
+		touch /etc/portage/package.env
+	fi
+
 	info "Configure the Portage make.conf file."
 	cat <<-EOF >> /etc/portage/make.conf
 	MAKEOPTS="-j$(nproc)"
@@ -293,7 +300,6 @@ chroot_build_initramfs() {
 	${EMERGE} app-shells/fzf
 
 	info "Enable ccache to build an initramfs."
-	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
 	cat <<-EOF >> /etc/portage/package.env
 	sys-apps/busybox ccache.conf
 	app-crypt/tpm2-tools ccache.conf
