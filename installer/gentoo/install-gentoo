@@ -374,6 +374,9 @@ chroot_main() {
 	chroot_install_system_utils
 
 	info "Install XOrg server."
+	# Without disabling `minimal` USE flag, emerge will fail to install
+	# drivers.
+	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
 	env-update
 	source /etc/profile
