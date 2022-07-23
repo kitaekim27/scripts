@@ -38,6 +38,6 @@ btrfs subvolume snapshot \
 	"/host-rootfs/deploy/${next_image}"
 
 rm /host-rootfs/deploy/target
-ln --symbolic --force "${next_image}" /host-rootfs/deploy/target
+ln --symbolic --force "/deploy/${next_image}" /host-rootfs/deploy/target
 
 info "Done."
