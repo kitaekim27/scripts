@@ -94,6 +94,6 @@ COMMON_USE="-elogind -systemd -bluetooth -networkmanager -dbus -mime -man
 	-su -pam -X -kde -qt -gnome -gtk minimal lto"
 export COMMON_FLAGS="-Os -march=native -pipe"
 
-EMERGE="nice --12 emerge --jobs=$(nproc) --root=${BUILD_DIR}"
+EMERGE="nice --12 emerge --jobs=2 --root=${BUILD_DIR}"
 
 main "${@}"
