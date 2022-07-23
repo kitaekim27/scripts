@@ -50,12 +50,17 @@ main_prepare_installer() {
 	find -L "${THIS_DIR}/tools" -mindepth 1 -maxdepth 1 \
 		-exec cp --recursive {} /usr/local/bin \;
 
-	info "Install tpm2-tools in the installer."
-	${EMERGE} --autounmask --autounmask-continue app-crypt/tpm2-tools
+	info "Configure Portage make.conf file."
+	cat <<-EOF >> /etc/portage/make.conf
+	MAKEOPTS="-j$(nproc)"
+	EOF
 
 	info "Configure Portage mirrors."
 	PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
+
+	info "Install tpm2-tools in the installer."
+	${EMERGE} --autounmask --autounmask-continue app-crypt/tpm2-tools
 }
 
 main_prepare_storage() {
@@ -289,10 +294,12 @@ chroot_build_initramfs() {
 
 	info "Enable ccache to build an initramfs."
 	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
-	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
-	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
-	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
-	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
+	cat <<-EOF >> /etc/portage/package.env
+	sys-apps/busybox ccache.conf
+	app-crypt/tpm2-tools ccache.conf
+	sys-fs/cryptsetup ccache.conf
+	app-editors/vim-core ccache.conf
+	EOF
 
 	info "Build and install an initramfs."
 	emerge-initramfs
@@ -328,8 +335,9 @@ chroot_install_bootloader() {
 	info "Install GRUB2 bootloader."
 	${EMERGE} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
-	echo "GRUB_CMDLINE_LINUX=\"root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")\"" \
-		>> /etc/default/grub
+	cat <<-EOF >> /etc/default/grub
+	GRUB_CMDLINE_LINUX="root=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")"
+	EOF
 	grub-mkconfig --output="/boot/grub/grub.cfg"
 }
 
