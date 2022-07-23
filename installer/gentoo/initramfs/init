@@ -154,8 +154,8 @@ mount -t btrfs -o noatime,subvol=/deploy/target /dev/mapper/root /mnt/root
 info "Clean up."
 udevadm control --exit
 umount -R /dev
-umount -R /proc
 umount -R /sys
+umount -R /proc
 
 info "Execute the init process!"
 exec switch_root /mnt/root /sbin/init
