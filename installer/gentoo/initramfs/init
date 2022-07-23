@@ -149,9 +149,7 @@ done
 
 info "Mount the root partition!"
 mkdir -p /mnt/root
-mount /dev/mapper/root /mnt/root
-mount -t btrfs -o noatime,rw,space_cache=v2,subvolid=5,subvol=/deploy/target \
-	/dev/mapper/root /mnt/root/deploy/target
+mount -t btrfs -o noatime,subvol=/deploy/target /dev/mapper/root /mnt/root
 
 info "Stop the udev daemon..."
 udevadm control --exit
@@ -162,4 +160,4 @@ umount /proc
 umount /sys
 
 info "Execute the init process!"
-exec switch_root /mnt/root/deploy/target /sbin/init
+exec switch_root /mnt/root /sbin/init
