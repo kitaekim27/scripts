@@ -161,11 +161,11 @@ main_prepare_chroot() {
 		-exec cp --archive {} "${INSTALL_ROOT}/var/lib/initramfs" \;
 
 	info "Copy config files into the installation."
-	cp --verbose --recursive "${THIS_DIR}/config" "${INSTALL_ROOT}"
+	cp --recursive "${THIS_DIR}/config" "${INSTALL_ROOT}"
 
 	info "Install my scripts into the installation."
 	find -L "${THIS_DIR}/tools" -mindepth 1 -maxdepth 1 \
-		-exec cp --verbose --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
+		-exec cp --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
 }
 
 # Mount fimesystems like fstab.
