@@ -358,12 +358,12 @@ chroot_main() {
 	chroot_configure_system
 
 	info "Update @world Portage set."
-	# Here, we use `--jobs="2"` flag which may cause memory exhaustion.
-	# The assumptions are as we will use a bare minimum profile, we don't
-	# have any packages consume memory drastcally such as a desktop
+	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
+	# exhaustion. The assumptions are as we will use a bare minimum profile,
+	# we don't have any packages consume memory drastcally such as a desktop
 	# environment and the @world set usually contain many packages that
 	# actually does not build anything but just setting up the system.
-	${EMERGE} --jobs="2" --update --deep --newuse @world
+	${EMERGE} --jobs="$(nproc)" --update --deep --newuse @world
 
 	chroot_install_firmwares
 	chroot_install_kernel
