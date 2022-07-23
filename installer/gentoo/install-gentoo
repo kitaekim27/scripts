@@ -179,13 +179,6 @@ chroot_configure_portage() {
 	mkdir --parents /etc/portage/env
 	find /config/etc/portage/env -type f -exec cp {} /etc/portage/env \;
 
-	info "Enable ccache for some specific packages."
-	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
-	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
-	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
-	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
-	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
-
 	if [ -d /etc/portage/package.use ]
 	then
 		info "Make the Portage package.use a single file."
@@ -293,6 +286,13 @@ chroot_install_kernel() {
 chroot_build_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
+
+	info "Enable ccache to build an initramfs."
+	[ -d /etc/portage/package.env ] && rm --recursisve /etc/portage/package.env
+	echo "sys-apps/busybox ccache.conf" >> /etc/portage/package.env
+	echo "app-crypt/tpm2-tools ccache.conf" >> /etc/portage/package.env
+	echo "sys-fs/cryptsetup ccache.conf" >> /etc/portage/package.env
+	echo "app-editors/vim-core ccache.conf" >> /etc/portage/package.env
 
 	info "Build and install an initramfs."
 	emerge-initramfs
