@@ -35,8 +35,8 @@ export PATH="${PATH}:/usr/local/bin"
 
 mount -t proc proc /proc
 mount -t devtmpfs udev /dev
+mkdir /dev/pts || :
 mount -t sysfs sysfs /sys
-mkdir -p /dev/pts
 mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /tmp
 
@@ -55,7 +55,7 @@ cat <<"EOF"
 EOF
 
 info "The initramfs is successfully loaded!"
-info "Start to initialize the system..."
+info "Start to initialize the system."
 
 # XXX: Hard-coded keyboard config.
 #      You can find all keymaps at /usr/share/keymaps.
@@ -63,22 +63,22 @@ info "Configure the keyboard."
 loadkeys us
 kbd_mode -u
 
-info "Parse kernel parameters..."
+info "Parse the kernel parameters."
 read -r cmdline < /proc/cmdline
 for cmd in ${cmdline}
 do
 	case "${cmd}" in
-		root=*)
-			cmd="${cmd#root=}"
+		cryptroot=*)
+			cmd="${cmd#cryptroot=}"
 			case "${cmd}" in
 				PARTUUID=*)
 					count=0
 					while true
 					do
-						if root=$(findfs PARTUUID="${cmd#PARTUUID=}")
+						if cryptroot=$(findfs PARTUUID="${cmd#PARTUUID=}")
 						then
-							info "Detected the root partition."
-							info "root=${root}"
+							info "Detected the encrypted root partition!"
+							info "cryptroot=${cryptroot}"
 							break
 						fi
 
@@ -97,46 +97,47 @@ do
 	esac
 done
 
-info "Decrypt the root partition..."
+info "Decrypt the root partition."
 while true
 do
 	sread "Enter a passphrase for the root partition: " passphrase
-	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" \
-		| xxd -revert -plain | cryptsetup luksOpen \
-			--key-file="-" "/dev/${root}" root
+	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" | xxd -revert -plain \
+		| cryptsetup luksOpen --key-file="-" "/dev/${cryptroot}" root
 	then
 		break
 	fi
 
-	error "Failed to open the root partition!"
+	error "Failed to decrypt the root partition!"
 	error "The system you're on might be modified to steal your information!"
 	while true
 	do
-		printf "Do you want to open the root partition using a secondary passphrase? [y/n]: "
+		printf "Do you want to open the root partition using the secondary passphrase? [y/n]: "
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
 				count=0
 				while true
 				do
-					sread "Enter a secondary passphrase for the root partition: " secondphrase
+					sread "Enter the secondary passphrase for the root partition: " secondphrase
 					if printf "%s" "${secondphrase}" | cryptsetup luksOpen \
-						--key-file="-" "/dev/${root}" root
+						--key-file="-" "/dev/${cryptroot}" root
 					then
 						break
 					fi
+
 					count=$((count+1))
 					if [ "${count}" = 10 ]
 					then
 						error "Failed to open the root partition!"
 						exit 1
 					fi
+
 					error "Failed to open the root partition! Try again."
 				done
 				break
 				;;
 			n* | N*)
-				info "Execute a shell for debugging..."
+				info "Execute the shell for debugging."
 				exit 1
 				;;
 			*)
@@ -146,17 +147,15 @@ do
 	done
 done
 
-info "Mount the root partition!"
+info "Mount the root partition."
 mkdir -p /mnt/root
 mount -t btrfs -o noatime,subvol=/deploy/target /dev/mapper/root /mnt/root
 
-info "Stop the udev daemon..."
+info "Clean up."
 udevadm control --exit
-
-info "Clean up..."
 umount -R /dev
-umount /proc
-umount /sys
+umount -R /proc
+umount -R /sys
 
 info "Execute the init process!"
 exec switch_root /mnt/root /sbin/init
