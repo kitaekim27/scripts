@@ -146,6 +146,9 @@ main_bootstrap_system() {
 		-exec tar --directory="${INSTALL_ROOT}" \
 			--extract --preserve-permissions --file={} \
 			--xattrs-include='*.*' --numeric-owner \;
+
+	info "Create a mount point for the btrfs root subvolume."
+	mkdir --parents "${INSTALL_ROOT}/rootvolume"
 }
 
 main_prepare_chroot() {

@@ -21,9 +21,9 @@ snapshot=$(date -Iseconds)
 
 info "Create a snapshot ${snapshot}."
 
-# Make a read-only snapshot in the `/host-rootfs/snapshots` directory.
+# Make a read-only snapshot in the `/rootvolume/snapshots` directory.
 btrfs subvolume snapshot -r \
-	/host-rootfs/deploy/current \
-	"/host-rootfs/snapshots/${snapshot}"
+	/rootvolume/deploy/current \
+	"/rootvolume/snapshots/${snapshot}"
 
 info "Done."
