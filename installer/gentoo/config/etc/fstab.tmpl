@@ -1,4 +1,4 @@
-PARTUUID=${PARTUUID_UEFI} /boot vfat noauto,noatime 0 0
+PARTUUID=${PARTUUID_UEFI} /boot vfat noatime 0 0
 PARTUUID=${PARTUUID_SWAP} none swap sw 0 0
 # Note that it seems btrfs requires noatime because without it, metadata blocks
 # always need to be copied as it's CoW filesystem. It seems this makes huge
