@@ -125,7 +125,7 @@ main_configure_storage() {
 	ln --symbolic /deploy/none /mnt/root/deploy/current
 	# This makes mounttab valid so that we can see / mount entry inside the
 	# chroot.
-	mount --types="btrfs" --options="subvol=/deploy/target" \
+	mount --types="btrfs" --options="${ROOT_MOUNT_FLAGS}" \
 		/dev/mapper/root /mnt/root/deploy/image-a
 
 	INSTALL_ROOT="/mnt/root/deploy/image-a"
@@ -171,14 +171,12 @@ main_prepare_chroot() {
 		-exec cp --recursive {} "${INSTALL_ROOT}/usr/local/bin/" \;
 }
 
-# Mount fimesystems like fstab.
 chroot_mount_filesystems() {
-	info "Mount an efi partition."
-	mount "/dev/${PARTITION_UEFI}" /boot
-
-	info "Mount the portage build directory as a tmpfs."
+	info "Mount partitions using fstab."
+	mount /boot
+	mount /tmp
 	mkdir --parents /var/tmp/portage
-	mount --types="tmpfs" --options="noatime,nosuid,nodev" tmpfs /var/tmp/portage
+	mount /var/tmp/portage
 }
 
 chroot_configure_portage() {
@@ -221,6 +219,7 @@ chroot_configure_portage() {
 
 chroot_configure_system() {
 	info "Generate the fstab."
+	ROOT_MOUNT_FLAGS="${ROOT_MOUNT_FLAGS}" \
 	PARTUUID_UEFI=$(blkid -o value -s PARTUUID "/dev/${PARTITION_UEFI}") \
 	PARTUUID_SWAP=$(blkid -o value -s PARTUUID "/dev/${PARTITION_SWAP}") \
 	PARTUUID_ROOT=$(blkid -o value -s PARTUUID "/dev/${PARTITION_ROOT}") \
@@ -358,9 +357,9 @@ chroot_cleanup() {
 }
 
 chroot_main() {
-	chroot_mount_filesystems
 	chroot_configure_portage
 	chroot_configure_system
+	chroot_mount_filesystems
 
 	info "Update @world Portage set."
 	# Here, we use `--jobs="$(nproc)"` flag which may cause memory
@@ -418,6 +417,7 @@ main() {
 		PARTITION_UEFI='${PARTITION_UEFI}'
 		PARTITION_SWAP='${PARTITION_SWAP}'
 		PARTITION_ROOT='${PARTITION_ROOT}'
+		ROOT_MOUNT_FLAGS='${ROOT_MOUNT_FLAGS}'
 		PORTAGE_MIRRORS='${PORTAGE_MIRRORS}'
 		EMERGE='${EMERGE}'
 
@@ -440,9 +440,14 @@ PARTITION_UEFI=""
 PARTITION_SWAP=""
 PARTITION_ROOT=""
 
+# Note that it seems btrfs requires noatime because without it, metadata blocks
+# always need to be copied as it's CoW filesystem. It seems this makes huge
+# difference when there are many snapshots.
+ROOT_MOUNT_FLAGS="noatime,subvol=/deploy/target"
+
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
 
-readonly EMERGE="nice --12 emerge --quiet-build"
+EMERGE="nice --12 emerge --quiet-build"
 
 main "${@}"
