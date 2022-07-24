@@ -150,7 +150,6 @@ done
 info "Mount the root partition."
 mkdir -p /mnt/root
 mount -t btrfs -o noatime,subvol=/deploy/target /dev/mapper/root /mnt/root
-sync
 
 info "Clean up."
 udevadm control --exit
