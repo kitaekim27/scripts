@@ -342,6 +342,10 @@ chroot_install_system_utils() {
 
 chroot_install_bootloader() {
 	info "Install GRUB2 bootloader."
+	echo "sys-boot/grub -theme -nls" >> /etc/portage/package.use
+	cat <<-EOF >> /etc/portage/make.conf
+	GRUB_PLATFORMS="efi-64"
+	EOF
 	${EMERGE} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
 	cat <<-EOF >> /etc/default/grub
