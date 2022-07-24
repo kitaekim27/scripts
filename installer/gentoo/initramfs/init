@@ -145,6 +145,7 @@ do
 				;;
 		esac
 	done
+	break
 done
 
 info "Mount the root partition."
