@@ -102,7 +102,7 @@ while true
 do
 	sread "Enter a passphrase for the root partition: " passphrase
 	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" | xxd -revert -plain \
-		| cryptsetup luksOpen --key-file="-" "/dev/${cryptroot}" root
+		| cryptsetup luksOpen --key-file="-" "${cryptroot}" root
 	then
 		break
 	fi
@@ -120,7 +120,7 @@ do
 				do
 					sread "Enter the secondary passphrase for the root partition: " secondphrase
 					if printf "%s" "${secondphrase}" | cryptsetup luksOpen \
-						--key-file="-" "/dev/${cryptroot}" root
+						--key-file="-" "${cryptroot}" root
 					then
 						break
 					fi
