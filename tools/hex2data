@@ -1,0 +1,4 @@
+#!/usr/bin/env busybox sh
+set -o errexit -o nounset -o noglob -o pipefail
+tmp=$(printf "%s" "${1}" | sed 's/\(.\{2\}\)/\\x\1/g')
+printf "%b" "${tmp}"
