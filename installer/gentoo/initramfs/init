@@ -36,8 +36,8 @@ export PATH="${PATH}:/usr/local/bin"
 mount -t proc proc /proc
 mount -t devtmpfs udev /dev
 mkdir /dev/pts || :
-mount -t sysfs sysfs /sys
 mount -t devpts devpts /dev/pts
+mount -t sysfs sysfs /sys
 mount -t tmpfs tmpfs /tmp
 
 /lib/systemd/systemd-udevd --daemon --resolve-names="never"
@@ -101,17 +101,11 @@ info "Decrypt the root partition."
 while true
 do
 	sread "Enter a passphrase for the root partition: " passphrase
-	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" \
-		| hex2data | cryptsetup luksOpen --key-file="-" "${cryptroot}" root
+	if ! luksphrase=$(mkpassphrase "${passphrase}" 2>/dev/null | sed  "s/result = \(.*\)/\1/")
 	then
-		break
-	fi
-
-	error "Failed to decrypt the root partition!"
-	error "The system you're on might be modified to steal your information!"
-	while true
-	do
-		printf "Do you want to open the root partition using the secondary passphrase? [y/n]: "
+		error "Can't unseal the key stored in TPM!"
+		error "The system might be modified to steal your information!"
+		printf "%s" "Do you want to use the secondary passphrase to open the root partition? [y/n]: "
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
@@ -119,8 +113,7 @@ do
 				while true
 				do
 					sread "Enter the secondary passphrase for the root partition: " secondphrase
-					if printf "%s" "${secondphrase}" | cryptsetup luksOpen \
-						--key-file="-" "${cryptroot}" root
+					if printf "%s" "${secondphrase}" | cryptsetup luksOpen --key-file="-" "${cryptroot}" root
 					then
 						break
 					fi
@@ -144,19 +137,23 @@ do
 				error "Invalid input! Try again."
 				;;
 		esac
-	done
-	break
+	fi
+
+	if printf "%s" "${luksphrase}" | hex2data | cryptsetup luksOpen --key-file="-" "${cryptroot}" root
+	then
+		break
+	fi
+
+	error "Failed to decrypt the root partition!"
 done
 
 info "Mount the root partition."
 mkdir -p /mnt/root
 mount -t btrfs -o noatime,subvol=/deploy/target /dev/mapper/root /mnt/root
+sync
 
 info "Clean up."
 udevadm control --exit
-umount -R /dev
-umount -R /sys
-umount -R /proc
 
 info "Execute the init process!"
 exec switch_root /mnt/root /sbin/init
