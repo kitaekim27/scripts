@@ -31,4 +31,4 @@ key_digest=$(printf "%s" "${key}" | base64 -d | sha256sum | awk '{print $1}')
 passphrase_digest=$(printf "%s" "${passphrase}" | sha256sum | awk '{print $1}')
 
 concat="${key_digest}${passphrase_digest}"
-printf "%s" "${concat}" | xxd -revert -plain | sha256sum | awk '{print "result =", $1}'
+printf "%s" "${concat}" | hex2data | sha256sum | awk '{print "result =", $1}'

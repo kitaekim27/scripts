@@ -101,8 +101,8 @@ info "Decrypt the root partition."
 while true
 do
 	sread "Enter a passphrase for the root partition: " passphrase
-	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" | xxd -revert -plain \
-		| cryptsetup luksOpen --key-file="-" "${cryptroot}" root
+	if mkpassphrase "${passphrase}" | sed  "s/result = \(.*\)/\1/" \
+		| hex2data | cryptsetup luksOpen --key-file="-" "${cryptroot}" root
 	then
 		break
 	fi

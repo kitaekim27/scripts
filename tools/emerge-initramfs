@@ -15,8 +15,9 @@ main() {
 	USE="${COMMON_USE} make-symlinks" ${EMERGE} sys-apps/busybox
 
 	info "Install utilities in the initramfs build directory."
-	USE="${COMMON_USE}" ${EMERGE} app-crypt/tpm2-tools sys-fs/cryptsetup \
-		sys-apps/kbd app-editors/vim-core
+	USE="${COMMON_USE}" ${EMERGE} \
+		app-crypt/tpm2-tools sys-fs/cryptsetup \
+		sys-apps/kbd
 
 	# Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
 	# for pthread for cryptsetup...
