@@ -210,12 +210,6 @@ chroot_configure_portage() {
 	mkdir --parents /etc/portage/repos.conf
 	cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 	emerge-webrsync
-
-	info "Select a Portage profile."
-	local profile
-	eselect profile list
-	read -rp "Select a Portage profile: " profile
-	eselect profile set "${profile}"
 }
 
 chroot_configure_system() {
