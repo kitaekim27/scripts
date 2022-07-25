@@ -50,7 +50,8 @@ main_prepare_installer() {
 	info "Download a stage 3 tarball."
 	local arch="amd64"
 	local mirror="http://ftp.daum.net/gentoo/releases"
-	local latest_tarball="$(wget --quiet --output-document="-" \
+	local latest_tarball
+	latest_tarball="$(wget --quiet --output-document="-" \
 		"${mirror}/${arch}/autobuilds/latest-stage3-amd64-hardened-nomultilib-openrc.txt" \
 				| awk '!/#/{print $1}')"
 	wget --no-verbose --directory-prefix="${THIS_DIR}/download" \
@@ -351,7 +352,7 @@ chroot_install_desktop() {
 	# Without disabling `minimal` USE flag, we can't install drivers.
 	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
-	cat <<-"EOF" >> /home/${USER_NAME}/.bash_profile
+	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx
 	EOF
 	env-update
@@ -363,7 +364,7 @@ chroot_install_desktop() {
 	${doas} git clone --branch="release" https://github.com/kitaekim27/dwm "${home}/.dwm"
 	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)"
 	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)" install
-	cat <<-"EOF" >> /home/${USER_NAME}/.xinitrc
+	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
 
