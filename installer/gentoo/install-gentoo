@@ -56,7 +56,6 @@ main_prepare_installer() {
 	EOF
 
 	info "Configure Portage mirrors."
-	PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
 
 	info "Install tpm2-tools in the installer."
@@ -461,7 +460,7 @@ PARTITION_SWAP=""
 PARTITION_ROOT=""
 
 INSTALL_ROOT=""
-PORTAGE_MIRRORS=""
+PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
