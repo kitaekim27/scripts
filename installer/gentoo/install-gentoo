@@ -224,7 +224,7 @@ chroot_configure_system() {
 
 	info "Create a default user."
 	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${USER_NAME}"
-	passwd "${USER_NAME}"
+	echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
 
 	info "Setup global XDG environment variables."
 	cat <<-"EOF" >> /etc/profile
@@ -437,6 +437,7 @@ main() {
 		PORTAGE_MIRRORS='${PORTAGE_MIRRORS}'
 		HOST_NAME='${HOST_NAME}'
 		USER_NAME='${USER_NAME}'
+		USER_PASSWORD='${USER_PASSWORD}'
 		PASSPHRASE='${PASSPHRASE}'
 		SECONDPHRASE='${SECONDPHRASE}'
 		EMERGE='${EMERGE}'
@@ -465,6 +466,7 @@ PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
+get_passphrase "Enter a passphrase for the use: " USER_PASSWORD
 get_passphrase "Enter a passphrase the root partition: " PASSPHRASE
 get_passphrase "Enter a secondary passphrase the root partition: " SECONDPHRASE
 
