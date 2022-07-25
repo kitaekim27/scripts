@@ -307,10 +307,9 @@ chroot_install_kernel() {
 	# /usr/src/linux symlink refers to the source tree corresponding to the
 	# currently running kernel.
 	info "Create a symlink /usr/src/linux."
-	local kernel
-	eselect kernel list
-	read -rp "Select a linux kernel to use: " kernel
-	eselect kernel set "${kernel}"
+	# As we're installing initially, we assume that there's only one kernel
+	# available.
+	eselect kernel set 1
 }
 
 chroot_install_initramfs() {
