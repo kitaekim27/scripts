@@ -93,18 +93,18 @@ main_configure_storage() {
 	luksphrase=$(mkpassphrase "${passphrase}" | sed "s/result = \(.*\)/\1/")
 
 	info "Encrypt the root partition."
-	printf "%s" "${luksphrase}" | xxd -revert -plain | cryptsetup luksFormat \
+	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksFormat \
 		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 
 	info "Add a secondary passphrase for the root partition."
 	local secondphrase
 	get_passphrase "Enter a secondary passphrase for the root partition: " secondphrase
-	printf "%s" "${luksphrase}" | xxd -revert -plain | cryptsetup luksAddKey \
+	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksAddKey \
 		--key-file="-" "/dev/${PARTITION_ROOT}" \
 		<(printf "%s" "${secondphrase}")
 
 	info "Decrypt the root partition for further installation."
-	printf "%s" "${luksphrase}" | xxd -revert -plain | cryptsetup luksOpen \
+	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksOpen \
 		--key-file="-" "/dev/${PARTITION_ROOT}" root
 
 	info "Format the root partition in btrfs."
