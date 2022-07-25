@@ -352,7 +352,7 @@ chroot_install_daemons() {
 
 chroot_install_system_utils() {
 	info "Install system utils."
-	${EMERGE} app-admin/doas sys-fs/btrfs-progs
+	${EMERGE} app-admin/doas sys-fs/btrfs-progs app-portage/gentoolkit
 	install --mode="600" /config/etc/doas.conf /etc/doas.conf
 }
 
