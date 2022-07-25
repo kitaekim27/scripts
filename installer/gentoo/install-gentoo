@@ -415,8 +415,8 @@ main() {
 
 		$(declare -f info)
 		$(declare -f error)
-		$(declare -f chroot_configure_system)
 		$(declare -f chroot_configure_portage)
+		$(declare -f chroot_configure_system)
 		$(declare -f chroot_mount_filesystems)
 		$(declare -f chroot_install_system_utils)
 		$(declare -f chroot_install_system_daemons)
