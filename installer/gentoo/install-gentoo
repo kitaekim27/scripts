@@ -27,8 +27,8 @@ get_passphrase() {
 	local checkphrase
 	while true
 	do
-		read -srp "${1}" "${2}"; echo
-		read -srp "Enter the passphrase again: " checkphrase; echo
+		read -srp "${THIS_SCRIPT}: ${1}" "${2}"; echo
+		read -srp "${THIS_SCRIPT}: Enter the passphrase again: " checkphrase; echo
 		[ "$(eval echo "\$${2}")" = "${checkphrase}" ] && break
 		info "You've entered different passphrases! Try again."
 	done
@@ -86,22 +86,16 @@ main_configure_storage() {
 	info "Seal a random key into TPM."
 	tpmsealrandkey
 
-	info "Create a LUKS2 passphrase for the root partition."
-	local passphrase
-	get_passphrase "Enter a passphrase for the root partition: " passphrase
-	local luksphrase
-	luksphrase=$(mkpassphrase "${passphrase}" | sed "s/result = \(.*\)/\1/")
-
 	info "Encrypt the root partition."
+	local luksphrase
+	luksphrase=$(mkpassphrase "${PASSPHRASE}" | sed "s/result = \(.*\)/\1/")
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksFormat \
 		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 
 	info "Add a secondary passphrase for the root partition."
-	local secondphrase
-	get_passphrase "Enter a secondary passphrase for the root partition: " secondphrase
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksAddKey \
 		--key-file="-" "/dev/${PARTITION_ROOT}" \
-		<(printf "%s" "${secondphrase}")
+		<(printf "%s" "${SECONDPHRASE}")
 
 	info "Decrypt the root partition for further installation."
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksOpen \
@@ -443,6 +437,8 @@ main() {
 		PORTAGE_MIRRORS='${PORTAGE_MIRRORS}'
 		HOST_NAME='${HOST_NAME}'
 		USER_NAME='${USER_NAME}'
+		PASSPHRASE='${PASSPHRASE}'
+		SECONDPHRASE='${SECONDPHRASE}'
 		EMERGE='${EMERGE}'
 
 		chroot_main
@@ -469,9 +465,12 @@ PORTAGE_MIRRORS=""
 
 HOST_NAME=""
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
-
 USER_NAME=""
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
+PASSPHRASE=""
+get_passphrase "Enter a passphrase the root partition: " PASSPHRASE
+SECONDPHRASE=""
+get_passphrase "Enter a secondary passphrase the root partition: " SECONDPHRASE
 
 EMERGE="nice --12 emerge --quiet-build"
 
