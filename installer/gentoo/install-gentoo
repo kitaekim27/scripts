@@ -229,15 +229,8 @@ chroot_configure_system() {
 	echo "Asia/Seoul" > /etc/timezone
 	${EMERGE} --config sys-libs/timezone-data
 
-	info "Generate system locales."
-	nano /etc/locale.gen
-	locale-gen
-
 	info "Configure system locales."
-	local locale
-	eselect locale list
-	read -rp "Select a locale: " locale
-	eselect locale set "${locale}"
+	eselect locale set en_US.utf8
 
 	info "Set the hostname."
 	local hostname
