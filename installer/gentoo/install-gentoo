@@ -386,7 +386,7 @@ chroot_install_xserver() {
 
 chroot_install_desktop() {
 	echo "x11-wm/dwm savedconfig" >> /etc/portage/package.use
-	${EMERGE} x11-wm/dwm
+	${EMERGE} =x11-wm/dwm-6.2
 	cat <<-"EOF" >> /home/${USER_NAME}/.xinitrc
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
