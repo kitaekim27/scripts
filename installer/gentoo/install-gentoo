@@ -132,7 +132,8 @@ main_bootstrap_system() {
 	local latest_tarball="$(wget --quiet --output-document="-" \
 		"${mirror}/${arch}/autobuilds/latest-stage3-amd64-hardened-nomultilib-openrc.txt" \
 				| awk '!/#/{print $1}')"
-	wget --no-verbose "${mirror}/${arch}/autobuilds/${latest_tarball}"
+	wget --no-verbose --directory-prefix="${THIS_DIR}/download" \
+		"${mirror}/${arch}/autobuilds/${latest_tarball}"
 
 	info "Extract the stage 3 tarball into ${INSTALL_ROOT}."
 	find "${THIS_DIR}/download" -iname "stage3-*.tar.xz" \
