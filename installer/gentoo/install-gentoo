@@ -327,7 +327,7 @@ chroot_install_system_daemons() {
 
 chroot_install_system_utils() {
 	info "Install system utils."
-	${EMERGE} sys-fs/btrfs-progs app-portage/gentoolkit
+	${EMERGE} sys-fs/btrfs-progs app-portage/gentoolkit dev-vcs/git
 
 	info "Install doas instead of sudo."
 	${EMERGE} app-admin/doas
