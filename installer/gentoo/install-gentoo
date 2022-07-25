@@ -217,9 +217,6 @@ chroot_configure_system() {
 	echo "Asia/Seoul" > /etc/timezone
 	${EMERGE} --config sys-libs/timezone-data
 
-	info "Configure system locales."
-	eselect locale set en_US.utf8
-
 	info "Set the hostname."
 	sed -i "s/localhost/${HOST_NAME}/g" /etc/conf.d/hostname /etc/hosts
 
