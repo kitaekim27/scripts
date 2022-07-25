@@ -203,7 +203,7 @@ chroot_configure_portage() {
 	info "Configure the Portage ebuild repositories."
 	mkdir --parents /etc/portage/repos.conf
 	cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
-	emaint sync --allrepos
+	emerge-webrsync
 }
 
 chroot_configure_system() {
