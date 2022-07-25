@@ -250,6 +250,24 @@ chroot_configure_system() {
 	passwd "${username}"
 	install --mode="644" /config/home/user/dot-profile "/home/${username}/.profile"
 
+	info "Setup global XDG environment variables."
+	cat <<-"EOF" >> /etc/profile
+	# Where user-specific data files should be written.
+	export XDG_DATA_HOME="${HOME}/.local/share"
+	# Where user-specific configuration files should be written.
+	export XDG_CONFIG_HOME="${HOME}/.config"
+	# Where user-specific state data should be written.
+	export XDG_STATE_HOME="${HOME}/.local/state"
+	# Directories relative to which data files should be searched.
+	export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+	# Directories relative to which configuration files should be searched.
+	export XDG_CONFIG_DIRS="/etc/xdg"
+	# Where user-specific non-essential (cached) data should be written.
+	export XDG_CACHE_HOME="${HOME}/.cache"
+	# Where user-specific runtime files and other file objects should be placed.
+	export XDG_RUNTIME_DIR=""
+	EOF
+
 	info "Reload the environment."
 	env-update
 	source /etc/profile
