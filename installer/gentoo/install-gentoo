@@ -368,6 +368,9 @@ chroot_install_desktop() {
 	cat <<-"EOF" >> /home/${USER_NAME}/.xinitrc
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
+
+	info "Install emacs, a terminal emulator looks like a text editor."
+	${EMERGE} app-editors/emacs
 }
 
 chroot_cleanup() {
