@@ -384,6 +384,14 @@ chroot_install_xserver() {
 	EOF
 }
 
+chroot_install_desktop() {
+	echo "x11-wm/dwm savedconfig" >> /etc/portage/package.use
+	${EMERGE} x11-wm/dwm
+	cat <<-"EOF" >> /home/${USER_NAME}/.xinitrc
+	exec dbus-launch --sh-syntax --exit-with-x11 dwm
+	EOF
+}
+
 chroot_cleanup() {
 	info "Clean up installation artiparcts."
 	rm --recursive /config
@@ -410,6 +418,7 @@ chroot_main() {
 	chroot_install_daemons
 	chroot_install_system_utils
 	chroot_install_xserver
+	chroot_install_desktop
 }
 
 main() {
@@ -436,6 +445,7 @@ main() {
 		$(declare -f chroot_install_daemons)
 		$(declare -f chroot_install_system_utils)
 		$(declare -f chroot_install_xserver)
+		$(declare -f chroot_install_desktop)
 		$(declare -f chroot_cleanup)
 		$(declare -f chroot_main)
 
