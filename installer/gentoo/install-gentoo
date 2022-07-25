@@ -46,6 +46,16 @@ main_prepare_installer() {
 	info "Sync the installer time with ntp.org."
 	ntpd -q -g
 
+	# TODO: Verify the downloaded files.
+	info "Download a stage 3 tarball."
+	local arch="amd64"
+	local mirror="http://ftp.daum.net/gentoo/releases"
+	local latest_tarball="$(wget --quiet --output-document="-" \
+		"${mirror}/${arch}/autobuilds/latest-stage3-amd64-hardened-nomultilib-openrc.txt" \
+				| awk '!/#/{print $1}')"
+	wget --no-verbose --directory-prefix="${THIS_DIR}/download" \
+		"${mirror}/${arch}/autobuilds/${latest_tarball}"
+
 	info "Install the scripts into the installer."
 	find -L "${THIS_DIR}/tools" -mindepth 1 -maxdepth 1 \
 		-exec cp --recursive {} /usr/local/bin \;
@@ -125,16 +135,6 @@ main_configure_storage() {
 }
 
 main_bootstrap_system() {
-	# TODO: Verify the downloaded files.
-	info "Download a stage 3 tarball."
-	local arch="amd64"
-	local mirror="http://ftp.daum.net/gentoo/releases"
-	local latest_tarball="$(wget --quiet --output-document="-" \
-		"${mirror}/${arch}/autobuilds/latest-stage3-amd64-hardened-nomultilib-openrc.txt" \
-				| awk '!/#/{print $1}')"
-	wget --no-verbose --directory-prefix="${THIS_DIR}/download" \
-		"${mirror}/${arch}/autobuilds/${latest_tarball}"
-
 	info "Extract the stage 3 tarball into ${INSTALL_ROOT}."
 	find "${THIS_DIR}/download" -iname "stage3-*.tar.xz" \
 		-exec tar --directory="${INSTALL_ROOT}" \
