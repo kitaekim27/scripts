@@ -380,8 +380,8 @@ chroot_cleanup() {
 }
 
 chroot_main() {
-	chroot_configure_system
 	chroot_configure_portage
+	chroot_configure_system
 	chroot_mount_filesystems
 
 	info "Update @world Portage set."
