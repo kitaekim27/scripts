@@ -19,7 +19,7 @@ sread() {
 	read_prompt="${1}"
 	read_variable="${2}"
 
-	printf "%s" "${read_prompt}"
+	info "${read_prompt}"
 	stty -echo
 	read -r "${read_variable}"
 	stty echo
@@ -105,7 +105,7 @@ do
 	then
 		error "Can't unseal the key stored in TPM!"
 		error "The system might be modified to steal your information!"
-		printf "%s" "Do you want to use the secondary passphrase to open the root partition? [y/n]: "
+		info "Do you want to use the secondary passphrase to open the root partition? [y/n]: "
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
