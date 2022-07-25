@@ -348,23 +348,23 @@ chroot_install_bootloader() {
 	grub-mkconfig --output="/boot/grub/grub.cfg"
 }
 
-chroot_install_xserver() {
+chroot_install_desktop() {
 	info "Install XOrg server."
-	# Without disabling `minimal` USE flag, emerge will fail to install
-	# drivers.
+	# Without disabling `minimal` USE flag, we can't install drivers.
 	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
-	env-update
-	source /etc/profile
-
 	cat <<-"EOF" >> /home/${USER_NAME}/.bash_profile
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx
 	EOF
-}
+	env-update
+	source /etc/profile
 
-chroot_install_desktop() {
-	echo "x11-wm/dwm savedconfig" >> /etc/portage/package.use
-	${EMERGE} =x11-wm/dwm-6.2
+	info "Build and install dwm window manager."
+	local doas="doas -u ${USER_NAME}"
+	local home="/home/${USER_NAME}"
+	${doas} git clone --branch="release" https://github.com/kitaekim27/dwm "${home}/.dwm"
+	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)"
+	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)" install
 	cat <<-"EOF" >> /home/${USER_NAME}/.xinitrc
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
@@ -396,7 +396,6 @@ chroot_main() {
 	chroot_install_initramfs
 	chroot_install_bootloader
 
-	chroot_install_xserver
 	chroot_install_desktop
 }
 
@@ -423,7 +422,6 @@ main() {
 		$(declare -f chroot_install_kernel)
 		$(declare -f chroot_install_initramfs)
 		$(declare -f chroot_install_bootloader)
-		$(declare -f chroot_install_xserver)
 		$(declare -f chroot_install_desktop)
 		$(declare -f chroot_cleanup)
 		$(declare -f chroot_main)
