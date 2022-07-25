@@ -463,13 +463,9 @@ PARTITION_ROOT=""
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
 
-HOST_NAME=""
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
-USER_NAME=""
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
-PASSPHRASE=""
 get_passphrase "Enter a passphrase the root partition: " PASSPHRASE
-SECONDPHRASE=""
 get_passphrase "Enter a secondary passphrase the root partition: " SECONDPHRASE
 
 EMERGE="nice --12 emerge --quiet-build"
