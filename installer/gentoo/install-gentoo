@@ -87,14 +87,14 @@ main_configure_storage() {
 
 	info "Encrypt the root partition."
 	local luksphrase
-	luksphrase=$(mkpassphrase "${PASSPHRASE}" | sed "s/result = \(.*\)/\1/")
+	luksphrase=$(mkpassphrase "${CRYPT_PASSPHRASE}" | sed "s/result = \(.*\)/\1/")
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksFormat \
 		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 
 	info "Add a secondary passphrase for the root partition."
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksAddKey \
 		--key-file="-" "/dev/${PARTITION_ROOT}" \
-		<(printf "%s" "${SECONDPHRASE}")
+		<(printf "%s" "${CRYPT_SECONDPHRASE}")
 
 	info "Decrypt the root partition for further installation."
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksOpen \
@@ -438,8 +438,8 @@ main() {
 		HOST_NAME='${HOST_NAME}'
 		USER_NAME='${USER_NAME}'
 		USER_PASSWORD='${USER_PASSWORD}'
-		PASSPHRASE='${PASSPHRASE}'
-		SECONDPHRASE='${SECONDPHRASE}'
+		CRYPT_PASSPHRASE='${CRYPT_PASSPHRASE}'
+		CRYPT_SECONDPHRASE='${CRYPT_SECONDPHRASE}'
 		EMERGE='${EMERGE}'
 
 		chroot_main
@@ -467,8 +467,8 @@ PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
 get_passphrase "Enter a passphrase for the user: " USER_PASSWORD
-get_passphrase "Enter a passphrase the root partition: " PASSPHRASE
-get_passphrase "Enter a secondary passphrase the root partition: " SECONDPHRASE
+get_passphrase "Enter a passphrase the root partition: " CRYPT_PASSPHRASE
+get_passphrase "Enter a secondary passphrase the root partition: " CRYPT_SECONDPHRASE
 
 EMERGE="nice --12 emerge --quiet-build"
 
