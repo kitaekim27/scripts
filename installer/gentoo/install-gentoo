@@ -128,7 +128,7 @@ main_bootstrap_system() {
 	# TODO: Verify the downloaded files.
 	info "Download a stage 3 tarball."
 	local arch="amd64"
-	local mirror="http://ftp.kaist.ac.kr/gentoo/releases"
+	local mirror="http://ftp.daum.net/gentoo"
 	local latest_tarball="$(wget --quiet --output-document="-" \
 		"${mirror}/${arch}/autobuilds/latest-stage3-amd64-hardened-nomultilib-openrc.txt" \
 				| awk '!/#/{print $1}')"
