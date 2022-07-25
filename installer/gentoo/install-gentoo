@@ -202,6 +202,7 @@ chroot_configure_portage() {
 	cat <<-EOF >> /etc/portage/make.conf
 	MAKEOPTS="-j$(nproc)"
 	USE="minimal elogind X gui bluetooth networkmanager dbus dist-kernel -systemd"
+	ACCEPT_LICENSE="@BINARY-REDISTRIBUTABLE"
 	${PORTAGE_MIRRORS}
 	EOF
 
@@ -293,8 +294,6 @@ chroot_install_firmwares() {
 	fi
 
 	info "Install the linux firmwares."
-	echo "sys-kernel/linux-firmware linux-fw-redistributable no-source-code" \
-		>> /etc/portage/package.license
 	${EMERGE} sys-kernel/linux-firmware
 }
 
@@ -330,7 +329,7 @@ chroot_install_initramfs() {
 	emerge-initramfs
 }
 
-chroot_install_daemons() {
+chroot_install_system_daemons() {
 	info "Enable the elogind service."
 	rc-update add elogind boot
 
@@ -352,7 +351,10 @@ chroot_install_daemons() {
 
 chroot_install_system_utils() {
 	info "Install system utils."
-	${EMERGE} app-admin/doas sys-fs/btrfs-progs app-portage/gentoolkit
+	${EMERGE} sys-fs/btrfs-progs app-portage/gentoolkit
+
+	info "Install doas instead of sudo."
+	${EMERGE} app-admin/doas
 	install --mode="600" /config/etc/doas.conf /etc/doas.conf
 }
 
@@ -398,8 +400,8 @@ chroot_cleanup() {
 }
 
 chroot_main() {
-	chroot_configure_portage
 	chroot_configure_system
+	chroot_configure_portage
 	chroot_mount_filesystems
 
 	info "Update @world Portage set."
@@ -410,13 +412,14 @@ chroot_main() {
 	# actually does not build anything but just setting up the system.
 	${EMERGE} --jobs="$(nproc)" --update --deep --newuse @world
 
+	chroot_install_system_utils
+	chroot_install_system_daemons
+
 	chroot_install_firmwares
 	chroot_install_kernel
 	chroot_install_initramfs
 	chroot_install_bootloader
 
-	chroot_install_daemons
-	chroot_install_system_utils
 	chroot_install_xserver
 	chroot_install_desktop
 }
@@ -442,7 +445,7 @@ main() {
 		$(declare -f chroot_install_kernel)
 		$(declare -f chroot_install_initramfs)
 		$(declare -f chroot_install_bootloader)
-		$(declare -f chroot_install_daemons)
+		$(declare -f chroot_install_system_daemons)
 		$(declare -f chroot_install_system_utils)
 		$(declare -f chroot_install_xserver)
 		$(declare -f chroot_install_desktop)
