@@ -227,12 +227,9 @@ chroot_configure_system() {
 	eselect locale set en_US.utf8
 
 	info "Set the hostname."
-	local hostname
-	read -rp "Enter the hostname: " hostname
-	sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
+	sed -i "s/localhost/${HOST_NAME}/g" /etc/conf.d/hostname /etc/hosts
 
 	info "Create a default user."
-	read -rp "Enter an user name: " USER_NAME
 	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${USER_NAME}"
 	passwd "${USER_NAME}"
 
@@ -444,6 +441,7 @@ main() {
 		PARTITION_SWAP='${PARTITION_SWAP}'
 		PARTITION_ROOT='${PARTITION_ROOT}'
 		PORTAGE_MIRRORS='${PORTAGE_MIRRORS}'
+		HOST_NAME='${HOST_NAME}'
 		USER_NAME='${USER_NAME}'
 		EMERGE='${EMERGE}'
 
@@ -469,6 +467,8 @@ PARTITION_ROOT=""
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
 
+# XXX: Please set these variables first!!!
+HOST_NAME=""
 USER_NAME=""
 
 EMERGE="nice --12 emerge --quiet-build"
