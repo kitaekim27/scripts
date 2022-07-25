@@ -466,7 +466,7 @@ PORTAGE_MIRRORS=$(mirrorselect --interactive --output)
 
 read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
 read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
-get_passphrase "Enter a passphrase for the use: " USER_PASSWORD
+get_passphrase "Enter a passphrase for the user: " USER_PASSWORD
 get_passphrase "Enter a passphrase the root partition: " PASSPHRASE
 get_passphrase "Enter a secondary passphrase the root partition: " SECONDPHRASE
 
