@@ -244,11 +244,9 @@ chroot_configure_system() {
 	sed -i "s/localhost/${hostname}/g" /etc/conf.d/hostname /etc/hosts
 
 	info "Create a default user."
-	local username
-	read -rp "Enter an user name: " username
-	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${username}"
-	passwd "${username}"
-	install --mode="644" /config/home/user/dot-profile "/home/${username}/.profile"
+	read -rp "Enter an user name: " USER_NAME
+	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${USER_NAME}"
+	passwd "${USER_NAME}"
 
 	info "Setup global XDG environment variables."
 	cat <<-"EOF" >> /etc/profile
@@ -372,6 +370,20 @@ chroot_install_bootloader() {
 	grub-mkconfig --output="/boot/grub/grub.cfg"
 }
 
+chroot_install_xserver() {
+	info "Install XOrg server."
+	# Without disabling `minimal` USE flag, emerge will fail to install
+	# drivers.
+	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
+	${EMERGE} x11-base/xorg-server
+	env-update
+	source /etc/profile
+
+	cat <<-"EOF" >> /home/${USER_NAME}/.bash_profile
+	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx
+	EOF
+}
+
 chroot_cleanup() {
 	info "Clean up installation artiparcts."
 	rm --recursive /config
@@ -397,14 +409,7 @@ chroot_main() {
 
 	chroot_install_daemons
 	chroot_install_system_utils
-
-	info "Install XOrg server."
-	# Without disabling `minimal` USE flag, emerge will fail to install
-	# drivers.
-	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
-	${EMERGE} x11-base/xorg-server
-	env-update
-	source /etc/profile
+	chroot_install_xserver
 }
 
 main() {
@@ -430,6 +435,7 @@ main() {
 		$(declare -f chroot_install_bootloader)
 		$(declare -f chroot_install_daemons)
 		$(declare -f chroot_install_system_utils)
+		$(declare -f chroot_install_xserver)
 		$(declare -f chroot_cleanup)
 		$(declare -f chroot_main)
 
@@ -439,6 +445,7 @@ main() {
 		PARTITION_SWAP='${PARTITION_SWAP}'
 		PARTITION_ROOT='${PARTITION_ROOT}'
 		PORTAGE_MIRRORS='${PORTAGE_MIRRORS}'
+		USER_NAME='${USER_NAME}'
 		EMERGE='${EMERGE}'
 
 		chroot_main
@@ -462,6 +469,8 @@ PARTITION_ROOT=""
 
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
+
+USER_NAME=""
 
 EMERGE="nice --12 emerge --quiet-build"
 
