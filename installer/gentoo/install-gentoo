@@ -298,7 +298,7 @@ chroot_install_kernel() {
 	eselect kernel set "${kernel}"
 }
 
-chroot_build_initramfs() {
+chroot_install_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
 
@@ -374,7 +374,7 @@ chroot_main() {
 
 	chroot_install_firmwares
 	chroot_install_kernel
-	chroot_build_initramfs
+	chroot_install_initramfs
 	chroot_install_bootloader
 
 	chroot_install_daemons
@@ -408,7 +408,7 @@ main() {
 		$(declare -f chroot_configure_system)
 		$(declare -f chroot_install_firmwares)
 		$(declare -f chroot_install_kernel)
-		$(declare -f chroot_build_initramfs)
+		$(declare -f chroot_install_initramfs)
 		$(declare -f chroot_install_bootloader)
 		$(declare -f chroot_install_daemons)
 		$(declare -f chroot_install_system_utils)
