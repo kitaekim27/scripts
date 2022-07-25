@@ -409,8 +409,8 @@ chroot_main() {
 
 main() {
 	main_check_network
-	main_prepare_installer
 	main_prepare_storage
+	main_prepare_installer
 	main_configure_storage
 	main_bootstrap_system
 	main_prepare_chroot
