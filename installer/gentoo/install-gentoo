@@ -467,9 +467,11 @@ PARTITION_ROOT=""
 INSTALL_ROOT=""
 PORTAGE_MIRRORS=""
 
-# XXX: Please set these variables first!!!
 HOST_NAME=""
+read -rp "${THIS_SCRIPT}: Enter hostname for the installation: " HOST_NAME
+
 USER_NAME=""
+read -rp "${THIS_SCRIPT}: Enter username for the installation: " USER_NAME
 
 EMERGE="nice --12 emerge --quiet-build"
 
