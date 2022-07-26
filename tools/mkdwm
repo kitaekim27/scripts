@@ -10,4 +10,6 @@ fi
 
 git -C /usr/src/dwm fetch origin release
 git -C /usr/src/dwm reset --hard origin/release
-make --directory="/usr/src/dwm" --jobs="$(nproc)" clean install
+make --directory="/usr/src/dwm" clean
+make --directory="/usr/src/dwm" --jobs="$(nproc)"
+make --directory="/usr/src/dwm" install
