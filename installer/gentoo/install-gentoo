@@ -302,7 +302,7 @@ chroot_install_initramfs() {
 		sys-apps/kbd
 
 	info "Build and install an initramfs."
-	instinitfs
+	mkinitfs
 }
 
 chroot_install_system_daemons() {
