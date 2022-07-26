@@ -199,6 +199,7 @@ chroot_configure_portage() {
 	USE="minimal elogind X gui bluetooth networkmanager dbus dist-kernel -systemd"
 	ACCEPT_LICENSE="@BINARY-REDISTRIBUTABLE"
 	${PORTAGE_MIRRORS}
+	BINPKG_FORMAT="gpkg"
 	EOF
 
 	info "Configure the Portage ebuild repositories."
@@ -291,19 +292,16 @@ chroot_install_kernel() {
 }
 
 chroot_install_initramfs() {
-	info "Install fzf to build an initramfs."
+	info "Install packages to build an initramfs."
 	${EMERGE} app-shells/fzf
-
-	info "Enable ccache to build an initramfs."
-	cat <<-EOF >> /etc/portage/package.env
-	sys-apps/busybox ccache.conf
-	app-crypt/tpm2-tools ccache.conf
-	sys-fs/cryptsetup ccache.conf
-	app-editors/vim-core ccache.conf
-	EOF
+	${EMERGE} --buildpkg \
+		sys-apps/busybox \
+		app-crypt/tpm2-tools \
+		sys-fs/cryptsetup \
+		sys-apps/kbd
 
 	info "Build and install an initramfs."
-	emerge-initramfs
+	instinitfs
 }
 
 chroot_install_system_daemons() {

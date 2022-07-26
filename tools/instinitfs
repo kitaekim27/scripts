@@ -1,0 +1,98 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+info() {
+	echo "${THIS_SCRIPT}:" "${@}"
+}
+
+error() {
+	info "${@}" >&2
+}
+
+main() {
+	info "Install busybox in the initramfs build directory."
+	USE="make-symlinks" ${EMERGE} sys-apps/busybox
+
+	info "Install utilities in the initramfs build directory."
+	${EMERGE} \
+		app-crypt/tpm2-tools\
+		sys-fs/cryptsetup \
+		sys-apps/kbd
+
+	# Here, we need to install libgcc_s.so.* which is a hidden runtime dependency
+	# for pthread for cryptsetup...
+	#
+	# Excerpt from GNU libgcc doc: GCC provides a low-level runtime library,
+	# libgcc.a or libgcc_s.so.1 on some platforms. GCC generates calls to routines
+	# in this library automatically, whenever it needs to perform some operation
+	# that is too complicated to emit inline code for.
+	info "Copy libgcc_s.so.1 into the initramfs build directory."
+	# Why use `find` here? Note two things:
+	# 1. There may be two or more libgcc_s.so.1 (e.g, for x86 and x64).
+	# 2. Postfix ".1" is just for represeting binary interface... It's very unlikely
+	#	but it might be changed in the futhre.
+	find "/usr/lib/gcc/x86_64-pc-linux-gnu/${GCC_VERSION}" \
+		-name "libgcc_s.so.[1-9]" -exec rcopy "{}" "${BUILD_DIR}" \;
+	find /etc/ld.so.conf.d -name '*gcc-x86_64-pc-linux-gnu.conf' \
+		-exec cp --archive "{}" "${BUILD_DIR}/etc/ld.so.conf.d" \;
+	chroot "${BUILD_DIR}" ldconfig
+
+	info "Create pseudo filesystem mount points in the iniramfs build directory."
+	for directory in /proc /sys /run /dev /tmp
+	do
+		mkdir --parents "${BUILD_DIR}${directory}"
+	done
+
+	info "Copy files in the source directory into the build directory."
+	find "${SOURCE_DIR}" -mindepth 1 -maxdepth 1 \
+		-exec cp --archive {} "${BUILD_DIR}" \;
+
+	info "Copy my scripts into the initramfs build directory."
+	mkdir --parents "${BUILD_DIR}/usr/local/bin"
+	cp "$(locatebin mkpassphrase)" "${BUILD_DIR}/usr/local/bin"
+	cp "$(locatebin hex2data)" "${BUILD_DIR}/usr/local/bin"
+
+	info "Install kernel modules into the initramfs build directory."
+	mkdir --parents "${BUILD_DIR}/lib/modules/${LINUX_VERSION}"
+	find "/lib/modules/${LINUX_VERSION}" -mindepth 1 -maxdepth 1 -exec cp \
+		--archive {} "${BUILD_DIR}/lib/modules/${LINUX_VERSION}" \;
+
+	# XXX: This code blindly install all firmwares into the initramfs. That means,
+	# it can increase the size of the initramfs drastcailly. An assumption here is
+	# that there should be only *necessary* firmwares in /lib/firmware.
+	#
+	# This is quite different from other distro's approach but in Gentoo Linux this
+	# is the natural way for it. (at least, I think.)
+	info "Install kernel firmwares into the initramfs build directory."
+	mkdir --parents "${BUILD_DIR}/lib/firmware"
+	find /lib/firmware -mindepth 1 -maxdepth 1 \
+		-exec cp --archive {} "${BUILD_DIR}/lib/firmware" \;
+
+	info "Build and install the initramfs into /boot."
+	( cd "${BUILD_DIR}" && find . -mindepth 1 -print0 \
+		| cpio --null --create --format="newc" \
+		| gzip > "/boot/initrd.img-${LINUX_VERSION}" )
+
+	info "Successfully built the initramfs!"
+	info "Clean up the initramfs build directory."
+	rm --recursive "${BUILD_DIR}"
+}
+
+if [ "${EUID}" != 0 ]
+then
+	error "This script requires root privilege!"
+	exit 1
+fi
+
+THIS_SCRIPT=$(basename "${0}")
+
+SOURCE_DIR="/var/lib/initramfs"
+BUILD_DIR=$(mktemp --directory --tmpdir "${THIS_SCRIPT}.XXXXXXXXXX")
+
+LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
+GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
+
+EMERGE="emerge --root=${BUILD_DIR} --usepkgonly"
+
+main "${@}"
