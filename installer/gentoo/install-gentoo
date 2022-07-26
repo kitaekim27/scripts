@@ -227,8 +227,7 @@ chroot_configure_system() {
 	echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
 
 	info "Setup global XDG environment variables."
-	cat <<-"EOF" >> /etc/profile
-
+	cat <<-"EOF" > /etc/env.d/99local
 	# XDG Base Directory Environment Variables.
 	# Where user-specific data files should be written.
 	export XDG_DATA_HOME="${HOME}/.local/share"
