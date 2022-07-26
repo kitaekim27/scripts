@@ -362,7 +362,10 @@ chroot_install_desktop() {
 	source /etc/profile
 
 	info "Install X11 utils."
-	${EMERGE} x11-apps/xrandr x11-misc/xdg-utils
+	${EMERGE} x11-apps/xrandr x11-apps/setxkbmap
+
+	info "Install XDG utils."
+	${EMERGE} x11-misc/xdg-utils
 
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
@@ -374,6 +377,10 @@ chroot_install_desktop() {
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
 	# Set desktop resolution using `xrandr`.
 	# xrandr --output Virtual-1 --mode 1440x900
+
+	# Switch capslock key and escape key.
+	# setxkbmap -option caps:swapescape
+
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
