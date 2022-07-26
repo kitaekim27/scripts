@@ -369,7 +369,7 @@ chroot_install_desktop() {
 	make --directory=/usr/src/dwm --jobs="$(nproc)"
 	make --directory=/usr/src/dwm --jobs="$(nproc)" install
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
-	exec dbus-launch --sh-syntax --exit-with-x11 dwm 1>/dev/null
+	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
@@ -378,7 +378,7 @@ chroot_install_desktop() {
 }
 
 chroot_cleanup() {
-	info "Clean up installation artiparcts."
+	info "Clean up installation artipacts."
 	rm --recursive /config
 }
 
