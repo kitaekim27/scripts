@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o noglob -o pipefail
+
+if [ "${EUID}" != 0 ]
+then
+	error "This script requires root privilege!"
+	exit 1
+fi
+
+git -C /usr/src/dwm checkout release
+git -C /usr/src/dwm pull
+make --directory="/usr/src/dwm" --jobs="$(nproc)"
+make --directory="/usr/src/dwm" --jobs="$(nproc)" install
