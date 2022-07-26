@@ -355,7 +355,8 @@ chroot_install_desktop() {
 	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
-	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx
+
+	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
 	EOF
 	env-update
 	source /etc/profile
@@ -368,8 +369,9 @@ chroot_install_desktop() {
 	make --directory=/usr/src/dwm --jobs="$(nproc)"
 	make --directory=/usr/src/dwm --jobs="$(nproc)" install
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
-	exec dbus-launch --sh-syntax --exit-with-x11 dwm
+	exec dbus-launch --sh-syntax --exit-with-x11 dwm 1>/dev/null
 	EOF
+	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
 	${EMERGE} app-editors/emacs
