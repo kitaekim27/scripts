@@ -344,7 +344,7 @@ chroot_install_bootloader() {
 	${EMERGE} sys-boot/grub
 	grub-install --efi-directory="/boot" --removable
 	cat <<-EOF >> /etc/default/grub
-	GRUB_CMDLINE_LINUX="cryptroot=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")"
+	GRUB_CMDLINE_LINUX="quiet cryptroot=PARTUUID=$(blkid -o value -s PARTUUID /dev/"${PARTITION_ROOT}")"
 	EOF
 	grub-mkconfig --output="/boot/grub/grub.cfg"
 }
