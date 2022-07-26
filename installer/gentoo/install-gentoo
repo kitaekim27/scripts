@@ -196,7 +196,7 @@ chroot_configure_portage() {
 	info "Configure the Portage make.conf file."
 	cat <<-EOF >> /etc/portage/make.conf
 	MAKEOPTS="-j$(nproc)"
-	USE="minimal elogind X gui bluetooth networkmanager dbus dist-kernel -systemd"
+	USE="minimal elogind X gui bluetooth networkmanager dbus dist-kernel cjk -systemd"
 	ACCEPT_LICENSE="@BINARY-REDISTRIBUTABLE"
 	${PORTAGE_MIRRORS}
 	BINPKG_FORMAT="gpkg"
