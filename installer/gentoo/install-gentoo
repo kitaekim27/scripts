@@ -361,6 +361,9 @@ chroot_install_desktop() {
 	env-update
 	source /etc/profile
 
+	info "Install X11 utils."
+	${EMERGE} x11-apps/xrandr
+
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
 
