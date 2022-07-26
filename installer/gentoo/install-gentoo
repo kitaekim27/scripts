@@ -386,7 +386,16 @@ chroot_install_desktop() {
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
+	echo "app-editors/emacs jit xft" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
+
+	info "Install doom emacs, a emacs configuration framework."
+	git clone --depth=1 https://github.com/doomemacs/doomemacs "/home/${USER_NAME}/.emacs.d"
+	chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.emacs.d"
+	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
+	# Add doom emacs binary location to PATH variable.
+	export PATH="${PATH}:${HOME}/.emacs.d/bin"
+	EOF
 }
 
 chroot_cleanup() {
