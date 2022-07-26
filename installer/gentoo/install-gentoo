@@ -362,7 +362,7 @@ chroot_install_desktop() {
 	source /etc/profile
 
 	info "Install X11 utils."
-	${EMERGE} x11-apps/xrandr
+	${EMERGE} x11-apps/xrandr x11-misc/xdg-utils
 
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
