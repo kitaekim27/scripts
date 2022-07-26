@@ -372,6 +372,8 @@ chroot_install_desktop() {
 	make --directory=/usr/src/dwm --jobs="$(nproc)"
 	make --directory=/usr/src/dwm --jobs="$(nproc)" install
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
+	# Set desktop resolution using `xrandr`.
+	# xrandr --output Virtual-1 --mode 1440x900
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
