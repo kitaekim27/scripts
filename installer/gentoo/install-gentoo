@@ -355,6 +355,8 @@ chroot_install_desktop() {
 	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
+	# Add doom emacs binary location to PATH variable.
+	export PATH="${PATH}:${HOME}/.emacs.d/bin"
 
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
 	EOF
@@ -392,10 +394,10 @@ chroot_install_desktop() {
 	info "Install doom emacs, a emacs configuration framework."
 	git clone --depth=1 https://github.com/doomemacs/doomemacs "/home/${USER_NAME}/.emacs.d"
 	chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.emacs.d"
-	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
-	# Add doom emacs binary location to PATH variable.
-	export PATH="${PATH}:${HOME}/.emacs.d/bin"
-	EOF
+
+	info "Set ownership of files in the user's home directory."
+	find "/home/${USER_NAME}" -mindepth 1 -maxdepth 1 \
+		-exec chown --recursive "${USER_NAME}:${USER_NAME}" {} \;
 }
 
 chroot_cleanup() {
