@@ -292,9 +292,11 @@ chroot_install_kernel() {
 }
 
 chroot_install_initramfs() {
-	info "Install packages to build an initramfs."
+	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
-	${EMERGE} --buildpkg \
+
+	info "Build binary packages to build an initramfs."
+	${EMERGE} --emptytree --buildpkg --buildpkgonly \
 		sys-apps/busybox \
 		app-crypt/tpm2-tools \
 		sys-fs/cryptsetup \
