@@ -359,11 +359,10 @@ chroot_install_desktop() {
 	source /etc/profile
 
 	info "Build and install dwm window manager."
-	local doas="doas -u ${USER_NAME}"
 	local home="/home/${USER_NAME}"
-	${doas} git clone --branch="release" https://github.com/kitaekim27/dwm "${home}/.dwm"
-	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)"
-	${doas} make --directory="${home}/.dwm" --jobs="$(nproc)" install
+	git clone --branch="release" https://github.com/kitaekim27/dwm /usr/src/dwm
+	make --directory=/usr/src/dwm --jobs="$(nproc)"
+	make --directory=/usr/src/dwm --jobs="$(nproc)" install
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
