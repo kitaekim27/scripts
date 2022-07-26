@@ -391,7 +391,7 @@ chroot_install_desktop() {
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
-	echo "app-editors/emacs jit xft" >> /etc/portage/package.use
+	echo "app-editors/emacs jit xft json" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
 
 	info "Install doom emacs, a emacs configuration framework."
