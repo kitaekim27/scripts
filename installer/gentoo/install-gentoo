@@ -353,6 +353,7 @@ chroot_install_desktop() {
 
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
 	EOF
+	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.bash_profile"
 	env-update
 	source /etc/profile
 
@@ -381,6 +382,7 @@ chroot_install_desktop() {
 
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
+	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
 	echo "app-editors/emacs jit xft json" >> /etc/portage/package.use
@@ -388,10 +390,6 @@ chroot_install_desktop() {
 
 	info "Install doom emacs, a emacs configuration framework."
 	git clone --depth=1 https://github.com/doomemacs/doomemacs "/home/${USER_NAME}/.emacs.d"
-
-	info "Set ownership of every files in the user's home directory."
-	find "/home/${USER_NAME}" -mindepth 1 -maxdepth 1 \
-		-exec chown --recursive "${USER_NAME}:${USER_NAME}" {} \;
 }
 
 chroot_cleanup() {
