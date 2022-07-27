@@ -90,7 +90,7 @@ THIS_SCRIPT=$(basename "${0}")
 SOURCE_DIR="/var/lib/initramfs"
 BUILD_DIR=$(mktemp --directory --tmpdir "${THIS_SCRIPT}.XXXXXXXXXX")
 
-LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
+LINUX_VERSION=${1:-$(lslinux | fzf --header="Select a target linux kernel version.")}
 GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
 
 COMMON_USE="-elogind -systemd -bluetooth -networkmanager -dbus -mime -man
