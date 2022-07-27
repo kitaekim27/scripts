@@ -390,6 +390,7 @@ chroot_install_desktop() {
 
 	info "Install doom emacs, a emacs configuration framework."
 	git clone --depth=1 https://github.com/doomemacs/doomemacs "/home/${USER_NAME}/.emacs.d"
+	doas -u "${USER_NAME}" doom install --force
 }
 
 chroot_cleanup() {
