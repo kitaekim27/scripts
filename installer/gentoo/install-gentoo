@@ -294,13 +294,6 @@ chroot_install_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
 
-	info "Build binary packages to build an initramfs."
-	${EMERGE} --emptytree --buildpkg --buildpkgonly \
-		sys-apps/busybox \
-		app-crypt/tpm2-tools \
-		sys-fs/cryptsetup \
-		sys-apps/kbd
-
 	info "Build and install an initramfs."
 	mkinitfs
 }

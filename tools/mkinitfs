@@ -12,11 +12,11 @@ error() {
 
 main() {
 	info "Install busybox in the initramfs build directory."
-	USE="make-symlinks" ${EMERGE} sys-apps/busybox
+	USE="${COMMON_USE} make-symlinks" ${EMERGE} sys-apps/busybox
 
 	info "Install utilities in the initramfs build directory."
-	${EMERGE} \
-		app-crypt/tpm2-tools\
+	USE="${COMMON_USE}" ${EMERGE} \
+		app-crypt/tpm2-tools \
 		sys-fs/cryptsetup \
 		sys-apps/kbd
 
@@ -93,6 +93,15 @@ BUILD_DIR=$(mktemp --directory --tmpdir "${THIS_SCRIPT}.XXXXXXXXXX")
 LINUX_VERSION=$(lslinux | fzf --header="Select a target linux kernel version.")
 GCC_VERSION="$(eselect gcc show | sed 's/x86_64-pc-linux-gnu-\(.*\)/\1/')"
 
-EMERGE="emerge --root=${BUILD_DIR} --usepkgonly"
+COMMON_USE="-elogind -systemd -bluetooth -networkmanager -dbus -mime -man
+	-su -pam -X -kde -qt -gnome -gtk minimal lto"
+export COMMON_FLAGS="-Os -march=native -pipe"
+
+# Here, we use binpkgs as cache.
+# If there exist binpkgs that meets our USE flags, we can make use of them.
+# If not, we will build binpkgs so that we can use them next time.
+# TODO: We could store binpkgs in somewhere like /var/lib/initramfs by modifying
+#       `PKGDIR` variable.
+EMERGE="nice --12 emerge --jobs=$(nproc) --root=${BUILD_DIR} --buildpkg --usepkg --binpkg-respect-use"
 
 main "${@}"
