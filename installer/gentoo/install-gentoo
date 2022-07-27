@@ -388,6 +388,8 @@ chroot_install_desktop() {
 	info "Install emacs, a terminal emulator looks like a text editor."
 	echo "app-editors/emacs jit xft json" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
+	ln --symbolic /etc/init.d/emacs "/etc/init.d/emacs.${USER_NAME}"
+	rc-update add "emacs.${USER_NAME}" default
 
 	info "Install doom emacs, a emacs configuration framework."
 	git clone --depth=1 https://github.com/doomemacs/doomemacs "/home/${USER_NAME}/.emacs.d"
