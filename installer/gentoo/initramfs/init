@@ -107,7 +107,7 @@ do
 	then
 		error "Can't unseal the key stored in TPM!"
 		error "The system might be modified to steal your information!"
-		printf "Do you want to use the secondary passphrase to open the root partition? [y/n]: "
+		printf "init: Do you want to use the secondary passphrase to open the root partition? [y/n]: "
 		read -r answer
 		case "${answer}" in
 			y* | Y*)
