@@ -127,6 +127,8 @@ main_configure_storage() {
 	btrfs subvolume create /mnt/root/deploy/image-a
 	ln --symbolic /deploy/image-a /mnt/root/deploy/target
 	ln --symbolic /deploy/none /mnt/root/deploy/current
+
+	info "Mount the btrfs root subvolume."
 	# This makes mounttab valid so that we can see / mount entry inside the
 	# chroot.
 	mount --types="btrfs" --options="noatime,subvol=/deploy/target" \
