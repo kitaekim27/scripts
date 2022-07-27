@@ -118,21 +118,21 @@ main_configure_storage() {
 	mkdir --parents /mnt/root
 	mount /dev/mapper/root /mnt/root
 
-	info "Create subvolumes in the btrfs root partition."
-	btrfs subvolume create /mnt/root/snapshots
-	btrfs subvolume create /mnt/root/deploy
-	btrfs subvolume create /mnt/root/image-a
-	# Here, note that our initial subvolume is image-a.
-	ln --symbolic /image-a /mnt/root/deploy/target
-	ln --symbolic /none /mnt/root/deploy/current
+	info "Set the filesystem hierarchy layout in the root partition."
+	mkdir --parents /mnt/root/deploy
+	mkdir --parents /mnt/root/snapshots
 
+	info "Create a btrfs subvolume to install the system."
+	# Here, note that our initial subvolume is image-a.
+	btrfs subvolume create /mnt/root/deploy/image-a
+	ln --symbolic /deploy/image-a /mnt/root/deploy/target
+	ln --symbolic /deploy/none /mnt/root/deploy/current
 	# This makes mounttab valid so that we can see / mount entry inside the
 	# chroot.
-	info "Mount the root subvolume."
 	mount --types="btrfs" --options="noatime,subvol=/deploy/target" \
-		/dev/mapper/root /mnt/root
+		/dev/mapper/root /mnt/root/deploy/image-a
 
-	INSTALL_ROOT="/mnt/root"
+	INSTALL_ROOT="/mnt/root/deploy/image-a"
 }
 
 main_bootstrap_system() {
@@ -142,9 +142,8 @@ main_bootstrap_system() {
 			--extract --preserve-permissions --file={} \
 			--xattrs-include='*.*' --numeric-owner \;
 
-	info "Create mount points for the btrfs subvolumes."
-	mkdir --parents "${INSTALL_ROOT}/snapshots"
-	mkdir --parents "${INSTALL_ROOT}/deploy"
+	info "Create a mount point for the btrfs root subvolume."
+	mkdir --parents "${INSTALL_ROOT}/rootvolume"
 }
 
 main_prepare_chroot() {

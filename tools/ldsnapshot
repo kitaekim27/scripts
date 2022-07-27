@@ -19,22 +19,24 @@ fi
 
 readonly snapshot="${1}"
 
-if [ ! -e "/snapshots/${snapshot}" ]
+if [ ! -e "/rootvolume/snapshots/${snapshot}" ]
 then
 	error "The given snapshot ${snapshot} does not exist!"
 	exit 1
 fi
 
-if [ "$(readlink -f /deploy/current)" = "/image-a" ]
+if [ "$(basename "$(readlink -f /rootvolume/deploy/current)")" = "image-a" ]
 then
-	next_image="/image-b"
+	next_image="image-b"
 else
-	next_image="/image-a"
+	next_image="image-a"
 fi
 
 info "Load a snapshot ${snapshot} as ${next_image}."
 
-btrfs subvolume snapshot "/snapshots/${snapshot}" "/${next_image}"
+btrfs subvolume snapshot \
+	"/rootvolume/snapshots/${snapshot}" \
+	"/rootvolume/deploy/${next_image}"
 
 rm /rootvolume/deploy/target
 ln --symbolic "/deploy/${next_image}" /rootvolume/deploy/target
