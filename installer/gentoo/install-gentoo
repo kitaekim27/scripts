@@ -493,6 +493,6 @@ get_passphrase "Enter a passphrase for the user: " USER_PASSWORD
 get_passphrase "Enter a passphrase the root partition: " CRYPT_PASSPHRASE
 get_passphrase "Enter a secondary passphrase the root partition: " CRYPT_SECONDPHRASE
 
-EMERGE="nice --12 emerge --quiet-build"
+EMERGE="nice --20 emerge --quiet-build"
 
 main "${@}"
