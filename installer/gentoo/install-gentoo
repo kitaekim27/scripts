@@ -371,10 +371,9 @@ chroot_install_desktop() {
 
 	info "Build and install dwm window manager."
 	git clone --branch="release" https://github.com/kitaekim27/dwm /usr/src/dwm
-	make --directory=/usr/src/dwm --jobs="$(nproc)"
-	make --directory=/usr/src/dwm --jobs="$(nproc)" install
+	mkdwm
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
-	# Set desktop resolution using `xrandr`.
+	# Set desktop resolution.
 	# xrandr --output Virtual-1 --mode 1440x900
 
 	# Switch capslock key and escape key.
