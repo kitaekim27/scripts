@@ -294,8 +294,9 @@ chroot_install_initramfs() {
 	info "Install fzf to build an initramfs."
 	${EMERGE} app-shells/fzf
 
+	# Here, we assume that there's only one kernel installed.
 	info "Build and install an initramfs."
-	mkinitfs
+	mkinitfs "$(lslinux)"
 }
 
 chroot_install_system_daemons() {
