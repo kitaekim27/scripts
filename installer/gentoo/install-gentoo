@@ -382,6 +382,8 @@ chroot_install_desktop() {
 	# Switch capslock key and escape key.
 	# setxkbmap -option caps:swapescape
 
+	refreshxroot &
+
 	exec dbus-launch --sh-syntax --exit-with-x11 dwm
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
