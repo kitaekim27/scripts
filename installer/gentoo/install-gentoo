@@ -330,6 +330,7 @@ chroot_install_system_utils() {
 	info "Install doas instead of sudo."
 	${EMERGE} app-admin/doas
 	install --mode="600" /config/etc/doas.conf /etc/doas.conf
+	ln --symbolic "$(locatebin doas)" /usr/bin/sudo
 }
 
 chroot_install_bootloader() {
