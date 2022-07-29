@@ -367,7 +367,9 @@ chroot_install_desktop() {
 	${EMERGE} --autounmask --autounmask-continue x11-misc/xdg-utils
 
 	info "Install fonts."
-	${EMERGE} media-fonts/fonts-meta
+	${EMERGE} media-fonts/noto-emoji
+	${EMERGE} media-fonts/hack
+	${EMERGE} media-fonts/nanum
 
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
