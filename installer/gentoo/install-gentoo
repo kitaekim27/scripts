@@ -196,6 +196,7 @@ chroot_configure_portage() {
 	fi
 
 	info "Configure the Portage make.conf file."
+	cp /config/etc/portage/make.conf /etc/portage/make.conf
 	cat <<-EOF >> /etc/portage/make.conf
 	MAKEOPTS="-j$(nproc)"
 	USE="minimal elogind X gui bluetooth networkmanager dbus dist-kernel cjk -systemd"
