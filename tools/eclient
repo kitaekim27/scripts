@@ -1,0 +1,5 @@
+#!/bin/bash
+# Execute emacsclient with socket specified.
+set -o errexit -o nounset -o noglob -o pipefail
+emacsclient --socket-name="${XDG_RUNTIME_DIR}/emacs/server" "${@}"
+
