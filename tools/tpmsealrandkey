@@ -24,6 +24,7 @@ cleanup() {
 }
 
 trap cleanup EXIT
+tpm2 flushcontext --transient-object
 
 info "Create a primary object in the endorsement hierarchy."
 tpm2 createprimary --quiet --hierarchy="e" --key-context="${tmpdir}/primary.ctx"
