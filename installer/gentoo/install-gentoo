@@ -358,7 +358,7 @@ chroot_install_desktop() {
 	source /etc/profile
 
 	info "Install X11 utils."
-	${EMERGE} x11-apps/xrandr x11-apps/setxkbmap
+	${EMERGE} x11-apps/xrandr x11-apps/setxkbmap x11-apps/xsetroot
 
 	# `x11-misc/xdg-utils` requires `app-text/xmlto text` USE flag.
 	info "Install XDG utils."
