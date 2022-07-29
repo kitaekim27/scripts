@@ -244,7 +244,7 @@ chroot_configure_system() {
 	# Where user-specific non-essential (cached) data should be written.
 	export XDG_CACHE_HOME="${HOME}/.cache"
 	# Where user-specific runtime files and other file objects should be placed.
-	export XDG_RUNTIME_DIR=""
+	export XDG_RUNTIME_DIR="${HOME}/.local/run"
 	EOF
 
 	info "Reload the environment."
