@@ -362,8 +362,9 @@ chroot_install_desktop() {
 	info "Install X11 utils."
 	${EMERGE} x11-apps/xrandr x11-apps/setxkbmap
 
+	# `x11-misc/xdg-utils` requires `app-text/xmlto text` USE flag.
 	info "Install XDG utils."
-	${EMERGE} x11-misc/xdg-utils
+	${EMERGE} --autounmask --autounmask-continue x11-misc/xdg-utils
 
 	info "Install fonts."
 	${EMERGE} media-fonts/fonts-meta
