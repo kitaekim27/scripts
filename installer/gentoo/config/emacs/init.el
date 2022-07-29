@@ -17,3 +17,5 @@
 
 (use-package evil-collection :ensure t)
 (evil-collection-init)
+
+(use-package spacemacs-theme :ensure t)
