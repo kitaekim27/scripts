@@ -28,9 +28,11 @@ tpm2 flushcontext --transient-object
 
 info "Create a primary object in the endorsement hierarchy."
 tpm2 createprimary --quiet --hierarchy="e" --key-context="${tmpdir}/primary.ctx"
+tpm2 flushcontext --transient-object
 
 info "Start a TPM HMAC trial session for building a policy."
 tpm2 startauthsession --session="${tmpdir}/session.bin"
+tpm2 flushcontext --transient-object
 
 info "Generate a TPM policy with sha256 bank of PCR 0,2,4,8,9."
 tpm2 policypcr \
@@ -38,6 +40,7 @@ tpm2 policypcr \
 	--session="${tmpdir}/session.bin" \
 	--pcr-list="sha256:0,2,4,8,9" \
 	--policy="${tmpdir}/policy.bin"
+tpm2 flushcontext --transient-object
 
 info "Seal a random key into a TPM object with the policy."
 dd if=/dev/urandom bs=128 count=1 status=none | tpm2 create \
@@ -46,6 +49,7 @@ dd if=/dev/urandom bs=128 count=1 status=none | tpm2 create \
 	--policy="${tmpdir}/policy.bin" \
 	--key-context="${tmpdir}/key.ctx" \
 	--sealing-input="-"
+tpm2 flushcontext --transient-object
 
 # Note that 0x81018000 is the first non-reserved persistent object handle in the
 # endorsement hierarchy.
