@@ -391,6 +391,7 @@ chroot_install_desktop() {
 	info "Install emacs, a terminal emulator looks like a text editor."
 	echo "app-editors/emacs xft json dynamic-loading" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
+	${EMERGE} app-emacs/emacs-daemon
 	ln --symbolic /etc/init.d/emacs "/etc/init.d/emacs.${USER_NAME}"
 	rc-update add "emacs.${USER_NAME}" default
 }
