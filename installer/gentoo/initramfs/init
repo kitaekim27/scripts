@@ -102,7 +102,7 @@ done
 info "Decrypt the root partition."
 while true
 do
-	if ! tpm_key=$(tpmunsealkey)
+	if ! tpm_key=$(tpmunsealkey 2>/dev/null)
 	then
 		error "Can't unseal the key stored in TPM!"
 		error "The system might be modified to steal your information!"
