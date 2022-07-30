@@ -98,7 +98,8 @@ main_configure_storage() {
 
 	info "Encrypt the root partition."
 	local luksphrase
-	luksphrase=$(mkpassphrase "${CRYPT_PASSPHRASE}" | sed "s/result = \(.*\)/\1/")
+	luksphrase=$(mkpassphrase "${CRYPT_PASSPHRASE}" "$(tpmunsealkey)" \
+		| sed "s/result = \(.*\)/\1/")
 	printf "%s" "${luksphrase}" | hex2data | cryptsetup luksFormat \
 		--type="luks2" --key-file="-" "/dev/${PARTITION_ROOT}"
 

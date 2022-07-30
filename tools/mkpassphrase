@@ -1,23 +1,10 @@
 #!/bin/sh
-# Concatenate the key in TPM and the given passphrase to generate a new
-# passphrase.
-
+# Concatenate the key in TPM and the given passphrase to generate a new passphrase.
 set -o errexit -o nounset -o noglob -o pipefail
 
-cleanup() {
-	rm -r "${TMPDIR}"
-}
-
 PASSPHRASE="${1}"
+TPM_KEY="${2}"
 TMPDIR=$(mktemp -d)
-
-trap cleanup EXIT
-
-# Unseal the key from the first non-reserved persistent object handle
-# (0x81018000).
-tpm2 startauthsession --policy-session --session="${TMPDIR}/session.bin"
-tpm2 policypcr --quiet --session="${TMPDIR}/session.bin" --pcr-list="sha256:0,2,4,8,9"
-TPM_KEY=$(tpm2 unseal --auth="session:${TMPDIR}/session.bin" --object-context="0x81018000" | base64)
 
 DIGEST_KEY=$(printf "%s" "${TPM_KEY}" | base64 -d | sha256sum | awk '{print $1}')
 DIGEST_PHRASE=$(printf "%s" "${PASSPHRASE}" | sha256sum | awk '{print $1}')

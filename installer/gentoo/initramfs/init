@@ -102,8 +102,7 @@ done
 info "Decrypt the root partition."
 while true
 do
-	sread "Enter a passphrase for the root partition: " passphrase
-	if ! luksphrase=$(mkpassphrase "${passphrase}" 2>/dev/null | sed  "s/result = \(.*\)/\1/")
+	if ! tpm_key=$(tpmunsealkey)
 	then
 		error "Can't unseal the key stored in TPM!"
 		error "The system might be modified to steal your information!"
@@ -141,6 +140,8 @@ do
 		esac
 	fi
 
+	sread "Enter a passphrase for the root partition: " passphrase
+	luksphrase=$(mkpassphrase "${passphrase}" "${tpm_key}" | sed  "s/result = \(.*\)/\1/")
 	if printf "%s" "${luksphrase}" | hex2data | cryptsetup luksOpen --key-file="-" "${cryptroot}" root
 	then
 		break

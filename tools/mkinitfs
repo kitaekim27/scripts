@@ -51,6 +51,7 @@ main() {
 	info "Copy my scripts into the initramfs build directory."
 	mkdir --parents "${BUILD_DIR}/usr/local/bin"
 	cp "$(locatebin mkpassphrase)" "${BUILD_DIR}/usr/local/bin"
+	cp "$(locatebin tpmunsealkey)" "${BUILD_DIR}/usr/local/bin"
 	cp "$(locatebin hex2data)" "${BUILD_DIR}/usr/local/bin"
 
 	info "Install kernel modules into the initramfs build directory."
