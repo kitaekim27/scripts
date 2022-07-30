@@ -230,26 +230,6 @@ chroot_configure_system() {
 	useradd --create-home --groups="users,wheel" --shell="/bin/bash" "${USER_NAME}"
 	echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
 
-	info "Setup global XDG environment variables."
-	cat <<-"EOF" >> /etc/profile
-
-	# XDG Base Directory Environment Variables.
-	# Where user-specific data files should be written.
-	export XDG_DATA_HOME="${HOME}/.local/share"
-	# Where user-specific configuration files should be written.
-	export XDG_CONFIG_HOME="${HOME}/.config"
-	# Where user-specific state data should be written.
-	export XDG_STATE_HOME="${HOME}/.local/state"
-	# Directories relative to which data files should be searched.
-	export XDG_DATA_DIRS="/usr/local/share:/usr/share"
-	# Directories relative to which configuration files should be searched.
-	export XDG_CONFIG_DIRS="/etc/xdg"
-	# Where user-specific non-essential (cached) data should be written.
-	export XDG_CACHE_HOME="${HOME}/.cache"
-	# Where user-specific runtime files and other file objects should be placed.
-	export XDG_RUNTIME_DIR="${HOME}/.local/run"
-	EOF
-
 	info "Reload the environment."
 	env-update
 	source /etc/profile
@@ -356,6 +336,13 @@ chroot_install_desktop() {
 	mkdir --parents /etc/X11/xorg.conf.d
 	cp /config/etc/X11/xorg.conf.d/50-synaptics.conf /etc/X11/xorg.conf.d
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
+	export XDG_DATA_HOME="${HOME}/.local/share"
+	export XDG_CONFIG_HOME="${HOME}/.config"
+	export XDG_STATE_HOME="${HOME}/.local/state"
+	export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+	export XDG_CONFIG_DIRS="/etc/xdg"
+	export XDG_CACHE_HOME="${HOME}/.cache"
+	export XDG_RUNTIME_DIR="${HOME}/.local/run"
 
 	export XMODIFIERS="@im=ibus"
 	export GTK_IM_MODULE="ibus"
