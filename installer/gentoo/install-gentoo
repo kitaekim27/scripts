@@ -388,7 +388,7 @@ chroot_install_desktop() {
 
 	refreshxroot &
 
-	exec dbus-launch --sh-syntax --exit-with-x11 dwm
+	exec dwm
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
