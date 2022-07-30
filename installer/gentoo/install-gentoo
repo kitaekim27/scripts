@@ -362,7 +362,11 @@ chroot_install_desktop() {
 	source /etc/profile
 
 	info "Install X11 utils."
-	${EMERGE} x11-apps/xrandr x11-apps/setxkbmap x11-apps/xsetroot
+	${EMERGE} \
+		x11-apps/setxkbmap \
+		x11-apps/xrandr \
+		x11-apps/xsetroot \
+		x11-misc/xwallpaper
 
 	# `x11-misc/xdg-utils` requires `app-text/xmlto text` USE flag.
 	info "Install XDG utils."
@@ -382,9 +386,10 @@ chroot_install_desktop() {
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
 	# Set desktop resolution.
 	# xrandr --output Virtual-1 --mode 1440x900
-
 	# Switch capslock key and escape key.
 	# setxkbmap -option caps:swapescape
+	# Set the wallpaper.
+	# xwallpaper --zoom /path/to/wallpaper
 
 	refreshxroot &
 
