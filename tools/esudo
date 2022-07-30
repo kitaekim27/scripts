@@ -1,4 +1,3 @@
 #!/bin/bash
 # Edit the given file with root privilege using emacs TRAMP.
-set -o errexit -o nounset -o noglob -o pipefail
 eclient "/doas::$(realpath "${1}")"
