@@ -288,6 +288,12 @@ chroot_install_system_daemons() {
 	info "Enable the elogind service."
 	rc-update add elogind boot
 
+	info "Install dbus."
+	${EMERGE} sys-apps/dbus
+	# Note that it seems this only starts system bus.
+	# For session bus, you need to start it somewhere else.
+	rc-update add dbus default
+
 	info "Install system daemons."
 	echo "app-admin/logrotate cron" >> /etc/portage/package.use
 	${EMERGE} \
