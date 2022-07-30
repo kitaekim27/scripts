@@ -361,6 +361,8 @@ chroot_install_desktop() {
 	export GTK_IM_MODULE="ibus"
 	export QT_IM_MODULE="ibus"
 
+	eval "$(dbus-launch --sh-syntax)"
+
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.bash_profile"
