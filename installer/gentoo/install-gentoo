@@ -333,8 +333,6 @@ chroot_install_desktop() {
 	# Without disabling `minimal` USE flag, we can't install drivers.
 	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
-	mkdir --parents /etc/X11/xorg.conf.d
-	cp /config/etc/X11/xorg.conf.d/50-synaptics.conf /etc/X11/xorg.conf.d
 	doas -u ${USER_NAME} touch "/home/${USER_NAME}/.bash_profile"
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
 
