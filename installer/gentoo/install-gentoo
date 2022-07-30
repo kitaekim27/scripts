@@ -356,6 +356,11 @@ chroot_install_desktop() {
 	mkdir --parents /etc/X11/xorg.conf.d
 	cp /config/etc/X11/xorg.conf.d/50-synaptics.conf /etc/X11/xorg.conf.d
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
+
+	export XMODIFIERS="@im=ibus"
+	export GTK_IM_MODULE="ibus"
+	export QT_IM_MODULE="ibus"
+
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
 	EOF
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.bash_profile"
@@ -378,6 +383,9 @@ chroot_install_desktop() {
 	${EMERGE} media-fonts/hack
 	${EMERGE} media-fonts/nanum
 
+	info "Install ibus input method."
+	${EMERGE} app-i18n/ibus app-i18n/ibus-hangul
+
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
 
@@ -387,12 +395,16 @@ chroot_install_desktop() {
 	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
 	# Set desktop resolution.
 	# xrandr --output Virtual-1 --mode 1440x900
+
 	# Switch capslock key and escape key.
 	# setxkbmap -option caps:swapescape
-	# Set the wallpaper.
+
+	# Set desktop wallpaper.
 	# xwallpaper --zoom /path/to/wallpaper
 
 	refreshxroot &
+
+	ibus-daemon --daemonize --xim
 
 	exec dwm
 	EOF
