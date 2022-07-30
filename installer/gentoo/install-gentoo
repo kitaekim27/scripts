@@ -335,7 +335,9 @@ chroot_install_desktop() {
 	${EMERGE} x11-base/xorg-server
 	mkdir --parents /etc/X11/xorg.conf.d
 	cp /config/etc/X11/xorg.conf.d/50-synaptics.conf /etc/X11/xorg.conf.d
+	doas -u ${USER_NAME} touch "/home/${USER_NAME}/.bash_profile"
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
+
 	export XDG_DATA_HOME="${HOME}/.local/share"
 	export XDG_CONFIG_HOME="${HOME}/.config"
 	export XDG_STATE_HOME="${HOME}/.local/state"
@@ -350,10 +352,9 @@ chroot_install_desktop() {
 
 	eval "$(dbus-launch --sh-syntax)"
 
-	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] && exec startx &>/dev/null
+	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] \
+		&& exec startx &>/dev/null
 	EOF
-	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.bash_profile"
-	env-update
 	source /etc/profile
 
 	info "Install X11 utils."
@@ -381,7 +382,8 @@ chroot_install_desktop() {
 	info "Build and install dwm window manager."
 	git clone --branch="release" https://github.com/kitaekim27/dwm /usr/src/dwm
 	mkdwm
-	cat <<-"EOF" >> "/home/${USER_NAME}/.xinitrc"
+	doas -u "${USER_NAME}" touch "/home/${USER_NAME}/.xinitrc"
+	cat <<-"EOF" > "/home/${USER_NAME}/.xinitrc"
 	# Set desktop resolution.
 	# xrandr --output Virtual-1 --mode 1440x900
 
@@ -397,7 +399,6 @@ chroot_install_desktop() {
 
 	exec dwm
 	EOF
-	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
 	echo "app-editors/emacs xft json dynamic-loading gtk cairo" >> /etc/portage/package.use
