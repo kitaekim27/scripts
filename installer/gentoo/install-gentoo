@@ -393,7 +393,7 @@ chroot_install_desktop() {
 	chown "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs, a terminal emulator looks like a text editor."
-	echo "app-editors/emacs xft json dynamic-loading" >> /etc/portage/package.use
+	echo "app-editors/emacs xft json dynamic-loading gtk cairo" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
 	${EMERGE} app-emacs/emacs-daemon
 	mkdir --parents "/home/${USER_NAME}/.emacs.d"
