@@ -336,8 +336,6 @@ chroot_install_bootloader() {
 
 chroot_install_desktop() {
 	info "Install XOrg server."
-	# Without disabling `minimal` USE flag, we can't install drivers.
-	echo "x11-base/xorg-server -minimal" >> /etc/portage/package.use
 	${EMERGE} x11-base/xorg-server
 	doas -u ${USER_NAME} touch "/home/${USER_NAME}/.bash_profile"
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
