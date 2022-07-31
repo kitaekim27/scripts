@@ -378,6 +378,11 @@ chroot_install_desktop() {
 	info "Install emacs config."
 	install -D --owner="${USER_NAME}" --group="${USER_NAME}" \
 		/config/emacs/init.el "/home/${USER_NAME}/.emacs.d/init.el"
+
+	info "Install flatpak."
+	${EMERGE} sys-apps/flatpak
+	${EMERGE} sys-apps/xdg-desktop-portal
+	${EMERGE} sys-apps/xdg-desktop-portal-gtk
 }
 
 chroot_cleanup() {
