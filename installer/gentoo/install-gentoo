@@ -370,16 +370,15 @@ chroot_install_desktop() {
 	${EMERGE} app-editors/emacs
 
 	info "Install bash profile."
-	install --owner="${USER_NAME}" --group="${USER_NAME}" \
+	install -D --owner="${USER_NAME}" --group="${USER_NAME}" \
 		/config/home/user/dot-bash_profile "/home/${USER_NAME}/.bash_profile"
 
 	info "Install xinitrc."
-	install --owner="${USER_NAME}" --group="${USER_NAME}" \
+	install -D --owner="${USER_NAME}" --group="${USER_NAME}" \
 		/config/home/user/dot-xinitrc "/home/${USER_NAME}/.xinitrc"
 
 	info "Install emacs config."
-	mkdir --parents "/home/${USER_NAME}/.emacs.d"
-	install --owner="${USER_NAME}" --group="${USER_NAME}" \
+	install -D --owner="${USER_NAME}" --group="${USER_NAME}" \
 		/config/emacs/init.el "/home/${USER_NAME}/.emacs.d/init.el"
 }
 
