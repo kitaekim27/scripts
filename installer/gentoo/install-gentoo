@@ -335,8 +335,7 @@ chroot_install_bootloader() {
 }
 
 chroot_install_desktop() {
-	info "Install XOrg server."
-	${EMERGE} x11-base/xorg-server
+	info "Set XDG base directory environment variables."
 	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
 
 	export XDG_DATA_HOME="${HOME}/.local/share"
@@ -346,17 +345,25 @@ chroot_install_desktop() {
 	export XDG_CONFIG_DIRS="/etc/xdg"
 	export XDG_CACHE_HOME="${HOME}/.cache"
 	export XDG_RUNTIME_DIR="${HOME}/.local/run"
+	EOF
+	source /etc/profile
+
+	info "Install ibus input method."
+	${EMERGE} app-i18n/ibus app-i18n/ibus-hangul
+	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
 
 	export XMODIFIERS="@im=ibus"
 	export GTK_IM_MODULE="ibus"
 	export QT_IM_MODULE="ibus"
+	EOF
+
+	info "Install XOrg server."
+	${EMERGE} x11-base/xorg-server
+	cat <<-"EOF" >> "/home/${USER_NAME}/.bash_profile"
 
 	[ -t 0 ] && [ "$(tty)" = /dev/tty1 ] && [ -z "${DISPLAY}" ] \
 		&& exec startx &>/dev/null
 	EOF
-	chmod "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.bash_profile"
-	env-update
-	source /etc/profile
 
 	info "Install X11 utils."
 	${EMERGE} \
@@ -373,9 +380,6 @@ chroot_install_desktop() {
 	${EMERGE} media-fonts/noto-emoji
 	${EMERGE} media-fonts/hack
 	${EMERGE} media-fonts/nanum
-
-	info "Install ibus input method."
-	${EMERGE} app-i18n/ibus app-i18n/ibus-hangul
 
 	info "Install build dependencies for dwm window manager."
 	${EMERGE} x11-libs/libXinerama x11-libs/libXft
