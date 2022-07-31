@@ -70,7 +70,7 @@ main_prepare_installer() {
 	echo "${PORTAGE_MIRRORS}" >> /etc/portage/make.conf
 
 	info "Install tpm2-tools in the installer."
-	${EMERGE} --autounmask --autounmask-continue app-crypt/tpm2-tools
+	${EMERGE} app-crypt/tpm2-tools
 }
 
 main_prepare_storage() {
