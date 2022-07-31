@@ -348,6 +348,11 @@ chroot_install_desktop() {
 	# `x11-misc/xdg-utils` requires `app-text/xmlto text` USE flag.
 	info "Install XDG utils."
 	${EMERGE} --autounmask --autounmask-continue x11-misc/xdg-utils
+	${EMERGE} x11-misc/xdg-user-dirs
+
+	# TODO: This should be executed by actual user. Use doas?
+	# info "Update XDG user directory configuration."
+	# xdg-user-dirs-update
 
 	info "Install ibus input method."
 	${EMERGE} app-i18n/ibus app-i18n/ibus-hangul
