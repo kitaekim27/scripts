@@ -103,6 +103,7 @@ export COMMON_FLAGS="-Os -march=native -pipe"
 # If not, we will build binpkgs so that we can use them next time.
 # TODO: We could store binpkgs in somewhere like /var/lib/initramfs by modifying
 #       `PKGDIR` variable.
-EMERGE="nice --20 emerge --jobs=$(nproc) --root=${BUILD_DIR} --buildpkg --usepkg --binpkg-respect-use"
+EMERGE="nice --20 emerge --jobs=$(nproc) --root=${BUILD_DIR} \
+	--buildpkg --usepkg --binpkg-respect-use"
 
 main "${@}"
