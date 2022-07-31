@@ -399,18 +399,21 @@ chroot_install_desktop() {
 
 	ibus-daemon --daemonize --xim
 
-	exec dbus-launch --exit-with-x11 dwm
+	eval $(dbus-launch --sh-syntax --exit-with-x11)
+
+	# Launch emacs daemon after dbus session bus so that emacs daemon aware
+	# the dbus session bus.
+	emacs --bg-daemon
+
+	exec dwm
 	EOF
 
 	info "Install emacs, a terminal emulator looks like a text editor."
 	echo "app-editors/emacs xft json dynamic-loading gtk cairo" >> /etc/portage/package.use
 	${EMERGE} app-editors/emacs
-	${EMERGE} app-emacs/emacs-daemon
 	mkdir --parents "/home/${USER_NAME}/.emacs.d"
 	install --owner="${USER_NAME}" --group="${USER_NAME}" \
 		/config/emacs/init.el "/home/${USER_NAME}/.emacs.d/init.el"
-	ln --symbolic /etc/init.d/emacs "/etc/init.d/emacs.${USER_NAME}"
-	rc-update add "emacs.${USER_NAME}" default
 }
 
 chroot_cleanup() {
