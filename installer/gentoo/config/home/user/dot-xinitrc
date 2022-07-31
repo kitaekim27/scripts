@@ -1,0 +1,25 @@
+# __  _(_)_ __ (_) |_ _ __ ___
+# \ \/ / | '_ \| | __| '__/ __|
+#  >  <| | | | | | |_| | | (__
+# /_/\_\_|_| |_|_|\__|_|  \___|
+
+# Set desktop resolution.
+# xrandr --output Virtual-1 --mode 1440x900
+
+# Switch capslock key and escape key.
+# setxkbmap -option caps:swapescape
+
+# Set desktop wallpaper.
+# xwallpaper --zoom /path/to/wallpaper
+
+refreshxroot &
+
+ibus-daemon --daemonize --xim
+
+eval $(dbus-launch --sh-syntax --exit-with-x11)
+
+# Launch emacs daemon after dbus session bus so that emacs daemon aware
+# the dbus session bus.
+emacs --bg-daemon
+
+exec dwm
