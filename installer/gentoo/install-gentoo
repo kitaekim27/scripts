@@ -385,9 +385,10 @@ chroot_install_desktop() {
 		/config/emacs/init.el "/home/${USER_NAME}/.emacs.d/init.el"
 
 	info "Install flatpak."
-	${EMERGE} sys-apps/flatpak
-	${EMERGE} sys-apps/xdg-desktop-portal
-	${EMERGE} sys-apps/xdg-desktop-portal-gtk
+	${EMERGE} \
+		sys-apps/flatpak \
+		sys-apps/xdg-desktop-portal \
+		sys-apps/xdg-desktop-portal-gtk
 }
 
 chroot_cleanup() {
