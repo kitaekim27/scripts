@@ -6,24 +6,33 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/") t)
 (package-initialize)
-(package-refresh-contents)
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
 (eval-when-compile (require 'use-package))
 
-(use-package vterm :ensure t)
-(setq vterm-kill-buffer-on-exit t)
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-kill-buffer-on-exit t))
 
-(setq evil-want-keybinding nil)
-(use-package evil :ensure t)
-(evil-mode 1)
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-keybinding nil)
+  :config
+  (setq evil-want-C-u-scroll t)
+  (evil-mode 1))
 
-(use-package evil-collection :ensure t)
-(evil-collection-init)
+(use-package evil-collection
+  :ensure t
+  :config
+  (evil-collection-init))
 
-(use-package all-the-icons :ensure t)
+(use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
 
 (use-package doom-themes
   :ensure t
